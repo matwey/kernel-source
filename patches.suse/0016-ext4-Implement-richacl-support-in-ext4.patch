@@ -609,8 +609,8 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  }
  
 @@ -1772,6 +1790,9 @@ static int _ext4_show_options(struct seq
-	if (nodefs || sbi->s_max_dir_size_kb)
-		SEQ_OPTS_PRINT("max_dir_size_kb=%u", sbi->s_max_dir_size_kb);
+ 	if (nodefs || sbi->s_max_dir_size_kb)
+ 		SEQ_OPTS_PRINT("max_dir_size_kb=%u", sbi->s_max_dir_size_kb);
  
 +	if (sb->s_flags & MS_RICHACL)
 +		SEQ_OPTS_PUTS("richacl");

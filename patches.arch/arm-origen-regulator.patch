@@ -28,11 +28,11 @@ index 4e574c2..5028fee 100644
 @@ -121,6 +121,7 @@ static struct regulator_consumer_supply __initdata ldo14_consumer[] = {
  };
  static struct regulator_consumer_supply __initdata ldo17_consumer[] = {
-	REGULATOR_SUPPLY("vdd33", "swb-a31"), /* AR6003 WLAN & CSR 8810 BT */
+ 	REGULATOR_SUPPLY("vdd33", "swb-a31"), /* AR6003 WLAN & CSR 8810 BT */
 +	REGULATOR_SUPPLY("vmmc", NULL),
  };
  static struct regulator_consumer_supply __initdata buck1_consumer[] = {
-	REGULATOR_SUPPLY("vdd_arm", NULL), /* CPUFREQ */
+ 	REGULATOR_SUPPLY("vdd_arm", NULL), /* CPUFREQ */
 --- linus.orig/arch/arm/mach-exynos/mach-smdkv310.c
 +++ linus/arch/arm/mach-exynos/mach-smdkv310.c
 @@ -14,6 +14,8 @@
@@ -45,7 +45,7 @@ index 4e574c2..5028fee 100644
  #include <linux/io.h>
  #include <linux/i2c.h>
 @@ -380,6 +382,14 @@ static void __init smdkv310_reserve(void
-	s5p_mfc_reserve_mem(0x43000000, 8 << 20, 0x51000000, 8 << 20);
+ 	s5p_mfc_reserve_mem(0x43000000, 8 << 20, 0x51000000, 8 << 20);
  }
 
 +static struct regulator_consumer_supply vddmmc_consumers[] __devinitdata = {
@@ -58,15 +58,15 @@ index 4e574c2..5028fee 100644
 +
  static void __init smdkv310_machine_init(void)
  {
-	s3c_i2c1_set_platdata(NULL);
+ 	s3c_i2c1_set_platdata(NULL);
 @@ -387,6 +397,9 @@ static void __init smdkv310_machine_init
 
-	smdkv310_smsc911x_init();
+ 	smdkv310_smsc911x_init();
 
 +	regulator_register_always_on(0, "fixed-3.3V", vddmmc_consumers,
 +				     ARRAY_SIZE(vddmmc_consumers), 3300000);
 +
-	s3c_sdhci0_set_platdata(&smdkv310_hsmmc0_pdata);
-	s3c_sdhci1_set_platdata(&smdkv310_hsmmc1_pdata);
-	s3c_sdhci2_set_platdata(&smdkv310_hsmmc2_pdata);
+ 	s3c_sdhci0_set_platdata(&smdkv310_hsmmc0_pdata);
+ 	s3c_sdhci1_set_platdata(&smdkv310_hsmmc1_pdata);
+ 	s3c_sdhci2_set_platdata(&smdkv310_hsmmc2_pdata);
 

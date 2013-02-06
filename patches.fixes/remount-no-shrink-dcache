@@ -53,7 +53,7 @@ Signed-off-by: Olaf Kirch <okir@suse.de>
  	if (remount_ro) {
 -		if (force) {
 +		if (rflags & REMOUNT_FORCE) {
-			mark_files_ro(sb);
+ 			mark_files_ro(sb);
  		} else {
  			retval = sb_prepare_remount_readonly(sb);
 @@ -728,7 +723,7 @@ int do_remount_sb(struct super_block *sb

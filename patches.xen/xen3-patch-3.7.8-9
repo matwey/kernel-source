@@ -1,0 +1,54 @@
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: Linux 3.7.9
+Patch-mainline: 3.7.9
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Automatically created from "patches.kernel.org/patch-3.7.8-9" by xen-port-patches.py
+
+--- 12.3.orig/arch/x86/include/mach-xen/asm/pgtable.h	2012-10-29 17:13:41.000000000 +0100
++++ 12.3/arch/x86/include/mach-xen/asm/pgtable.h	2013-02-18 12:20:18.000000000 +0100
+@@ -138,6 +138,11 @@ static inline unsigned long pmd_pfn(pmd_
+ 	return (pmd_val(pmd) & PTE_PFN_MASK) >> PAGE_SHIFT;
+ }
+ 
++static inline unsigned long pud_pfn(pud_t pud)
++{
++	return (pud_val(pud) & PTE_PFN_MASK) >> PAGE_SHIFT;
++}
++
+ static inline int pmd_large(pmd_t pte)
+ {
+ 	return pmd_flags(pte) & _PAGE_PSE;
+--- 12.3.orig/arch/x86/mm/fault-xen.c	2012-10-29 17:13:41.000000000 +0100
++++ 12.3/arch/x86/mm/fault-xen.c	2013-02-18 12:20:18.000000000 +0100
+@@ -757,13 +757,15 @@ __bad_area_nosemaphore(struct pt_regs *r
+ 				return;
+ 		}
+ #endif
++		/* Kernel addresses are always protection faults: */
++		if (address >= TASK_SIZE)
++			error_code |= PF_PROT;
+ 
+-		if (unlikely(show_unhandled_signals))
++		if (likely(show_unhandled_signals))
+ 			show_signal_msg(regs, error_code, address, tsk);
+ 
+-		/* Kernel addresses are always protection faults: */
+ 		tsk->thread.cr2		= address;
+-		tsk->thread.error_code	= error_code | (address >= TASK_SIZE);
++		tsk->thread.error_code	= error_code;
+ 		tsk->thread.trap_nr	= X86_TRAP_PF;
+ 
+ 		force_sig_info_fault(SIGSEGV, si_code, address, tsk, 0);
+--- 12.3.orig/arch/x86/mm/init_64-xen.c	2012-10-31 11:57:31.000000000 +0100
++++ 12.3/arch/x86/mm/init_64-xen.c	2013-02-18 12:20:18.000000000 +0100
+@@ -1106,6 +1106,9 @@ int kern_addr_valid(unsigned long addr)
+ 	if (pud_none(*pud))
+ 		return 0;
+ 
++	if (pud_large(*pud))
++		return pfn_valid(pud_pfn(*pud));
++
+ 	pmd = pmd_offset(pud, addr);
+ 	if (pmd_none(*pmd))
+ 		return 0;

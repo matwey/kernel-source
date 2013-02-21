@@ -17,7 +17,7 @@ Acked-by: jbeulich@novell.com
  	---help---
  	  Say Y here to get to see options related to running Linux under
  	  various hypervisors.  This option alone does not add any kernel code.
---- 12.3.orig/arch/x86/kernel/acpi/boot.c	2013-02-05 10:40:07.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/acpi/boot.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/acpi/boot.c	2012-07-05 10:35:17.000000000 +0200
 @@ -70,8 +70,12 @@ int acpi_strict;
  
@@ -71,7 +71,7 @@ Acked-by: jbeulich@novell.com
  static int __init parse_acpi_skip_timer_override(char *arg)
  {
  	acpi_skip_timer_override = 1;
---- 12.3.orig/arch/x86/kernel/apic/apic-xen.c	2007-06-12 13:12:48.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/apic/apic-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/apic/apic-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -54,7 +54,6 @@ static cpumask_t timer_bcast_ipi;
  /*
@@ -113,7 +113,7 @@ Acked-by: jbeulich@novell.com
  #endif
  	}
  }
---- 12.3.orig/arch/x86/kernel/cpu/common-xen.c	2012-07-05 09:59:30.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/cpu/common-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/cpu/common-xen.c	2012-07-05 10:35:22.000000000 +0200
 @@ -48,7 +48,7 @@ struct cpu_dev * cpu_devs[X86_VENDOR_NUM
  
@@ -178,7 +178,7 @@ Acked-by: jbeulich@novell.com
  
  	/* Clear all 6 debug registers: */
  	set_debugreg(0, 0);
---- 12.3.orig/arch/x86/kernel/cpu/mcheck/mce_dom0.c	2011-10-17 10:45:09.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/cpu/mcheck/mce_dom0.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/cpu/mcheck/mce_dom0.c	2011-08-15 10:44:20.000000000 +0200
 @@ -53,8 +53,7 @@ static struct mc_info *g_mi;
  
@@ -198,7 +198,7 @@ Acked-by: jbeulich@novell.com
 +	mce_dom0_interrupt(VIRQ_MCA, NULL);
  }
  
---- 12.3.orig/arch/x86/kernel/entry_32-xen.S	2013-01-25 13:04:32.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/entry_32-xen.S	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/entry_32-xen.S	2013-01-25 14:05:58.000000000 +0100
 @@ -80,8 +80,12 @@ VM_MASK		= 0x00020000
  NMI_MASK	= 0x80000000
@@ -586,7 +586,7 @@ Acked-by: jbeulich@novell.com
  .section .rodata,"a"
  #include "syscall_table.S"
  
---- 12.3.orig/arch/x86/kernel/head_32-xen.S	2012-12-06 15:59:02.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/head_32-xen.S	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/head_32-xen.S	2011-08-09 10:35:35.000000000 +0200
 @@ -63,7 +63,7 @@ ENTRY(startup_32)
  	movl %eax,%gs
@@ -597,7 +597,7 @@ Acked-by: jbeulich@novell.com
  	jmp start_kernel
  
  #define HYPERCALL_PAGE_OFFSET 0x1000
---- 12.3.orig/arch/x86/kernel/io_apic_32-xen.c	2009-03-18 10:39:31.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/io_apic_32-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/io_apic_32-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -31,6 +31,9 @@
  #include <linux/acpi.h>
@@ -1678,7 +1678,7 @@ Acked-by: jbeulich@novell.com
 +	return 0;
 +}
 +early_param("noapic", parse_noapic);
---- 12.3.orig/arch/x86/kernel/microcode_core-xen.c	2011-12-21 10:11:41.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/microcode_core-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/microcode_core-xen.c	2011-12-01 14:59:39.000000000 +0100
 @@ -2,6 +2,7 @@
   *	Intel CPU Microcode Update Driver for Linux
@@ -1815,7 +1815,7 @@ Acked-by: jbeulich@novell.com
  module_init(microcode_init)
  module_exit(microcode_exit)
 -MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
---- 12.3.orig/arch/x86/kernel/mpparse-xen.c	2007-06-12 13:12:48.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/mpparse-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/mpparse-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -30,6 +30,7 @@
  #include <asm/io_apic.h>
@@ -1983,7 +1983,7 @@ Acked-by: jbeulich@novell.com
  	/*
  	 * Mapping between Global System Interrups, which
  	 * represent all possible interrupts, and IRQs
---- 12.3.orig/arch/x86/kernel/pci-dma-xen.c	2012-11-14 12:23:04.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/pci-dma-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/pci-dma-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -110,8 +110,7 @@ dma_map_sg(struct device *hwdev, struct 
  {
@@ -2043,7 +2043,7 @@ Acked-by: jbeulich@novell.com
  	if (swiotlb)
  		swiotlb_unmap_single(dev, dma_addr, size, direction);
  	else
---- 12.3.orig/arch/x86/kernel/process_32-xen.c	2012-08-10 08:16:46.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/process_32-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/process_32-xen.c	2012-08-10 10:27:53.000000000 +0200
 @@ -37,6 +37,7 @@
  #include <linux/kallsyms.h>
@@ -2134,7 +2134,7 @@ Acked-by: jbeulich@novell.com
  		sp -= get_random_int() % 8192;
  	return sp & ~0xf;
  }
---- 12.3.orig/arch/x86/kernel/setup_32-xen.c	2012-06-06 13:16:59.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/setup_32-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/setup_32-xen.c	2012-06-06 13:46:10.000000000 +0200
 @@ -56,6 +56,7 @@
  #include <asm/apic.h>
@@ -2710,7 +2710,7 @@ Acked-by: jbeulich@novell.com
  
  #ifdef CONFIG_ACPI
  	acpi_boot_init();
---- 12.3.orig/arch/x86/kernel/smp_32-xen.c	2007-12-10 08:47:31.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/smp_32-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/smp_32-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -279,8 +279,7 @@ static inline void leave_mm (unsigned lo
   * 2) Leave the mm if we are in the lazy tlb mode.
@@ -2996,7 +2996,7 @@ Acked-by: jbeulich@novell.com
  
  	if ((hpet_enable() >= 0) && hpet_use_timer) {
  		printk("Using HPET for base-timer\n");
---- 12.3.orig/arch/x86/kernel/traps_32-xen.c	2012-07-05 09:59:30.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/traps_32-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/traps_32-xen.c	2012-07-05 10:35:00.000000000 +0200
 @@ -28,6 +28,7 @@
  #include <linux/kprobes.h>
@@ -3444,7 +3444,7 @@ Acked-by: jbeulich@novell.com
  #ifdef CONFIG_KPROBES
  fastcall void __kprobes do_int3(struct pt_regs *regs, long error_code)
  {
---- 12.3.orig/arch/x86/mach-xen/setup.c	2011-09-07 14:16:54.000000000 +0200
+--- 12.3.orig/arch/x86/mach-xen/setup.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mach-xen/setup.c	2011-08-09 10:35:06.000000000 +0200
 @@ -102,8 +102,10 @@ void __init pre_setup_arch_hook(void)
  
@@ -3459,7 +3459,7 @@ Acked-by: jbeulich@novell.com
  
  	if (HYPERVISOR_memory_op(XENMEM_machphys_mapping, &mapping) == 0) {
  		machine_to_phys_mapping = (unsigned long *)mapping.v_start;
---- 12.3.orig/arch/x86/mm/fault_32-xen.c	2010-09-23 15:39:04.000000000 +0200
+--- 12.3.orig/arch/x86/mm/fault_32-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mm/fault_32-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -27,21 +27,24 @@
  #include <asm/uaccess.h>
@@ -3547,7 +3547,7 @@ Acked-by: jbeulich@novell.com
  		yield();
  		down_read(&mm->mmap_sem);
  		goto survive;
---- 12.3.orig/arch/x86/mm/highmem_32-xen.c	2008-10-29 09:55:56.000000000 +0100
+--- 12.3.orig/arch/x86/mm/highmem_32-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mm/highmem_32-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -38,11 +38,9 @@ static void *__kmap_atomic(struct page *
  
@@ -3615,7 +3615,7 @@ Acked-by: jbeulich@novell.com
  
  	return (void*) vaddr;
  }
---- 12.3.orig/arch/x86/mm/hypervisor.c	2012-06-06 13:16:59.000000000 +0200
+--- 12.3.orig/arch/x86/mm/hypervisor.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mm/hypervisor.c	2012-05-31 14:42:14.000000000 +0200
 @@ -31,6 +31,7 @@
   */
@@ -3947,7 +3947,7 @@ Acked-by: jbeulich@novell.com
  			if (++i == MAX_BATCHED_FULL_PTES) {
  				if ((rc = HYPERVISOR_mmu_update(
  					&u[0], i, NULL, DOMID_SELF)) != 0)
---- 12.3.orig/arch/x86/mm/init_32-xen.c	2011-10-17 10:45:09.000000000 +0200
+--- 12.3.orig/arch/x86/mm/init_32-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mm/init_32-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -313,8 +313,7 @@ static void __init permanent_kmaps_init(
  static void __meminit free_new_highpage(struct page *page, int pfn)
@@ -4127,7 +4127,7 @@ Acked-by: jbeulich@novell.com
  	unsigned long start_pfn = start >> PAGE_SHIFT;
  	unsigned long nr_pages = size >> PAGE_SHIFT;
  
---- 12.3.orig/arch/x86/mm/ioremap-xen.c	2011-04-11 13:43:15.000000000 +0200
+--- 12.3.orig/arch/x86/mm/ioremap-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mm/ioremap-xen.c	2011-02-07 15:37:37.000000000 +0100
 @@ -12,7 +12,7 @@
  #include <linux/init.h>
@@ -4176,7 +4176,7 @@ Acked-by: jbeulich@novell.com
  		vunmap((void __force *) addr);
  		return NULL;
  	}
---- 12.3.orig/arch/x86/mm/pgtable_32-xen.c	2010-09-23 15:39:04.000000000 +0200
+--- 12.3.orig/arch/x86/mm/pgtable_32-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mm/pgtable_32-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -68,7 +68,9 @@ void show_mem(void)
  	printk(KERN_INFO "%lu pages writeback\n",
@@ -4233,7 +4233,7 @@ Acked-by: jbeulich@novell.com
  }
  
  pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
---- 12.3.orig/arch/x86/ia32/ia32entry-xen.S	2008-04-02 12:34:02.000000000 +0200
+--- 12.3.orig/arch/x86/ia32/ia32entry-xen.S	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/ia32/ia32entry-xen.S	2011-01-31 17:29:16.000000000 +0100
 @@ -83,6 +83,7 @@
   */ 	
@@ -4304,7 +4304,7 @@ Acked-by: jbeulich@novell.com
 +	reboot.o smpboot_$(BITS).o tsc_$(BITS).o
 +disabled-obj-$(CONFIG_XEN_UNPRIVILEGED_GUEST) += mpparse_64.o
  %/head_$(BITS).o %/head_$(BITS).s: $(if $(CONFIG_XEN),EXTRA_AFLAGS,dummy) :=
---- 12.3.orig/arch/x86/kernel/e820_64-xen.c	2009-12-04 08:45:56.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/e820_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/e820_64-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -16,6 +16,7 @@
  #include <linux/string.h>
@@ -4797,7 +4797,7 @@ Acked-by: jbeulich@novell.com
  }
  
  unsigned long pci_mem_start = 0xaeedbabe;
---- 12.3.orig/arch/x86/kernel/early_printk-xen.c	2007-06-12 13:13:01.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/early_printk-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/early_printk-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -244,20 +244,16 @@ void early_printk(const char *fmt, ...)
  
@@ -4845,7 +4845,7 @@ Acked-by: jbeulich@novell.com
  }
  
 -__setup("earlyprintk=", setup_early_printk);
---- 12.3.orig/arch/x86/kernel/entry_64-xen.S	2012-10-31 10:29:18.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/entry_64-xen.S	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/entry_64-xen.S	2011-10-07 11:17:17.000000000 +0200
 @@ -4,9 +4,6 @@
   *  Copyright (C) 1991, 1992  Linus Torvalds
@@ -5089,7 +5089,7 @@ Acked-by: jbeulich@novell.com
  
  ENTRY(alignment_check)
  	errorentry do_alignment_check
---- 12.3.orig/arch/x86/kernel/head_64-xen.S	2012-12-06 15:59:02.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/head_64-xen.S	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/head_64-xen.S	2012-12-06 16:06:11.000000000 +0100
 @@ -5,9 +5,6 @@
   *  Copyright (C) 2000 Pavel Machek <pavel@suse.cz>
@@ -5110,7 +5110,7 @@ Acked-by: jbeulich@novell.com
  gdt_end:
  	/* asm/segment.h:GDT_ENTRIES must match this */
  	/* This should be a multiple of the cache line size */
---- 12.3.orig/arch/x86/kernel/head64-xen.c	2011-08-08 12:54:10.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/head64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/head64-xen.c	2011-08-09 10:35:40.000000000 +0200
 @@ -7,6 +7,9 @@
   *	Modified for Xen.
@@ -5203,7 +5203,7 @@ Acked-by: jbeulich@novell.com
 -	setup_boot_cpu_data();
  	start_kernel();
  }
---- 12.3.orig/arch/x86/kernel/io_apic_64-xen.c	2009-03-18 10:39:31.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/io_apic_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/io_apic_64-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -26,9 +26,12 @@
  #include <linux/delay.h>
@@ -6904,7 +6904,7 @@ Acked-by: jbeulich@novell.com
  	spin_unlock_irqrestore(&ioapic_lock, flags);
  
  	return 0;
---- 12.3.orig/arch/x86/kernel/ioport-xen.c	2008-01-28 12:24:19.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/ioport-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/ioport-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -58,6 +58,7 @@ asmlinkage long sys_ioperm(unsigned long
  
@@ -6914,7 +6914,7 @@ Acked-by: jbeulich@novell.com
  
  		set_xen_guest_handle(set_iobitmap.bitmap, (char *)bitmap);
  		set_iobitmap.nr_ports = IO_BITMAP_BITS;
---- 12.3.orig/arch/x86/kernel/process_64-xen.c	2012-08-10 08:16:46.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/process_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/process_64-xen.c	2012-08-10 10:27:54.000000000 +0200
 @@ -88,25 +88,24 @@ void idle_notifier_unregister(struct not
  }
@@ -7122,7 +7122,7 @@ Acked-by: jbeulich@novell.com
  		sp -= get_random_int() % 8192;
  	return sp & ~0xf;
  }
---- 12.3.orig/arch/x86/kernel/setup_64-xen.c	2012-06-06 13:16:59.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/setup_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/setup_64-xen.c	2012-06-06 13:46:12.000000000 +0200
 @@ -88,9 +88,6 @@ extern struct edid_info edid_info;
  shared_info_t *HYPERVISOR_shared_info = (shared_info_t *)empty_zero_page;
@@ -7560,7 +7560,7 @@ Acked-by: jbeulich@novell.com
  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
  
  		/* VIA/Cyrix/Centaur-defined */
---- 12.3.orig/arch/x86/kernel/smp_64-xen.c	2008-04-02 12:34:02.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/smp_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/smp_64-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -381,9 +381,8 @@ int smp_call_function_single (int cpu, v
  	/* prevent preemption and reschedule on another processor */
@@ -7623,7 +7623,7 @@ Acked-by: jbeulich@novell.com
 -	return 0; /* Should not happen */
 -#endif
 -}
---- 12.3.orig/arch/x86/kernel/traps_64-xen.c	2012-07-05 09:59:30.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/traps_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/traps_64-xen.c	2012-07-05 10:35:02.000000000 +0200
 @@ -23,6 +23,7 @@
  #include <linux/delay.h>
@@ -8080,7 +8080,7 @@ Acked-by: jbeulich@novell.com
 -__setup("call_trace=", call_trace_setup);
 +early_param("call_trace", call_trace_setup);
  #endif
---- 12.3.orig/arch/x86/kernel/vsyscall_64-xen.c	2007-06-18 08:38:13.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/vsyscall_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/kernel/vsyscall_64-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -26,6 +26,10 @@
  #include <linux/seqlock.h>
@@ -8275,7 +8275,7 @@ Acked-by: jbeulich@novell.com
  	return 0;
  }
  
---- 12.3.orig/arch/x86/mm/fault_64-xen.c	2011-10-07 10:44:29.000000000 +0200
+--- 12.3.orig/arch/x86/mm/fault_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mm/fault_64-xen.c	2011-07-26 09:24:01.000000000 +0200
 @@ -40,8 +40,7 @@
  #define PF_RSVD	(1<<3)
@@ -8414,7 +8414,7 @@ Acked-by: jbeulich@novell.com
  				pgd_page_table(unlock, page);
  			}
  			spin_unlock(&pgd_lock);
---- 12.3.orig/arch/x86/mm/init_64-xen.c	2011-10-17 10:45:09.000000000 +0200
+--- 12.3.orig/arch/x86/mm/init_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mm/init_64-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -61,8 +61,6 @@ EXPORT_SYMBOL(__kernel_page_user);
  
@@ -8728,7 +8728,7 @@ Acked-by: jbeulich@novell.com
  }
  
  int kern_addr_valid(unsigned long addr) 
---- 12.3.orig/arch/x86/mm/pageattr_64-xen.c	2009-03-18 10:39:31.000000000 +0100
+--- 12.3.orig/arch/x86/mm/pageattr_64-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/mm/pageattr_64-xen.c	2011-01-31 17:29:16.000000000 +0100
 @@ -377,8 +377,8 @@ static void revert_page(unsigned long ad
  	BUG_ON(pud_none(*pud));
@@ -8815,7 +8815,7 @@ Acked-by: jbeulich@novell.com
  {
  	struct tpm_private *tp = tpm_priv;
  	unsigned long flags;
---- 12.3.orig/drivers/pci/Kconfig	2012-10-22 16:33:47.000000000 +0200
+--- 12.3.orig/drivers/pci/Kconfig	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/drivers/pci/Kconfig	2012-10-23 14:41:04.000000000 +0200
 @@ -87,7 +87,7 @@ config XEN_PCIDEV_FRONTEND
  config HT_IRQ
@@ -8826,7 +8826,7 @@ Acked-by: jbeulich@novell.com
  	help
  	   This allows native hypertransport devices to use interrupts.
  
---- 12.3.orig/drivers/pci/msi-xen.c	2012-10-31 10:29:18.000000000 +0100
+--- 12.3.orig/drivers/pci/msi-xen.c	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/drivers/pci/msi-xen.c	2012-10-31 10:59:40.000000000 +0100
 @@ -6,6 +6,7 @@
   * Copyright (C) Tom Long Nguyen (tom.l.nguyen@intel.com)
@@ -9977,9 +9977,9 @@ Acked-by: jbeulich@novell.com
  			__FUNCTION__, PTR_ERR(eth_name));
  		return 0;
  	} else {
---- 12.3.orig/drivers/xen/netback/common.h	2013-02-05 10:28:44.000000000 +0100
-+++ 12.3/drivers/xen/netback/common.h	2013-01-25 14:05:52.000000000 +0100
-@@ -92,6 +92,7 @@ typedef struct netif_st {
+--- 12.3.orig/drivers/xen/netback/common.h	2013-02-18 12:09:49.000000000 +0100
++++ 12.3/drivers/xen/netback/common.h	2013-02-18 12:14:52.000000000 +0100
+@@ -94,6 +94,7 @@ typedef struct netif_st {
  
  	/* Statistics */
  	unsigned long nr_copied_skbs;
@@ -9987,18 +9987,18 @@ Acked-by: jbeulich@novell.com
  
  	/* Miscellaneous private stuff. */
  	struct list_head list;  /* scheduling list */
-@@ -202,7 +203,7 @@ void netif_deschedule_work(netif_t *neti
+@@ -205,7 +206,7 @@ void netif_deschedule_work(netif_t *neti
  
  int netif_be_start_xmit(struct sk_buff *skb, struct net_device *dev);
  struct net_device_stats *netif_be_get_stats(struct net_device *dev);
 -irqreturn_t netif_be_int(int irq, void *dev_id, struct pt_regs *regs);
 +irqreturn_t netif_be_int(int irq, void *dev_id);
  
- /* Prevent the device from generating any further traffic. */
- void xenvif_carrier_off(netif_t *netif);
---- 12.3.orig/drivers/xen/netback/interface.c	2013-02-05 10:28:44.000000000 +0100
-+++ 12.3/drivers/xen/netback/interface.c	2011-11-03 12:01:26.000000000 +0100
-@@ -173,6 +173,7 @@ static const struct netif_stat {
+ static inline int netbk_can_queue(struct net_device *dev)
+ {
+--- 12.3.orig/drivers/xen/netback/interface.c	2013-02-18 12:09:49.000000000 +0100
++++ 12.3/drivers/xen/netback/interface.c	2013-02-18 12:14:54.000000000 +0100
+@@ -177,6 +177,7 @@ static const struct netif_stat {
  	u16 offset;
  } netbk_stats[] = {
  	{ "copied_skbs", offsetof(netif_t, nr_copied_skbs) / sizeof(long) },
@@ -10025,8 +10025,8 @@ Acked-by: jbeulich@novell.com
  	skb->pkt_type = PACKET_HOST; /* overridden by eth_type_trans() */
  	skb->protocol = eth_type_trans(skb, dev);
  	skb->dev      = dev;
---- 12.3.orig/drivers/xen/netback/netback.c	2013-02-05 10:28:44.000000000 +0100
-+++ 12.3/drivers/xen/netback/netback.c	2013-01-25 14:05:40.000000000 +0100
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:09:49.000000000 +0100
++++ 12.3/drivers/xen/netback/netback.c	2013-02-18 12:14:55.000000000 +0100
 @@ -41,6 +41,7 @@
  #include <xen/evtchn.h>
  #include <xen/gnttab.h>
@@ -10060,7 +10060,7 @@ Acked-by: jbeulich@novell.com
  
  		if (meta[npo.meta_cons].copy)
  			offset = 0;
-@@ -1482,18 +1486,12 @@ static void net_tx_action(unsigned long 
+@@ -1489,18 +1493,12 @@ static void net_tx_action(unsigned long 
  			netif_idx_release(pending_idx);
  		}
  
@@ -10083,7 +10083,7 @@ Acked-by: jbeulich@novell.com
  
  		netbk_fill_frags(skb);
  
-@@ -1510,6 +1508,12 @@ static void net_tx_action(unsigned long 
+@@ -1517,6 +1515,12 @@ static void net_tx_action(unsigned long 
  		skb->dev      = netif->dev;
  		skb->protocol = eth_type_trans(skb, skb->dev);
  
@@ -10096,7 +10096,7 @@ Acked-by: jbeulich@novell.com
  		netif->stats.rx_bytes += skb->len;
  		netif->stats.rx_packets++;
  
-@@ -1558,7 +1562,7 @@ static void netif_page_release(struct pa
+@@ -1565,7 +1569,7 @@ static void netif_page_release(struct pa
  	netif_idx_release(idx);
  }
  
@@ -10105,7 +10105,7 @@ Acked-by: jbeulich@novell.com
  {
  	netif_t *netif = dev_id;
  
-@@ -1625,7 +1629,7 @@ static netif_rx_response_t *make_rx_resp
+@@ -1632,7 +1636,7 @@ static netif_rx_response_t *make_rx_resp
  }
  
  #ifdef NETBE_DEBUG_INTERRUPT
@@ -10661,7 +10661,7 @@ Acked-by: jbeulich@novell.com
  {
  	struct xenoprof_buf * buf;
  	static unsigned long flag;
---- 12.3.orig/arch/x86/include/mach-xen/asm/desc_32.h	2008-01-28 12:24:19.000000000 +0100
+--- 12.3.orig/arch/x86/include/mach-xen/asm/desc_32.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/desc_32.h	2011-01-31 17:29:16.000000000 +0100
 @@ -32,52 +32,110 @@ static inline struct desc_struct *get_cp
  	return (struct desc_struct *)per_cpu(cpu_gdt_descr, cpu).address;
@@ -10823,7 +10823,7 @@ Acked-by: jbeulich@novell.com
  static inline void clear_LDT(void)
  {
  	int cpu = get_cpu();
---- 12.3.orig/arch/x86/include/mach-xen/asm/fixmap_32.h	2007-06-12 13:14:02.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/fixmap_32.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/fixmap_32.h	2011-01-31 17:29:16.000000000 +0100
 @@ -55,7 +55,7 @@ enum fixed_addresses {
  #ifdef CONFIG_X86_LOCAL_APIC
@@ -10846,7 +10846,7 @@ Acked-by: jbeulich@novell.com
  
  #define set_fixmap(idx, phys) \
  		__set_fixmap(idx, phys, PAGE_KERNEL)
---- 12.3.orig/arch/x86/include/mach-xen/asm/hypercall_32.h	2012-10-31 10:29:18.000000000 +0100
+--- 12.3.orig/arch/x86/include/mach-xen/asm/hypercall_32.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/hypercall_32.h	2012-10-31 10:58:57.000000000 +0100
 @@ -127,6 +127,23 @@
  	__res;							\
@@ -10918,7 +10918,7 @@ Acked-by: jbeulich@novell.com
  	return _hypercall3(int, grant_table_op, cmd, uop, count);
  }
  
---- 12.3.orig/arch/x86/include/mach-xen/asm/hypercall_64.h	2012-10-31 10:29:18.000000000 +0100
+--- 12.3.orig/arch/x86/include/mach-xen/asm/hypercall_64.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/hypercall_64.h	2012-10-31 10:59:05.000000000 +0100
 @@ -134,6 +134,23 @@
  	__res;							\
@@ -10989,7 +10989,7 @@ Acked-by: jbeulich@novell.com
  	return _hypercall3(int, grant_table_op, cmd, uop, count);
  }
  
---- 12.3.orig/arch/x86/include/mach-xen/asm/hypervisor.h	2012-10-31 10:29:18.000000000 +0100
+--- 12.3.orig/arch/x86/include/mach-xen/asm/hypervisor.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/hypervisor.h	2012-10-31 10:59:11.000000000 +0100
 @@ -42,6 +42,7 @@
  #include <xen/interface/sched.h>
@@ -11061,7 +11061,7 @@ Acked-by: jbeulich@novell.com
  static inline int
  HYPERVISOR_yield(
  	void)
---- 12.3.orig/arch/x86/include/mach-xen/asm/pgtable-3level.h	2008-04-02 12:34:02.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/pgtable-3level.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/pgtable-3level.h	2011-01-31 17:29:16.000000000 +0100
 @@ -53,7 +53,6 @@ static inline int pte_exec_kernel(pte_t 
   * not possible, use pte_get_and_clear to obtain the old pte
@@ -11119,7 +11119,7 @@ Acked-by: jbeulich@novell.com
  static inline int pte_same(pte_t a, pte_t b)
  {
  	return a.pte_low == b.pte_low && a.pte_high == b.pte_high;
---- 12.3.orig/arch/x86/include/mach-xen/asm/pgtable_32.h	2011-04-11 13:43:15.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/pgtable_32.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/pgtable_32.h	2011-02-07 15:37:16.000000000 +0100
 @@ -260,31 +260,89 @@ static inline pte_t pte_mkhuge(pte_t pte
  # include <asm/pgtable-2level.h>
@@ -11444,7 +11444,7 @@ Acked-by: jbeulich@novell.com
  /* from system description table in BIOS.  Mostly for MCA use, but
  others may find it useful. */
  extern unsigned int machine_id;
---- 12.3.orig/arch/x86/include/mach-xen/asm/smp_32.h	2007-06-12 13:14:02.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/smp_32.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/smp_32.h	2011-01-31 17:29:16.000000000 +0100
 @@ -79,25 +79,36 @@ static inline int hard_smp_processor_id(
  	return GET_APIC_ID(*(unsigned long *)(APIC_BASE+APIC_ID));
@@ -11490,7 +11490,7 @@ Acked-by: jbeulich@novell.com
 +#endif
 +
  #endif
---- 12.3.orig/arch/x86/include/mach-xen/asm/tlbflush_32.h	2007-11-26 16:59:25.000000000 +0100
+--- 12.3.orig/arch/x86/include/mach-xen/asm/tlbflush_32.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/tlbflush_32.h	2011-01-31 17:29:16.000000000 +0100
 @@ -8,8 +8,6 @@
  #define __flush_tlb_global() xen_tlb_flush()
@@ -11501,7 +11501,7 @@ Acked-by: jbeulich@novell.com
  #define cpu_has_invlpg	(boot_cpu_data.x86 > 3)
  
  #define __flush_tlb_single(addr) xen_invlpg(addr)
---- 12.3.orig/arch/x86/include/mach-xen/asm/fixmap_64.h	2007-06-12 13:14:13.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/fixmap_64.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/fixmap_64.h	2011-01-31 17:29:16.000000000 +0100
 @@ -41,7 +41,7 @@ enum fixed_addresses {
  #ifdef CONFIG_X86_LOCAL_APIC
@@ -11512,7 +11512,7 @@ Acked-by: jbeulich@novell.com
  	FIX_IO_APIC_BASE_0,
  	FIX_IO_APIC_BASE_END = FIX_IO_APIC_BASE_0 + MAX_IO_APICS-1,
  #endif
---- 12.3.orig/arch/x86/include/mach-xen/asm/pgtable_64.h	2011-04-11 13:43:15.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/pgtable_64.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/pgtable_64.h	2011-02-07 15:37:14.000000000 +0100
 @@ -44,12 +44,9 @@ extern unsigned long __supported_pte_mas
  
@@ -11692,7 +11692,7 @@ Acked-by: jbeulich@novell.com
  #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
  #define __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
  #define __HAVE_ARCH_PTEP_CLEAR_FLUSH
---- 12.3.orig/arch/x86/include/mach-xen/asm/processor_64.h	2008-03-06 08:54:32.000000000 +0100
+--- 12.3.orig/arch/x86/include/mach-xen/asm/processor_64.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/processor_64.h	2011-01-31 17:29:16.000000000 +0100
 @@ -484,6 +484,8 @@ static inline void __mwait(unsigned long
  		: :"a" (eax), "c" (ecx));
@@ -11703,7 +11703,7 @@ Acked-by: jbeulich@novell.com
  #define stack_current() \
  ({								\
  	struct thread_info *ti;					\
---- 12.3.orig/arch/x86/include/mach-xen/asm/smp_64.h	2007-06-12 13:14:13.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/smp_64.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/smp_64.h	2011-01-31 17:29:16.000000000 +0100
 @@ -4,15 +4,12 @@
  /*
@@ -11810,7 +11810,7 @@ Acked-by: jbeulich@novell.com
 +#endif /* !CONFIG_SMP */
  #endif
  
---- 12.3.orig/arch/x86/include/mach-xen/asm/tlbflush_64.h	2007-11-26 16:59:25.000000000 +0100
+--- 12.3.orig/arch/x86/include/mach-xen/asm/tlbflush_64.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/tlbflush_64.h	2011-01-31 17:29:16.000000000 +0100
 @@ -12,9 +12,6 @@
   */
@@ -11822,7 +11822,7 @@ Acked-by: jbeulich@novell.com
  #define __flush_tlb_all() __flush_tlb_global()
  
  #define __flush_tlb_one(addr)	xen_invlpg((unsigned long)addr)
---- 12.3.orig/include/xen/evtchn.h	2009-03-19 11:35:59.000000000 +0100
+--- 12.3.orig/include/xen/evtchn.h	2013-02-18 12:13:07.000000000 +0100
 +++ 12.3/include/xen/evtchn.h	2012-10-23 14:40:45.000000000 +0200
 @@ -54,34 +54,34 @@
   */

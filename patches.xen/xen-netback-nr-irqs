@@ -8,9 +8,9 @@ be pretty unbounded. Also, store the dynirq rather than the raw irq
 to push up the limit where the type of notify_list needs to become
 'int' rather than 'u16'.
 
---- head.orig/drivers/xen/netback/interface.c	2012-10-31 12:18:06.000000000 +0100
-+++ head/drivers/xen/netback/interface.c	2012-02-10 13:34:52.000000000 +0100
-@@ -274,6 +274,7 @@ int netif_map(struct backend_info *be, g
+--- 12.3.orig/drivers/xen/netback/interface.c	2013-02-18 12:21:15.000000000 +0100
++++ 12.3/drivers/xen/netback/interface.c	2013-02-18 12:21:30.000000000 +0100
+@@ -278,6 +278,7 @@ int netif_map(struct backend_info *be, g
  		netif->dev->name, netif);
  	if (err < 0)
  		goto err_hypervisor;
@@ -18,8 +18,8 @@ to push up the limit where the type of notify_list needs to become
  	netif->irq = err;
  	disable_irq(netif->irq);
  
---- head.orig/drivers/xen/netback/netback.c	2012-11-29 14:26:31.000000000 +0100
-+++ head/drivers/xen/netback/netback.c	2012-11-29 14:27:13.000000000 +0100
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:21:07.000000000 +0100
++++ 12.3/drivers/xen/netback/netback.c	2012-11-29 14:27:13.000000000 +0100
 @@ -645,8 +645,12 @@ static void net_rx_action(unsigned long 
  	static mmu_update_t rx_mmu[NET_RX_RING_SIZE];
  	static gnttab_transfer_t grant_trans_op[NET_RX_RING_SIZE];

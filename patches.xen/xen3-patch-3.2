@@ -16,7 +16,7 @@ Acked-by: jbeulich@suse.com
 +	.quad compat_sys_process_vm_readv
 +	.quad compat_sys_process_vm_writev
  ia32_syscall_end:
---- 12.3.orig/arch/x86/include/asm/mach_traps.h	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/arch/x86/include/asm/mach_traps.h	2013-02-18 12:13:05.000000000 +0100
 +++ 12.3/arch/x86/include/asm/mach_traps.h	2011-11-28 11:36:37.000000000 +0100
 @@ -5,6 +5,8 @@
  #ifndef _ASM_X86_MACH_DEFAULT_MACH_TRAPS_H
@@ -1857,7 +1857,7 @@ Acked-by: jbeulich@suse.com
  
  #include <asm/apic.h>
  #include <asm/io_apic.h>
---- 12.3.orig/arch/x86/kernel/nmi.c	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/nmi.c	2013-02-18 12:13:05.000000000 +0100
 +++ 12.3/arch/x86/kernel/nmi.c	2012-06-13 15:57:05.000000000 +0200
 @@ -191,15 +191,12 @@ pci_serr_error(unsigned char reason, str
  	pr_emerg("Dazed and confused, but trying to continue\n");
@@ -2368,7 +2368,7 @@ Acked-by: jbeulich@suse.com
  	depends on PCI_MMCONFIG && EXPERIMENTAL
  	help
  	  Support for error detection and correction the Intel
---- 12.3.orig/drivers/edac/sb_edac.c	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/drivers/edac/sb_edac.c	2013-02-18 12:13:05.000000000 +0100
 +++ 12.3/drivers/edac/sb_edac.c	2012-10-04 13:09:34.000000000 +0200
 @@ -1552,7 +1552,11 @@ static int sbridge_mce_check_error(struc
  		mce->socketid, mce->apicid);
@@ -3232,8 +3232,8 @@ Acked-by: jbeulich@suse.com
  	.ndo_change_mtu	        = NULL, /* allow arbitrary mtu */
  };
  
---- 12.3.orig/drivers/xen/netback/netback.c	2013-01-25 14:15:29.000000000 +0100
-+++ 12.3/drivers/xen/netback/netback.c	2013-01-25 14:16:01.000000000 +0100
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:17:08.000000000 +0100
++++ 12.3/drivers/xen/netback/netback.c	2013-02-18 12:17:14.000000000 +0100
 @@ -78,15 +78,18 @@ static struct timer_list netbk_tx_pendin
  
  #define MAX_PENDING_REQS 256
@@ -3303,7 +3303,7 @@ Acked-by: jbeulich@suse.com
  }
  
  /* This is a twin to netbk_gop_skb.  Assume that netbk_gop_skb was
-@@ -1085,11 +1096,11 @@ static gnttab_map_grant_ref_t *netbk_get
+@@ -1087,11 +1098,11 @@ static gnttab_map_grant_ref_t *netbk_get
  {
  	struct skb_shared_info *shinfo = skb_shinfo(skb);
  	skb_frag_t *frags = shinfo->frags;
@@ -3317,7 +3317,7 @@ Acked-by: jbeulich@suse.com
  
  	for (i = start; i < shinfo->nr_frags; i++, txp++) {
  		pending_idx = pending_ring[MASK_PEND_IDX(pending_cons++)];
-@@ -1101,7 +1112,7 @@ static gnttab_map_grant_ref_t *netbk_get
+@@ -1103,7 +1114,7 @@ static gnttab_map_grant_ref_t *netbk_get
  		memcpy(&pending_tx_info[pending_idx].req, txp, sizeof(*txp));
  		netif_get(netif);
  		pending_tx_info[pending_idx].netif = netif;
@@ -3326,7 +3326,7 @@ Acked-by: jbeulich@suse.com
  	}
  
  	return mop;
-@@ -1111,7 +1122,7 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1113,7 +1124,7 @@ static int netbk_tx_check_mop(struct sk_
  			       gnttab_map_grant_ref_t **mopp)
  {
  	gnttab_map_grant_ref_t *mop = *mopp;
@@ -3335,7 +3335,7 @@ Acked-by: jbeulich@suse.com
  	netif_t *netif = pending_tx_info[pending_idx].netif;
  	netif_tx_request_t *txp;
  	struct skb_shared_info *shinfo = skb_shinfo(skb);
-@@ -1132,12 +1143,12 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1134,12 +1145,12 @@ static int netbk_tx_check_mop(struct sk_
  	}
  
  	/* Skip first skb fragment if it is on same page as header fragment. */
@@ -3350,7 +3350,7 @@ Acked-by: jbeulich@suse.com
  
  		/* Check error status: if okay then remember grant handle. */
  		newerr = (++mop)->status;
-@@ -1165,7 +1176,7 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1167,7 +1178,7 @@ static int netbk_tx_check_mop(struct sk_
  		pending_idx = *((u16 *)skb->data);
  		netif_idx_release(pending_idx);
  		for (j = start; j < i; j++) {
@@ -3359,7 +3359,7 @@ Acked-by: jbeulich@suse.com
  			netif_idx_release(pending_idx);
  		}
  
-@@ -1184,20 +1195,16 @@ static void netbk_fill_frags(struct sk_b
+@@ -1186,20 +1197,16 @@ static void netbk_fill_frags(struct sk_b
  	int i;
  
  	for (i = 0; i < nr_frags; i++) {
@@ -3383,7 +3383,7 @@ Acked-by: jbeulich@suse.com
  
  		skb->len += txp->size;
  		skb->data_len += txp->size;
-@@ -1421,14 +1428,11 @@ static void net_tx_action(unsigned long 
+@@ -1428,14 +1435,11 @@ static void net_tx_action(unsigned long 
  		__skb_put(skb, data_len);
  
  		skb_shinfo(skb)->nr_frags = ret;
@@ -4071,7 +4071,7 @@ Acked-by: jbeulich@suse.com
  
  #endif /* CONFIG_PARAVIRT_XEN */
  
---- 12.3.orig/include/xen/blkif.h	2012-04-04 08:57:09.000000000 +0200
+--- 12.3.orig/include/xen/blkif.h	2013-02-18 12:13:05.000000000 +0100
 +++ 12.3/include/xen/blkif.h	2012-04-04 10:27:25.000000000 +0200
 @@ -46,12 +46,21 @@ struct blkif_x86_32_request {
  	blkif_sector_t sector_number;/* start sector idx on disk (r/w only)  */

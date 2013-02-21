@@ -821,7 +821,7 @@ Acked-by: jbeulich@novell.com
   out:
  	if (mem_base)
  		iounmap(mem_base);
---- 12.3.orig/arch/x86/kernel/pcspeaker.c	2013-01-25 13:57:40.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/pcspeaker.c	2013-02-18 12:13:06.000000000 +0100
 +++ 12.3/arch/x86/kernel/pcspeaker.c	2011-01-31 17:32:22.000000000 +0100
 @@ -6,6 +6,11 @@ static __init int add_pcspkr(void)
  {
@@ -4232,9 +4232,9 @@ Acked-by: jbeulich@novell.com
  		cpu_data[cpu] = boot_cpu_data;
  		cpu_data[cpu].apicid = apicid;
  
---- 12.3.orig/drivers/xen/netback/interface.c	2011-11-03 12:01:26.000000000 +0100
-+++ 12.3/drivers/xen/netback/interface.c	2011-11-03 12:03:20.000000000 +0100
-@@ -165,7 +165,7 @@ static void netbk_get_drvinfo(struct net
+--- 12.3.orig/drivers/xen/netback/interface.c	2013-02-18 12:14:54.000000000 +0100
++++ 12.3/drivers/xen/netback/interface.c	2013-02-18 12:15:09.000000000 +0100
+@@ -169,7 +169,7 @@ static void netbk_get_drvinfo(struct net
  			      struct ethtool_drvinfo *info)
  {
  	strcpy(info->driver, "netbk");
@@ -4523,7 +4523,7 @@ Acked-by: jbeulich@novell.com
  
  static inline void activate_mm(struct mm_struct *prev, struct mm_struct *next)
  {
---- 12.3.orig/arch/x86/include/mach-xen/asm/pgalloc_32.h	2008-07-21 11:00:33.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/pgalloc_32.h	2013-02-18 12:13:06.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/pgalloc_32.h	2011-01-31 17:32:22.000000000 +0100
 @@ -6,12 +6,23 @@
  #include <linux/mm.h>		/* for struct page */
@@ -4699,7 +4699,7 @@ Acked-by: jbeulich@novell.com
  void xenbus_unregister_driver(struct xenbus_driver *drv);
  
  struct xenbus_transaction
---- 12.3.orig/lib/swiotlb-xen.c	2012-11-14 12:23:04.000000000 +0100
+--- 12.3.orig/lib/swiotlb-xen.c	2013-02-18 12:13:06.000000000 +0100
 +++ 12.3/lib/swiotlb-xen.c	2011-01-31 17:32:22.000000000 +0100
 @@ -143,8 +143,8 @@ __setup("swiotlb=", setup_io_tlb_npages)
   * Statically reserve bounce buffer space and initialize bounce buffer data

@@ -27,7 +27,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 --- a/fs/ext4/Kconfig
 +++ b/fs/ext4/Kconfig
-@@ -83,3 +83,13 @@ config EXT4_DEBUG
+@@ -85,3 +85,13 @@ config EXT4_DEBUG
  
  	  If you select Y here, then you will be able to turn on debugging
  	  with a command such as "echo 1 > /sys/kernel/debug/ext4/mballoc-debug"
@@ -50,7 +50,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 +ext4-$(CONFIG_EXT4_FS_RICHACL)		+= richacl.o
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -908,6 +908,10 @@ struct ext4_inode_info {
+@@ -924,6 +924,10 @@ struct ext4_inode_info {
  
  	/* Precomputed uuid+inum+igen checksum for seeding inode checksums */
  	__u32 i_csum_seed;
@@ -71,7 +71,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  /*
   * Called when an inode is released. Note that this is different
-@@ -258,5 +259,8 @@ const struct inode_operations ext4_file_
+@@ -334,5 +335,8 @@ const struct inode_operations ext4_file_
  #endif
  	.get_acl	= ext4_get_acl,
  	.fiemap		= ext4_fiemap,
@@ -90,7 +90,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  #include <trace/events/ext4.h>
  
-@@ -861,7 +862,11 @@ got:
+@@ -908,7 +909,11 @@ got:
  	if (err)
  		goto fail_drop;
  
@@ -113,7 +113,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  #include <trace/events/ext4.h>
  
-@@ -3654,6 +3655,9 @@ struct inode *ext4_iget(struct super_blo
+@@ -3828,6 +3829,9 @@ struct inode *ext4_iget(struct super_blo
  	set_nlink(inode, le16_to_cpu(raw_inode->i_links_count));
  
  	ext4_clear_state_flags(ei);	/* Only relevant on 32-bit archs */
@@ -123,7 +123,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	ei->i_dir_start_lookup = 0;
  	ei->i_dtime = le32_to_cpu(raw_inode->i_dtime);
  	/* We now have enough fields to check if the inode was active or not.
-@@ -4078,7 +4082,11 @@ int ext4_setattr(struct dentry *dentry,
+@@ -4253,7 +4257,11 @@ int ext4_setattr(struct dentry *dentry,
  	int orphan = 0;
  	const unsigned int ia_valid = attr->ia_valid;
  
@@ -136,7 +136,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	if (error)
  		return error;
  
-@@ -4178,9 +4186,12 @@ int ext4_setattr(struct dentry *dentry,
+@@ -4361,9 +4369,12 @@ int ext4_setattr(struct dentry *dentry,
  	if (orphan && inode->i_nlink)
  		ext4_orphan_del(NULL, inode);
  
@@ -162,7 +162,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  #include <trace/events/ext4.h>
  /*
-@@ -2587,6 +2588,9 @@ const struct inode_operations ext4_dir_i
+@@ -3052,6 +3053,9 @@ const struct inode_operations ext4_dir_i
  #endif
  	.get_acl	= ext4_get_acl,
  	.fiemap         = ext4_fiemap,
@@ -172,7 +172,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  };
  
  const struct inode_operations ext4_special_inode_operations = {
-@@ -2598,4 +2602,7 @@ const struct inode_operations ext4_speci
+@@ -3063,4 +3067,7 @@ const struct inode_operations ext4_speci
  	.removexattr	= generic_removexattr,
  #endif
  	.get_acl	= ext4_get_acl,
@@ -545,7 +545,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  #define CREATE_TRACE_POINTS
  #include <trace/events/ext4.h>
-@@ -921,7 +922,9 @@ static struct inode *ext4_alloc_inode(st
+@@ -937,7 +938,9 @@ static struct inode *ext4_alloc_inode(st
  	ei = kmem_cache_alloc(ext4_inode_cachep, GFP_NOFS);
  	if (!ei)
  		return NULL;
@@ -556,7 +556,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	ei->vfs_inode.i_version = 1;
  	ei->vfs_inode.i_data.writeback_index = 0;
  	memset(&ei->i_cached_extent, 0, sizeof(struct ext4_ext_cache));
-@@ -1009,6 +1012,13 @@ void ext4_clear_inode(struct inode *inod
+@@ -1030,6 +1033,13 @@ void ext4_clear_inode(struct inode *inod
  	invalidate_inode_buffers(inode);
  	clear_inode(inode);
  	dquot_drop(inode);
@@ -570,7 +570,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	ext4_discard_preallocations(inode);
  	if (EXT4_I(inode)->jinode) {
  		jbd2_journal_release_jbd_inode(EXT4_JOURNAL(inode),
-@@ -1171,7 +1181,7 @@ enum {
+@@ -1207,7 +1217,7 @@ enum {
  	Opt_bsd_df, Opt_minix_df, Opt_grpid, Opt_nogrpid,
  	Opt_resgid, Opt_resuid, Opt_sb, Opt_err_cont, Opt_err_panic, Opt_err_ro,
  	Opt_nouid32, Opt_debug, Opt_removed,
@@ -579,7 +579,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	Opt_auto_da_alloc, Opt_noauto_da_alloc, Opt_noload,
  	Opt_commit, Opt_min_batch_time, Opt_max_batch_time,
  	Opt_journal_dev, Opt_journal_checksum, Opt_journal_async_commit,
-@@ -1208,6 +1218,7 @@ static const match_table_t tokens = {
+@@ -1245,6 +1255,7 @@ static const match_table_t tokens = {
  	{Opt_user_xattr, "user_xattr"},
  	{Opt_nouser_xattr, "nouser_xattr"},
  	{Opt_acl, "acl"},
@@ -587,7 +587,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	{Opt_noacl, "noacl"},
  	{Opt_noload, "norecovery"},
  	{Opt_noload, "noload"},
-@@ -1457,6 +1468,9 @@ static int handle_mount_opt(struct super
+@@ -1508,6 +1519,9 @@ static int handle_mount_opt(struct super
  	case Opt_nouser_xattr:
  		ext4_msg(sb, KERN_WARNING, deprecated_msg, opt, "3.5");
  		break;
@@ -597,7 +597,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	case Opt_sb:
  		return 1;	/* handled by get_sb_block() */
  	case Opt_removed:
-@@ -1648,6 +1662,10 @@ static int parse_options(char *options,
+@@ -1709,6 +1723,10 @@ static int parse_options(char *options,
  			return 0;
  		}
  	}
@@ -608,7 +608,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	return 1;
  }
  
-@@ -1772,6 +1790,9 @@ static int _ext4_show_options(struct seq
+@@ -1837,6 +1855,9 @@ static int _ext4_show_options(struct seq
  	if (nodefs || sbi->s_max_dir_size_kb)
  		SEQ_OPTS_PRINT("max_dir_size_kb=%u", sbi->s_max_dir_size_kb);
  
@@ -618,15 +618,15 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	ext4_show_quota_options(seq, sb);
  	return 0;
  }
-@@ -2983,6 +3004,7 @@ static int ext4_fill_super(struct super_
- 	int err;
+@@ -3269,6 +3290,7 @@ static int ext4_fill_super(struct super_
+ 	int err = 0;
  	unsigned int journal_ioprio = DEFAULT_JOURNAL_IOPRIO;
  	ext4_group_t first_not_zeroed;
 +	unsigned long acl_flags = 0;
  
  	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
  	if (!sbi)
-@@ -3054,7 +3076,7 @@ static int ext4_fill_super(struct super_
+@@ -3383,7 +3405,7 @@ static int ext4_fill_super(struct super_
  #ifdef CONFIG_EXT4_FS_XATTR
  	set_opt(sb, XATTR_USER);
  #endif
@@ -635,7 +635,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  	set_opt(sb, POSIX_ACL);
  #endif
  	set_opt(sb, MBLK_IO_SUBMIT);
-@@ -3137,8 +3159,12 @@ static int ext4_fill_super(struct super_
+@@ -3457,8 +3479,12 @@ static int ext4_fill_super(struct super_
  			clear_opt(sb, DELALLOC);
  	}
  
@@ -650,7 +650,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  	if (le32_to_cpu(es->s_rev_level) == EXT4_GOOD_OLD_REV &&
  	    (EXT4_HAS_COMPAT_FEATURE(sb, ~0U) ||
-@@ -4249,6 +4275,7 @@ static int ext4_remount(struct super_blo
+@@ -4587,6 +4613,7 @@ static int ext4_remount(struct super_blo
  	ext4_group_t g;
  	unsigned int journal_ioprio = DEFAULT_JOURNAL_IOPRIO;
  	int err = 0;
@@ -658,7 +658,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  #ifdef CONFIG_QUOTA
  	int i;
  #endif
-@@ -4283,8 +4310,12 @@ static int ext4_remount(struct super_blo
+@@ -4620,8 +4647,12 @@ static int ext4_remount(struct super_blo
  	if (sbi->s_mount_flags & EXT4_MF_FS_ABORTED)
  		ext4_abort(sb, "Abort forced by user");
  
@@ -705,7 +705,7 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
  
  struct ext4_xattr_header {
  	__le32	h_magic;	/* magic number for identification */
-@@ -70,6 +71,10 @@ extern const struct xattr_handler ext4_x
+@@ -72,6 +73,10 @@ extern const struct xattr_handler ext4_x
  extern const struct xattr_handler ext4_xattr_acl_access_handler;
  extern const struct xattr_handler ext4_xattr_acl_default_handler;
  extern const struct xattr_handler ext4_xattr_security_handler;

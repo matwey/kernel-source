@@ -1,4 +1,4 @@
-WORKING WITH THE SUSE 2.6.x KERNEL SOURCES
+WORKING WITH THE SUSE KERNEL SOURCES
 
 Andreas Gruenbacher <agruen@suse.de>, SUSE Labs, 2003, 2004, 2005, 2006
 Michal Marek <mmarek@suse.de>, SUSE Labs, 2010
@@ -308,12 +308,12 @@ this:
       $ for f in patches.*.tar.bz2; do		\
 	  tar -xjf "$f" || break;		\
 	done
-      $ tar -xjf linux-2.6.5.tar.bz2
+      $ tar -xjf linux-3.7.tar.bz2
 
     # Apply the patches
 
       $ for p in $(./guards < series.conf); do
-	  patch -d linux-2.6.5 -p1 < $p || break
+	  patch -d linux-3.7 -p1 < $p || break
 	done
 
 The configuration script config.conf which is similar to series.conf is
@@ -334,7 +334,7 @@ packing up the repository, they end up in config.tar.bz2.
 The kernel-$FLAVOR packages are based on config/$ARCH/$FLAVOR.
 (kernel-default is based on config/$ARCH/default, for example). The
 kernel-$FLAVOR packages install their configuration files as
-/boot/config-$VER_STR (for example, /boot/config-2.6.5-99-default). The
+/boot/config-$VER_STR (for example, /boot/config-3.7.6-99-default). The
 config is also packaged in the kernel-$FLAVOR-devel package as
 /usr/src/linux-obj/$ARCH/$FLAVOR/.config.
 
@@ -422,21 +422,21 @@ encounters new config options without entries in the config file.
 MODULE LOAD PATHS
 
 Modules that belong to a specific kernel release are installed in
-/lib/modules/2.6.5-99-smp and similar. Note that this path contains the
+/lib/modules/3.7.6-99-smp and similar. Note that this path contains the
 kernel package release number. Modules from KMPs must be installed
-below /lib/modules/2.6.5-99-smp/updates/ and similar: modules below
+below /lib/modules/3.7.6-99-smp/updates/ and similar: modules below
 updates/ have priority over other modules.
 
 When KMPs contain modules that are compatible between multiple installed
 kernels, symlinks are used to make those modules available to those
 compatible kernels like this:
 
-  /lib/modules/2.6.16-100-smp/weak-updates/foo.ko ->
-      /lib/modules/2.6.16-99-smp/updates/foo.ko
+  /lib/modules/3.7.6-100-smp/weak-updates/foo.ko ->
+      /lib/modules/3.7.6-99-smp/updates/foo.ko
 
 Modules in the weak-updates directory have lower priority than modules
-in /lib/modules/2.6.16-100-smp/updates/, and higher priority than other
-modules in /lib/modules/2.6.16-100-smp.
+in /lib/modules/3.7.6-100-smp/updates/, and higher priority than other
+modules in /lib/modules/3.7.6-100-smp.
 
 
 REFERENCES

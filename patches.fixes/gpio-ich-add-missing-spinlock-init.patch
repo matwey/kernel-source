@@ -1,0 +1,26 @@
+From: Jean Delvare <khali@linux-fr.org>
+Date: Sun, 16 Dec 2012 21:31:40 +0100
+Subject: gpio/ich: Add missing spinlock init
+Patch-mainline: v3.8
+Git-commit: d39a948fef2446cfac3749bbfcfdd536335c3764 
+
+As reported by CONFIG_DEBUG_SPINLOCK=y.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Acked-by: Peter Tyser <ptyser@xes-inc.com>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: Jean Delvare <jdelvare@suse.de>
+---
+ drivers/gpio/gpio-ich.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/drivers/gpio/gpio-ich.c
++++ b/drivers/gpio/gpio-ich.c
+@@ -390,6 +390,7 @@ static int __devinit ichx_gpio_probe(str
+ 		return -ENODEV;
+ 	}
+ 
++	spin_lock_init(&ichx_priv.lock);
+ 	res_base = platform_get_resource(pdev, IORESOURCE_IO, ICH_RES_GPIO);
+ 	ichx_priv.use_gpio = ich_info->use_gpio;
+ 	err = ichx_gpio_request_regions(res_base, pdev->name,

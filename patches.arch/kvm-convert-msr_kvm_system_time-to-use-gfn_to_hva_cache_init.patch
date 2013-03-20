@@ -19,8 +19,8 @@ Signed-off-by: Andrew Honig <ahonig@google.com>
 Acked-by: Bruce Rogers <brogers@suse.com>
 ---
  arch/x86/include/asm/kvm_host.h |    4 +--
- arch/x86/kvm/x86.c              |   48 ++++++++++++++++++----------------------
- 2 files changed, 24 insertions(+), 28 deletions(-)
+ arch/x86/kvm/x86.c              |   46 +++++++++++++++++-----------------------
+ 2 files changed, 22 insertions(+), 28 deletions(-)
 
 Index: b/arch/x86/include/asm/kvm_host.h
 ===================================================================
@@ -106,7 +106,7 @@ Index: b/arch/x86/kvm/x86.c
  		kvmclock_reset(vcpu);
  
  		vcpu->arch.time = data;
-@@ -1644,20 +1640,19 @@ int kvm_set_msr_common(struct kvm_vcpu *
+@@ -1644,20 +1640,17 @@ int kvm_set_msr_common(struct kvm_vcpu *
  		if (!(data & 1))
  			break;
  
@@ -118,7 +118,7 @@ Index: b/arch/x86/kvm/x86.c
 -		if (vcpu->arch.time_offset &
 -				(sizeof(struct pvclock_vcpu_time_info) - 1))
 +		if (gpa_offset & (sizeof(struct pvclock_vcpu_time_info) - 1))
- 			return 1;
+ 			break;
  
 -		vcpu->arch.time_page =
 -				gfn_to_page(vcpu->kvm, data >> PAGE_SHIFT);
@@ -127,16 +127,14 @@ Index: b/arch/x86/kvm/x86.c
 -			vcpu->arch.time_page = NULL;
 -
 +		if (kvm_gfn_to_hva_cache_init(vcpu->kvm,
-+		     &vcpu->arch.pv_time, data & ~1ULL)) {
++		     &vcpu->arch.pv_time, data & ~1ULL))
 +			vcpu->arch.pv_time_enabled = false;
-+			return 1;
-+		} else {
++		else
 +			vcpu->arch.pv_time_enabled = true;
-+		}
  		break;
  	}
  	case MSR_KVM_ASYNC_PF_EN:
-@@ -2651,7 +2646,7 @@ static int kvm_vcpu_ioctl_x86_set_xcrs(s
+@@ -2651,7 +2644,7 @@ static int kvm_vcpu_ioctl_x86_set_xcrs(s
   */
  static int kvm_set_guest_paused(struct kvm_vcpu *vcpu)
  {
@@ -145,7 +143,7 @@ Index: b/arch/x86/kvm/x86.c
  		return -EINVAL;
  	vcpu->arch.pvclock_set_guest_stopped_request = true;
  	kvm_make_request(KVM_REQ_CLOCK_UPDATE, vcpu);
-@@ -6263,6 +6258,7 @@ int kvm_arch_vcpu_init(struct kvm_vcpu *
+@@ -6263,6 +6256,7 @@ int kvm_arch_vcpu_init(struct kvm_vcpu *
  	if (!zalloc_cpumask_var(&vcpu->arch.wbinvd_dirty_mask, GFP_KERNEL))
  		goto fail_free_mce_banks;
  

@@ -1,0 +1,65 @@
+From 7e3c832158e2552e5e106a588e2b9e61c35b68f2 Mon Sep 17 00:00:00 2001
+From: Ilija Hadzic <ihadzic@research.bell-labs.com>
+Date: Sat, 30 Mar 2013 18:20:35 -0400
+Subject: [PATCH] drm: correctly restore mappings if drm_open fails
+Patch-mainline: not yet
+References: bnc#807850
+
+If first drm_open fails, the error-handling path will
+incorrectly restore inode's mapping to NULL. This can
+cause the crash later on. Fix by separately storing
+away mapping pointers that drm_open can touch and
+restore each from its own respective variable if the
+call fails.
+
+Reference: 
+http://lists.freedesktop.org/archives/dri-devel/2013-March/036564.html
+
+V2: use one variable to store file and inode mapping
+    since they are the same at the function entry; also
+    fix spelling mistakes in commit message.
+
+Reported-by: Marco Munderloh <munderl@tnt.uni-hannover.de>
+Signed-off-by: Ilija Hadzic <ihadzic@research.bell-labs.com>
+Cc: Michal Hocko <mhocko@suse.cz>
+Cc: stable@vger.kernel.org
+Acked-by: Michal Hocko <mhocko@suse.cz>
+
+---
+ drivers/gpu/drm/drm_fops.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_fops.c b/drivers/gpu/drm/drm_fops.c
+index 13fdcd1..429e07d 100644
+--- a/drivers/gpu/drm/drm_fops.c
++++ b/drivers/gpu/drm/drm_fops.c
+@@ -123,6 +123,7 @@ int drm_open(struct inode *inode, struct file *filp)
+ 	int retcode = 0;
+ 	int need_setup = 0;
+ 	struct address_space *old_mapping;
++	struct address_space *old_imapping;
+ 
+ 	minor = idr_find(&drm_minors_idr, minor_id);
+ 	if (!minor)
+@@ -137,6 +138,7 @@ int drm_open(struct inode *inode, struct file *filp)
+ 	if (!dev->open_count++)
+ 		need_setup = 1;
+ 	mutex_lock(&dev->struct_mutex);
++	old_imapping = inode->i_mapping;
+ 	old_mapping = dev->dev_mapping;
+ 	if (old_mapping == NULL)
+ 		dev->dev_mapping = &inode->i_data;
+@@ -159,8 +161,8 @@ int drm_open(struct inode *inode, struct file *filp)
+ 
+ err_undo:
+ 	mutex_lock(&dev->struct_mutex);
+-	filp->f_mapping = old_mapping;
+-	inode->i_mapping = old_mapping;
++	filp->f_mapping = old_imapping;
++	inode->i_mapping = old_imapping;
+ 	iput(container_of(dev->dev_mapping, struct inode, i_data));
+ 	dev->dev_mapping = old_mapping;
+ 	mutex_unlock(&dev->struct_mutex);
+-- 
+1.7.4.1
+

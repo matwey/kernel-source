@@ -1,0 +1,40 @@
+From: Eddi De Pieri <eddi@depieri.net>
+Date: Mon, 14 Jan 2013 18:21:32 -0300
+Subject: [media] Support Digivox Mini HD (rtl2832)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Git-commit: 09f9408dc394835157397f9a4d714ecb53d03976
+Patch-mainline: v3.9-rc5
+References: bnc#812113
+
+Add support for Digivox Mini HD (rtl2832)
+The tuner works, but with worst performance then realtek linux driver,
+due to incomplete implementation of fc2580.c
+
+Signed-off-by: Eddi De Pieri <eddi@depieri.net>
+Tested-by: Lorenzo Dongarrà <lorenzo_64@katamail.com>
+Acked-by: Antti Palosaari <crope@iki.fi>
+Reviewed-by: Antti Palosaari <crope@iki.fi>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+---
+ drivers/media/usb/dvb-usb-v2/rtl28xxu.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
+index 4ab0dd8..e127bd1 100644
+--- a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
++++ b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
+@@ -1368,6 +1368,8 @@ static const struct usb_device_id rtl28xxu_id_table[] = {
+ 		&rtl2832u_props, "ASUS My Cinema-U3100Mini Plus V2", NULL) },
+ 	{ DVB_USB_DEVICE(USB_VID_KWORLD_2, 0xd393,
+ 		&rtl2832u_props, "GIGABYTE U7300", NULL) },
++	{ DVB_USB_DEVICE(USB_VID_DEXATEK, 0x1104,
++		&rtl2832u_props, "Digivox Micro Hd", NULL) },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(usb, rtl28xxu_id_table);
+-- 
+1.8.2
+

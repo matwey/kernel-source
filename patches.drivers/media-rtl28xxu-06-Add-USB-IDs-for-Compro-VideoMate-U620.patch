@@ -1,0 +1,31 @@
+From: Alistair Buxton <a.j.buxton@gmail.com>
+Date: Tue, 12 Feb 2013 21:58:47 -0300
+Subject: [media] rtl28xxu: Add USB IDs for Compro VideoMate U620F
+Git-commit: b9e2afff1e6b36d05a0e12b6114eb0aaf8949c09
+Patch-mainline: v3.9-rc5
+References: bnc#812113
+
+Signed-off-by: Alistair Buxton <a.j.buxton@gmail.com>
+Acked-by: Antti Palosaari <crope@iki.fi>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+---
+ drivers/media/usb/dvb-usb-v2/rtl28xxu.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
+index e127bd1..d98387a 100644
+--- a/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
++++ b/drivers/media/usb/dvb-usb-v2/rtl28xxu.c
+@@ -1370,6 +1370,8 @@ static const struct usb_device_id rtl28xxu_id_table[] = {
+ 		&rtl2832u_props, "GIGABYTE U7300", NULL) },
+ 	{ DVB_USB_DEVICE(USB_VID_DEXATEK, 0x1104,
+ 		&rtl2832u_props, "Digivox Micro Hd", NULL) },
++	{ DVB_USB_DEVICE(USB_VID_COMPRO, 0x0620,
++		&rtl2832u_props, "Compro VideoMate U620F", NULL) },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(usb, rtl28xxu_id_table);
+-- 
+1.8.2
+

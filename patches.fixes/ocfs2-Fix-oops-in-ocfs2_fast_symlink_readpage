@@ -1,0 +1,27 @@
+From: Sunil Mushran <smushran@yahoo.com>
+Git-commit 30b9c9e6ba289ba3bb67cc292efcc4122ea37ae5
+Date:   Fri Aug 3 17:36:17 2012 +0100
+Subject: ocfs2: Fix oops in ocfs2_fast_symlink_readpage() code path
+Patch-mainline: Yes, v3.9-rc1
+    
+    Commit ea022dfb3c2a4680483b00eb2fecc9fc4f6091d1 was missing a var init.
+    
+    Reported-and-Tested-by: Vincent Etienne <vetienne@aprogsys.com>
+    Signed-off-by: Sunil Mushran <sunil.mushran@gmail.com>
+    Signed-off-by: Joel Becker <jlbec@evilplan.org>
+    Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Acked-by: Goldwyn Rodrigues <rgoldwyn@suse.com>
+
+diff --git a/fs/ocfs2/symlink.c b/fs/ocfs2/symlink.c
+index f1fbb4b..66edce7 100644
+--- a/fs/ocfs2/symlink.c
++++ b/fs/ocfs2/symlink.c
+@@ -57,7 +57,7 @@
+ static int ocfs2_fast_symlink_readpage(struct file *unused, struct page *page)
+ {
+ 	struct inode *inode = page->mapping->host;
+-	struct buffer_head *bh;
++	struct buffer_head *bh = NULL;
+ 	int status = ocfs2_read_inode_block(inode, &bh);
+ 	struct ocfs2_dinode *fe;
+ 	const char *link;

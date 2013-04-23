@@ -1,7 +1,7 @@
 From: Torsten Duwe <duwe@lst.de>
 Subject: KMS: fix EDID detailed timing frame rate
 Git-commit: c19b3b0f6eed552952845e4ad908dba2113d67b4
-Patch-mainline: all 3.x -stable
+Patch-mainline: 3.9-rc4
 
 When KMS has parsed an EDID "detailed timing", it leaves the frame rate
 zeroed.  Consecutive (debug-) output of that mode thus yields 0 for

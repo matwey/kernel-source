@@ -1,7 +1,7 @@
 From: Torsten Duwe <torsten@lst.de>
 Subject: KMS: fix EDID detailed timing vsync parsing
 Git-commit: 16dad1d743d31a104a849c8944e6b9eb479f6cd7
-Patch-mainline: all 3.x -stable
+Patch-mainline: 3.9-rc4
 
 EDID spreads some values across multiple bytes; bit-fiddling is needed
 to retrieve these.  The current code to parse "detailed timings" has a

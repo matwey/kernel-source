@@ -1,0 +1,97 @@
+From: Benjamin Poirier <bpoirier@suse.de>
+Date: Mon, 29 Apr 2013 11:42:14 +0000
+Subject: unix/stream: fix peeking with an offset larger than data in queue
+Patch-mainline: Queued in subsystem maintainer repository
+Git-repo: git://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git
+Git-commit: 79f632c71bea0d0864d84d6a4ce78da5a9430f5b
+References: bnc#803931 CVE-2013-0290
+
+Currently, peeking on a unix stream socket with an offset larger than len of
+the data in the sk receive queue returns immediately with bogus data.
+
+This patch fixes this so that the behavior is the same as peeking with no
+offset on an empty queue: the caller blocks.
+
+Signed-off-by: Benjamin Poirier <bpoirier@suse.de>
+Acked-by: Eric Dumazet <edumazet@google.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ net/unix/af_unix.c |   25 ++++++++++++-------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
+
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -1862,10 +1862,10 @@ out:
+ }
+ 
+ /*
+- *	Sleep until data has arrive. But check for races..
++ *	Sleep until more data has arrived. But check for races..
+  */
+-
+-static long unix_stream_data_wait(struct sock *sk, long timeo)
++static long unix_stream_data_wait(struct sock *sk, long timeo,
++				  struct sk_buff *last)
+ {
+ 	DEFINE_WAIT(wait);
+ 
+@@ -1874,7 +1874,7 @@ static long unix_stream_data_wait(struct
+ 	for (;;) {
+ 		prepare_to_wait(sk_sleep(sk), &wait, TASK_INTERRUPTIBLE);
+ 
+-		if (!skb_queue_empty(&sk->sk_receive_queue) ||
++		if (skb_peek_tail(&sk->sk_receive_queue) != last ||
+ 		    sk->sk_err ||
+ 		    (sk->sk_shutdown & RCV_SHUTDOWN) ||
+ 		    signal_pending(current) ||
+@@ -1893,8 +1893,6 @@ static long unix_stream_data_wait(struct
+ 	return timeo;
+ }
+ 
+-
+-
+ static int unix_stream_recvmsg(struct kiocb *iocb, struct socket *sock,
+ 			       struct msghdr *msg, size_t size,
+ 			       int flags)
+@@ -1939,14 +1937,12 @@ static int unix_stream_recvmsg(struct ki
+ 		goto out;
+ 	}
+ 
+-	skip = sk_peek_offset(sk, flags);
+-
+ 	do {
+ 		int chunk;
+-		struct sk_buff *skb;
++		struct sk_buff *skb, *last;
+ 
+ 		unix_state_lock(sk);
+-		skb = skb_peek(&sk->sk_receive_queue);
++		last = skb = skb_peek(&sk->sk_receive_queue);
+ again:
+ 		if (skb == NULL) {
+ 			unix_sk(sk)->recursion_level = 0;
+@@ -1969,7 +1965,7 @@ again:
+ 				break;
+ 			mutex_unlock(&u->readlock);
+ 
+-			timeo = unix_stream_data_wait(sk, timeo);
++			timeo = unix_stream_data_wait(sk, timeo, last);
+ 
+ 			if (signal_pending(current)
+ 			    ||  mutex_lock_interruptible(&u->readlock)) {
+@@ -1983,10 +1979,13 @@ again:
+ 			break;
+ 		}
+ 
+-		if (skip >= skb->len) {
++		skip = sk_peek_offset(sk, flags);
++		while (skip >= skb->len) {
+ 			skip -= skb->len;
++			last = skb;
+ 			skb = skb_peek_next(skb, &sk->sk_receive_queue);
+-			goto again;
++			if (!skb)
++				goto again;
+ 		}
+ 
+ 		unix_state_unlock(sk);

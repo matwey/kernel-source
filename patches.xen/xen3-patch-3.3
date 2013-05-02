@@ -485,7 +485,7 @@ Acked-by: jbeulich@suse.com
 -	.quad compat_sys_process_vm_readv
 -	.quad compat_sys_process_vm_writev
 -ia32_syscall_end:
---- 12.3.orig/arch/x86/include/asm/debugreg.h	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/arch/x86/include/asm/debugreg.h	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/arch/x86/include/asm/debugreg.h	2012-04-10 17:25:00.000000000 +0200
 @@ -168,7 +168,7 @@ extern void aout_dump_debugregs(struct u
  
@@ -1439,7 +1439,7 @@ Acked-by: jbeulich@suse.com
  	DISABLE_INTERRUPTS(CLBR_NONE)
  	TRACE_IRQS_OFF
 --- 12.3.orig/arch/x86/kernel/head-xen.c	2012-02-08 16:16:55.000000000 +0100
-+++ 12.3/arch/x86/kernel/head-xen.c	2012-02-09 17:46:13.000000000 +0100
++++ 12.3/arch/x86/kernel/head-xen.c	2013-04-05 09:22:12.000000000 +0200
 @@ -54,7 +54,7 @@ void __init reserve_ebda_region(void)
  		lowmem = 0x9f000;
  
@@ -1449,7 +1449,7 @@ Acked-by: jbeulich@suse.com
  }
  #else /* CONFIG_XEN */
  #include <linux/export.h>
-@@ -106,12 +106,9 @@ void __init xen_start_kernel(void)
+@@ -106,12 +106,10 @@ void __init xen_start_kernel(void)
  	WARN_ON(HYPERVISOR_vm_assist(VMASST_CMD_enable,
  				     VMASST_TYPE_writable_pagetables));
  
@@ -1459,9 +1459,10 @@ Acked-by: jbeulich@suse.com
 -				   + (xen_start_info->nr_pt_frames
 -				      << PAGE_SHIFT),
 -				   "Xen provided");
-+	memblock_reserve(ALIGN(__pa_symbol(&_end), PAGE_SIZE),
++	memblock_reserve(PAGE_ALIGN(__pa_symbol(&_end)),
 +			 __pa(xen_start_info->pt_base)
-+			 + PFN_PHYS(xen_start_info->nr_pt_frames));
++			 + PFN_PHYS(xen_start_info->nr_pt_frames)
++			 - PAGE_ALIGN(__pa_symbol(&_end)));
  
  #ifdef CONFIG_X86_32
  {
@@ -1548,7 +1549,7 @@ Acked-by: jbeulich@suse.com
  	inc_irq_stat(x86_platform_ipis);
  
  	if (x86_platform_ipi_callback)
---- 12.3.orig/arch/x86/kernel/irq_64.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/irq_64.c	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/arch/x86/kernel/irq_64.c	2012-05-11 10:57:43.000000000 +0200
 @@ -39,7 +39,9 @@ static inline void stack_overflow_check(
  {
@@ -2719,7 +2720,7 @@ Acked-by: jbeulich@suse.com
  	 * The return value is ignored as the calls cannot fail.
  	 * Large pages for identity mappings are not used at boot time
  	 * and hence no memory allocations during large page split.
---- 12.3.orig/drivers/acpi/osl.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/acpi/osl.c	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/drivers/acpi/osl.c	2012-04-10 17:24:36.000000000 +0200
 @@ -326,8 +326,12 @@ acpi_map_lookup_virt(void __iomem *virt,
  }
@@ -3558,8 +3559,8 @@ Acked-by: jbeulich@suse.com
 -	unregister_balloon(&balloon_sysdev);
 +	unregister_balloon(&balloon_dev);
  }
---- 12.3.orig/drivers/xen/blkback/blkback.c	2012-04-04 10:26:46.000000000 +0200
-+++ 12.3/drivers/xen/blkback/blkback.c	2013-01-25 15:08:42.000000000 +0100
+--- 12.3.orig/drivers/xen/blkback/blkback.c	2013-04-16 14:08:35.000000000 +0200
++++ 12.3/drivers/xen/blkback/blkback.c	2013-04-16 14:09:08.000000000 +0200
 @@ -62,7 +62,7 @@ module_param_named(reqs, blkif_reqs, uin
  MODULE_PARM_DESC(reqs, "Number of blkback requests to allocate");
  
@@ -3569,7 +3570,7 @@ Acked-by: jbeulich@suse.com
  static unsigned int debug_lvl;
  module_param(log_stats, bool, 0644);
  module_param(debug_lvl, uint, 0644);
-@@ -341,8 +341,11 @@ irqreturn_t blkif_be_int(int irq, void *
+@@ -320,8 +320,11 @@ irqreturn_t blkif_be_int(int irq, void *
  
  static void dispatch_discard(blkif_t *blkif, struct blkif_request_discard *req)
  {
@@ -3582,9 +3583,9 @@ Acked-by: jbeulich@suse.com
  
  	blkif->st_ds_req++;
  
-@@ -361,12 +364,8 @@ static void dispatch_discard(blkif_t *bl
- 
- 	plug_queue(blkif, preq.bdev);
+@@ -338,12 +341,8 @@ static void dispatch_discard(blkif_t *bl
+ 		return;
+ 	}
  
 -	if (blkif->blk_backend_type == BLKIF_BACKEND_PHY ||
 -	    blkif->blk_backend_type == BLKIF_BACKEND_FILE)
@@ -3597,7 +3598,7 @@ Acked-by: jbeulich@suse.com
  	case 0:
  		status = BLKIF_RSP_OKAY;
  		break;
---- 12.3.orig/drivers/xen/blkback/common.h	2012-06-08 10:37:58.000000000 +0200
+--- 12.3.orig/drivers/xen/blkback/common.h	2013-04-16 14:08:36.000000000 +0200
 +++ 12.3/drivers/xen/blkback/common.h	2012-06-08 10:38:21.000000000 +0200
 @@ -43,16 +43,12 @@
  	pr_debug("(file=%s, line=%d) " _f,	\
@@ -4440,7 +4441,7 @@ Acked-by: jbeulich@suse.com
  /* For xenbus internal use. */
  enum {
  	XENBUS_XSD_UNCOMMITTED = 0,
---- 12.3.orig/drivers/xen/xenbus/xenbus_dev_backend.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/xen/xenbus/xenbus_dev_backend.c	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/drivers/xen/xenbus/xenbus_dev_backend.c	2012-06-13 16:00:49.000000000 +0200
 @@ -7,7 +7,9 @@
  #include <linux/capability.h>
@@ -4494,7 +4495,7 @@ Acked-by: jbeulich@suse.com
 +void xenbus_ring_ops_init(void);
 +
  #endif
---- 12.3.orig/include/linux/pci_ids.h	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/include/linux/pci_ids.h	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/include/linux/pci_ids.h	2012-06-21 08:31:17.000000000 +0200
 @@ -75,6 +75,7 @@
  #define PCI_CLASS_SYSTEM_RTC		0x0803

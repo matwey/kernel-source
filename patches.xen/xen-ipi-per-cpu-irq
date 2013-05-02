@@ -145,7 +145,7 @@ Patch-mainline: n/a
  
  static int __init nonmi_ipi_setup(char *str)
 --- head.orig/drivers/xen/core/evtchn.c	2012-10-04 13:30:59.000000000 +0200
-+++ head/drivers/xen/core/evtchn.c	2012-10-04 13:39:08.000000000 +0200
++++ head/drivers/xen/core/evtchn.c	2013-03-20 12:29:57.000000000 +0100
 @@ -57,6 +57,20 @@ static DEFINE_SPINLOCK(irq_mapping_updat
  static int evtchn_to_irq[NR_EVENT_CHANNELS] = {
  	[0 ...  NR_EVENT_CHANNELS-1] = -1 };
@@ -593,7 +593,7 @@ Patch-mainline: n/a
  }
  EXPORT_SYMBOL_GPL(irq_to_evtchn_port);
  
-@@ -1140,14 +1342,23 @@ static void restore_cpu_virqs(unsigned i
+@@ -1140,14 +1342,25 @@ static void restore_cpu_virqs(unsigned i
  
  static void restore_cpu_ipis(unsigned int cpu)
  {
@@ -616,11 +616,13 @@ Patch-mainline: n/a
 +		if (irq == -1
 +		    || !VALID_EVTCHN(per_cpu(ipi_evtchn, cpu)))
 +			return;
++
++		bitmap_zero(per_cpu(ipi_pending, cpu), NR_IPIS);
 +#endif
  
  		data = irq_get_irq_data(irq);
  		BUG_ON(irq_data_cfg(data)->info != mk_irq_info(IRQT_IPI, ipi, 0));
-@@ -1161,13 +1372,23 @@ static void restore_cpu_ipis(unsigned in
+@@ -1161,13 +1374,23 @@ static void restore_cpu_ipis(unsigned in
  
  		/* Record the new mapping. */
  		evtchn_to_irq[evtchn] = irq;
@@ -644,7 +646,7 @@ Patch-mainline: n/a
  }
  
  static void evtchn_resume(void)
-@@ -1364,7 +1585,8 @@ int evtchn_map_pirq(int irq, int xen_pir
+@@ -1364,7 +1587,8 @@ int evtchn_map_pirq(int irq, int xen_pir
  		struct irq_cfg *cfg;
  
  		spin_lock(&irq_mapping_update_lock);

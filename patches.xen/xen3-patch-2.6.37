@@ -8,8 +8,8 @@ Acked-by: Jeff Mahoney <jeffm@suse.com>
 Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches.py
 
 --- 12.3.orig/arch/x86/Kconfig	2012-10-23 15:40:08.000000000 +0200
-+++ 12.3/arch/x86/Kconfig	2012-10-23 15:45:53.000000000 +0200
-@@ -1817,7 +1817,6 @@ config USE_PERCPU_NUMA_NODE_ID
++++ 12.3/arch/x86/Kconfig	2013-04-16 14:06:51.000000000 +0200
+@@ -1813,7 +1813,6 @@ config USE_PERCPU_NUMA_NODE_ID
  	depends on NUMA
  
  menu "Power management and ACPI options"
@@ -17,7 +17,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  
  config ARCH_HIBERNATION_HEADER
  	def_bool y
-@@ -1825,6 +1824,8 @@ config ARCH_HIBERNATION_HEADER
+@@ -1821,6 +1820,8 @@ config ARCH_HIBERNATION_HEADER
  
  source "kernel/power/Kconfig"
  
@@ -26,7 +26,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  source "drivers/acpi/Kconfig"
  
  source "drivers/sfi/Kconfig"
-@@ -1960,6 +1961,8 @@ source "drivers/cpuidle/Kconfig"
+@@ -1956,6 +1957,8 @@ source "drivers/cpuidle/Kconfig"
  
  source "drivers/idle/Kconfig"
  
@@ -35,7 +35,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  endmenu
  
  
-@@ -2040,7 +2043,7 @@ config PCI_OLPC
+@@ -2036,7 +2039,7 @@ config PCI_OLPC
  
  config PCI_XEN
  	def_bool y
@@ -44,7 +44,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  	select SWIOTLB_XEN
  
  config PCI_DOMAINS
-@@ -2064,21 +2067,6 @@ config PCI_CNB20LE_QUIRK
+@@ -2060,21 +2063,6 @@ config PCI_CNB20LE_QUIRK
  
  	  You should say N unless you know you need this.
  
@@ -92,7 +92,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  #endif
  #endif
  
---- 12.3.orig/arch/x86/include/asm/io.h	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/arch/x86/include/asm/io.h	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/arch/x86/include/asm/io.h	2011-09-07 16:07:28.000000000 +0200
 @@ -331,7 +331,7 @@ extern void early_iounmap(void __iomem *
  extern void fixup_early_ioremap(void);
@@ -4004,7 +4004,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  
  	return 0;
  }
---- 12.3.orig/arch/x86/kernel/resource.c	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/resource.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/arch/x86/kernel/resource.c	2011-09-23 14:48:43.000000000 +0200
 @@ -1,3 +1,7 @@
 +#ifdef CONFIG_XEN
@@ -5736,7 +5736,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  config HT_IRQ
  	bool "Interrupts on hypertransport devices"
  	default y
---- 12.3.orig/drivers/pci/Makefile	2011-01-31 14:32:40.000000000 +0100
+--- 12.3.orig/drivers/pci/Makefile	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/pci/Makefile	2012-08-20 13:16:30.000000000 +0200
 @@ -72,7 +72,7 @@ obj-$(CONFIG_PCI_SYSCALL) += syscall.o
  
@@ -7294,9 +7294,9 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  
  		if (unlikely(spinning)) {
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
---- 12.3.orig/drivers/xen/evtchn.c	2011-02-01 15:03:10.000000000 +0100
-+++ 12.3/drivers/xen/evtchn.c	2011-02-01 15:09:47.000000000 +0100
-@@ -528,7 +528,11 @@ static const struct file_operations evtc
+--- 12.3.orig/drivers/xen/evtchn.c	2013-04-16 14:06:37.000000000 +0200
++++ 12.3/drivers/xen/evtchn.c	2013-04-16 14:06:48.000000000 +0200
+@@ -538,7 +538,11 @@ static const struct file_operations evtc
  
  static struct miscdevice evtchn_miscdev = {
  	.minor        = MISC_DYNAMIC_MINOR,
@@ -7341,7 +7341,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  	/* Allocate space for the per-instance private data. */
  	private_data = kmalloc(sizeof(*private_data), GFP_KERNEL);
  	if (!private_data)
---- 12.3.orig/drivers/xen/pci.c	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/drivers/xen/pci.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/pci.c	2012-06-19 12:04:27.000000000 +0200
 @@ -23,11 +23,20 @@
  #include <xen/interface/physdev.h>
@@ -7463,7 +7463,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  }
  
  
---- 12.3.orig/drivers/xen/sfc_netback/ci/tools/platform/linux_kernel.h	2008-02-20 09:32:49.000000000 +0100
+--- 12.3.orig/drivers/xen/sfc_netback/ci/tools/platform/linux_kernel.h	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/sfc_netback/ci/tools/platform/linux_kernel.h	2011-02-01 15:09:47.000000000 +0100
 @@ -54,7 +54,6 @@
  #include <linux/in6.h>
@@ -7590,7 +7590,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  typedef struct xen_memory_map xen_memory_map_t;
  DEFINE_XEN_GUEST_HANDLE(xen_memory_map_t);
  
---- 12.3.orig/include/uapi/xen/privcmd.h	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/include/uapi/xen/privcmd.h	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/include/uapi/xen/privcmd.h	2012-10-23 15:44:46.000000000 +0200
 @@ -1,98 +1,3 @@
 -/******************************************************************************
@@ -7704,7 +7704,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  
  typedef struct privcmd_hypercall
  {
---- 12.3.orig/kernel/power/Kconfig	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/kernel/power/Kconfig	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/kernel/power/Kconfig	2012-08-20 13:16:23.000000000 +0200
 @@ -166,7 +166,7 @@ config PM_ADVANCED_DEBUG
  

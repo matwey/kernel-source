@@ -16,7 +16,7 @@ Acked-by: jbeulich@suse.com
 +	.quad compat_sys_process_vm_readv
 +	.quad compat_sys_process_vm_writev
  ia32_syscall_end:
---- 12.3.orig/arch/x86/include/asm/mach_traps.h	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/arch/x86/include/asm/mach_traps.h	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/arch/x86/include/asm/mach_traps.h	2011-11-28 11:36:37.000000000 +0100
 @@ -5,6 +5,8 @@
  #ifndef _ASM_X86_MACH_DEFAULT_MACH_TRAPS_H
@@ -1857,7 +1857,7 @@ Acked-by: jbeulich@suse.com
  
  #include <asm/apic.h>
  #include <asm/io_apic.h>
---- 12.3.orig/arch/x86/kernel/nmi.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/nmi.c	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/arch/x86/kernel/nmi.c	2012-06-13 15:57:05.000000000 +0200
 @@ -191,15 +191,12 @@ pci_serr_error(unsigned char reason, str
  	pr_emerg("Dazed and confused, but trying to continue\n");
@@ -2368,7 +2368,7 @@ Acked-by: jbeulich@suse.com
  	depends on PCI_MMCONFIG && EXPERIMENTAL
  	help
  	  Support for error detection and correction the Intel
---- 12.3.orig/drivers/edac/sb_edac.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/edac/sb_edac.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/edac/sb_edac.c	2012-10-04 13:09:34.000000000 +0200
 @@ -1552,7 +1552,11 @@ static int sbridge_mce_check_error(struc
  		mce->socketid, mce->apicid);
@@ -2503,8 +2503,8 @@ Acked-by: jbeulich@suse.com
  obj-$(CONFIG_XEN_BLKDEV_BACKEND)	+= blkback/
  obj-$(CONFIG_XEN_BLKDEV_TAP)		+= blktap/
  obj-$(filter m,$(CONFIG_XEN_BLKDEV_TAP2)) += blktap2/ blktap2-new/
---- 12.3.orig/drivers/xen/blkback/blkback.c	2013-02-05 10:55:33.000000000 +0100
-+++ 12.3/drivers/xen/blkback/blkback.c	2012-04-04 10:26:46.000000000 +0200
+--- 12.3.orig/drivers/xen/blkback/blkback.c	2013-04-16 14:08:26.000000000 +0200
++++ 12.3/drivers/xen/blkback/blkback.c	2013-04-16 14:08:35.000000000 +0200
 @@ -39,6 +39,7 @@
  #include <linux/kthread.h>
  #include <linux/freezer.h>
@@ -2513,7 +2513,7 @@ Acked-by: jbeulich@suse.com
  #include <linux/delay.h>
  #include <xen/balloon.h>
  #include <xen/evtchn.h>
-@@ -195,16 +196,17 @@ static void fast_flush_area(pending_req_
+@@ -175,16 +176,17 @@ static void fast_flush_area(pending_req_
  static void print_stats(blkif_t *blkif)
  {
  	printk(KERN_DEBUG "%s: oo %3d  |  rd %4d  |  wr %4d  |  br %4d"
@@ -2533,7 +2533,7 @@ Acked-by: jbeulich@suse.com
  }
  
  int blkif_schedule(void *arg)
-@@ -337,6 +339,49 @@ irqreturn_t blkif_be_int(int irq, void *
+@@ -316,6 +318,47 @@ irqreturn_t blkif_be_int(int irq, void *
   * DOWNWARD CALLS -- These interface with the block-device layer proper.
   */
  
@@ -2544,20 +2544,18 @@ Acked-by: jbeulich@suse.com
 +
 +	blkif->st_ds_req++;
 +
-+	preq.dev           = req->handle;
 +	preq.sector_number = req->sector_number;
 +	preq.nr_sects      = req->nr_sectors;
 +
 +	if (vbd_translate(&preq, blkif, REQ_DISCARD) != 0) {
 +		DPRINTK("access denied: discard of [%Lu,%Lu) on dev=%04x\n",
 +			preq.sector_number,
-+			preq.sector_number + preq.nr_sects, preq.dev);
++			preq.sector_number + preq.nr_sects,
++			blkif->vbd.pdevice);
 +		make_response(blkif, req->id, req->operation, BLKIF_RSP_ERROR);
 +		msleep(1); /* back off a bit */
 +		return;
 +	}
-+
-+	plug_queue(blkif, preq.bdev);
 +
 +	if (blkif->blk_backend_type == BLKIF_BACKEND_PHY ||
 +	    blkif->blk_backend_type == BLKIF_BACKEND_FILE)
@@ -2583,7 +2581,7 @@ Acked-by: jbeulich@suse.com
  static int _do_block_io_op(blkif_t *blkif)
  {
  	blkif_back_rings_t *blk_rings = &blkif->blk_rings;
-@@ -391,6 +436,11 @@ static int _do_block_io_op(blkif_t *blki
+@@ -370,6 +413,11 @@ static int _do_block_io_op(blkif_t *blki
  
  			dispatch_rw_block_io(blkif, &req, pending_req);
  			break;
@@ -2595,8 +2593,8 @@ Acked-by: jbeulich@suse.com
  		default:
  			/* A good sign something is wrong: sleep for a while to
  			 * avoid excessive CPU consumption by a bad guest. */
---- 12.3.orig/drivers/xen/blkback/common.h	2012-06-08 10:35:57.000000000 +0200
-+++ 12.3/drivers/xen/blkback/common.h	2012-06-08 10:37:58.000000000 +0200
+--- 12.3.orig/drivers/xen/blkback/common.h	2013-02-20 09:20:37.000000000 +0100
++++ 12.3/drivers/xen/blkback/common.h	2013-04-16 14:08:36.000000000 +0200
 @@ -27,7 +27,6 @@
  #ifndef __BLKIF__BACKEND__COMMON_H__
  #define __BLKIF__BACKEND__COMMON_H__
@@ -2625,7 +2623,7 @@ Acked-by: jbeulich@suse.com
  	blkif_back_rings_t blk_rings;
  	struct vm_struct *blk_ring_area;
  	/* The VBD attached to this interface. */
-@@ -89,6 +94,7 @@ typedef struct blkif_st {
+@@ -88,6 +93,7 @@ typedef struct blkif_st {
  	int                 st_oo_req;
  	int                 st_br_req;
  	int                 st_fl_req;
@@ -2633,7 +2631,7 @@ Acked-by: jbeulich@suse.com
  	int                 st_rd_sect;
  	int                 st_wr_sect;
  
-@@ -128,7 +134,7 @@ unsigned long vbd_secsize(struct vbd *vb
+@@ -127,7 +133,7 @@ unsigned long vbd_secsize(struct vbd *vb
  
  struct phys_req {
  	unsigned short       dev;
@@ -3598,7 +3596,7 @@ Acked-by: jbeulich@suse.com
  	.ndo_set_mac_address    = xennet_set_mac_address,
  	.ndo_validate_addr      = eth_validate_addr,
  	.ndo_fix_features       = xennet_fix_features,
---- 12.3.orig/drivers/xen/pcifront/pci.c	2007-06-12 13:13:45.000000000 +0200
+--- 12.3.orig/drivers/xen/pcifront/pci.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/pcifront/pci.c	2011-11-18 15:48:41.000000000 +0100
 @@ -3,8 +3,6 @@
   *
@@ -4071,7 +4069,7 @@ Acked-by: jbeulich@suse.com
  
  #endif /* CONFIG_PARAVIRT_XEN */
  
---- 12.3.orig/include/xen/blkif.h	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/include/xen/blkif.h	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/include/xen/blkif.h	2012-04-04 10:27:25.000000000 +0200
 @@ -46,12 +46,21 @@ struct blkif_x86_32_request {
  	blkif_sector_t sector_number;/* start sector idx on disk (r/w only)  */

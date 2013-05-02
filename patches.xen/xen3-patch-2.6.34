@@ -56,7 +56,7 @@ Automatically created from "patches.kernel.org/patch-2.6.34" by xen-port-patches
  	.quad sys_modify_ldt
  	.quad compat_sys_adjtimex
  	.quad sys32_mprotect		/* 125 */
---- 12.3.orig/arch/x86/include/asm/i8259.h	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/arch/x86/include/asm/i8259.h	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/arch/x86/include/asm/i8259.h	2011-04-13 13:58:56.000000000 +0200
 @@ -54,6 +54,7 @@ extern struct irq_chip i8259A_chip;
  
@@ -3125,7 +3125,7 @@ Automatically created from "patches.kernel.org/patch-2.6.34" by xen-port-patches
  		goto exit_entry_free;
  	}
  
---- 12.3.orig/drivers/misc/Kconfig	2013-02-05 10:40:05.000000000 +0100
+--- 12.3.orig/drivers/misc/Kconfig	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/misc/Kconfig	2012-10-23 15:32:26.000000000 +0200
 @@ -418,7 +418,7 @@ config TI_DAC7512
  
@@ -3504,7 +3504,7 @@ Automatically created from "patches.kernel.org/patch-2.6.34" by xen-port-patches
  #include <linux/version.h>
  #include <linux/list.h>
  
---- 12.3.orig/drivers/xen/sfc_netutil/accel_cuckoo_hash.c	2011-10-17 10:45:09.000000000 +0200
+--- 12.3.orig/drivers/xen/sfc_netutil/accel_cuckoo_hash.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/sfc_netutil/accel_cuckoo_hash.c	2011-02-01 15:03:03.000000000 +0100
 @@ -24,6 +24,7 @@
  
@@ -3610,8 +3610,8 @@ Automatically created from "patches.kernel.org/patch-2.6.34" by xen-port-patches
  #include <asm/pci.h>
  #include <asm/dma.h>
 --- 12.3.orig/mm/page_alloc.c	2012-10-23 15:17:51.000000000 +0200
-+++ 12.3/mm/page_alloc.c	2013-01-25 14:10:53.000000000 +0100
-@@ -5188,7 +5188,8 @@ static void __setup_per_zone_wmarks(void
++++ 12.3/mm/page_alloc.c	2013-04-16 14:06:27.000000000 +0200
+@@ -5191,7 +5191,8 @@ static void __setup_per_zone_wmarks(void
  			high = percpu_pagelist_fraction
  			       ? zone->present_pages / percpu_pagelist_fraction
  			       : 5 * zone_batchsize(zone);
@@ -3621,7 +3621,7 @@ Automatically created from "patches.kernel.org/patch-2.6.34" by xen-port-patches
  		}
  	}
  #endif
-@@ -6067,6 +6068,11 @@ static const struct trace_print_flags pa
+@@ -6070,6 +6071,11 @@ static const struct trace_print_flags pa
  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
  	{1UL << PG_compound_lock,	"compound_lock"	},
  #endif

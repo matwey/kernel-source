@@ -7,7 +7,7 @@ Patch-mainline: 3.7
 Automatically created from "patch-3.7" by xen-port-patches.py
 Acked-by: jbeulich@suse.com
 
---- 12.3.orig/arch/arm/Kconfig	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/arch/arm/Kconfig	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/arch/arm/Kconfig	2012-12-06 16:18:50.000000000 +0100
 @@ -1845,9 +1845,9 @@ config CC_STACKPROTECTOR
  
@@ -21,7 +21,7 @@ Acked-by: jbeulich@suse.com
  	bool "Xen guest support on ARM (EXPERIMENTAL)"
  	depends on EXPERIMENTAL && ARM && OF
  	depends on CPU_V7 && !CPU_V6
---- 12.3.orig/arch/arm/Makefile	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/arch/arm/Makefile	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/arch/arm/Makefile	2012-10-30 15:36:13.000000000 +0100
 @@ -251,7 +251,7 @@ endif
  core-$(CONFIG_FPE_NWFPE)	+= arch/arm/nwfpe/
@@ -32,7 +32,7 @@ Acked-by: jbeulich@suse.com
  
  # If we have a machine-specific directory, then include it in the build.
  core-y				+= arch/arm/kernel/ arch/arm/mm/ arch/arm/common/
---- 12.3.orig/arch/arm/include/asm/xen/interface.h	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/arch/arm/include/asm/xen/interface.h	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/arch/arm/include/asm/xen/interface.h	2012-10-31 11:29:25.000000000 +0100
 @@ -11,14 +11,14 @@
  
@@ -70,7 +70,7 @@ Acked-by: jbeulich@suse.com
  /* Maximum number of virtual CPUs in multi-processor guests. */
  #define MAX_VIRT_CPUS 1
 --- 12.3.orig/arch/x86/Kconfig	2012-10-23 16:01:05.000000000 +0200
-+++ 12.3/arch/x86/Kconfig	2012-10-30 08:30:06.000000000 +0100
++++ 12.3/arch/x86/Kconfig	2013-04-16 14:09:27.000000000 +0200
 @@ -88,7 +88,7 @@ config X86
  	select IRQ_FORCED_THREADING
  	select USE_GENERIC_SMP_HELPERS if SMP
@@ -80,7 +80,7 @@ Acked-by: jbeulich@suse.com
  	select CLKEVT_I8253 if !XEN
  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
  	select GENERIC_IOMAP
-@@ -1541,6 +1541,7 @@ config ARCH_RANDOM
+@@ -1537,6 +1537,7 @@ config ARCH_RANDOM
  config X86_SMAP
  	def_bool y
  	prompt "Supervisor Mode Access Prevention" if EXPERT
@@ -2649,7 +2649,7 @@ Acked-by: jbeulich@suse.com
  };
  
  static int adjust_tjmax(struct platform_data *c, u32 id, struct device *dev)
---- 12.3.orig/drivers/remoteproc/Kconfig	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/drivers/remoteproc/Kconfig	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/drivers/remoteproc/Kconfig	2012-11-02 12:55:30.000000000 +0100
 @@ -1,4 +1,5 @@
  menu "Remoteproc drivers (EXPERIMENTAL)"
@@ -2932,7 +2932,7 @@ Acked-by: jbeulich@suse.com
  
  	return rc;
  }
---- 12.3.orig/drivers/xen/fallback.c	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/drivers/xen/fallback.c	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/drivers/xen/fallback.c	2012-11-14 13:29:46.000000000 +0100
 @@ -3,7 +3,16 @@
  #include <linux/bug.h>
@@ -2979,7 +2979,7 @@ Acked-by: jbeulich@suse.com
  
  	/* This flag prevents this VM area being copied on a fork(). A better
  	 * behaviour might be to explicitly carry out the appropriate mappings
---- 12.3.orig/drivers/xen/netback/netback.c	2012-02-17 09:00:33.000000000 +0100
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:17:22.000000000 +0100
 +++ 12.3/drivers/xen/netback/netback.c	2012-11-29 14:10:18.000000000 +0100
 @@ -36,6 +36,7 @@
  
@@ -3583,7 +3583,7 @@ Acked-by: jbeulich@suse.com
  	err = xenbus_scanf(XBT_NIL, "control",
  			   "platform-feature-xs_reset_watches", "%d",
  			   &supported);
---- 12.3.orig/include/uapi/xen/evtchn.h	2013-02-05 10:40:04.000000000 +0100
+--- 12.3.orig/include/uapi/xen/evtchn.h	2013-04-16 14:02:56.000000000 +0200
 +++ 12.3/include/uapi/xen/evtchn.h	2012-10-31 16:44:01.000000000 +0100
 @@ -1,88 +1 @@
 -/******************************************************************************

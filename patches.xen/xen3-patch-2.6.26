@@ -8,8 +8,8 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
 2.6.35/arch/x86/include/asm/scatterlist.h (would need to be reverted there)
 3.1/init/Kconfig (done differently)
 
---- 12.3.orig/arch/x86/Kconfig	2012-10-23 14:57:00.000000000 +0200
-+++ 12.3/arch/x86/Kconfig	2012-10-23 14:58:22.000000000 +0200
+--- 12.3.orig/arch/x86/Kconfig	2013-04-16 14:05:13.000000000 +0200
++++ 12.3/arch/x86/Kconfig	2013-04-16 14:05:20.000000000 +0200
 @@ -49,7 +49,7 @@ config X86
  	select HAVE_SYSCALL_TRACEPOINTS
  	select SYSCTL_EXCEPTION_TRACE
@@ -36,7 +36,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  	---help---
  	  Allow the kernel linear mapping to use 1GB pages on CPUs that
  	  support it. This can improve the kernel's performance a tiny bit by
-@@ -2332,6 +2333,4 @@ source "crypto/Kconfig"
+@@ -2328,6 +2329,4 @@ source "crypto/Kconfig"
  
  source "arch/x86/kvm/Kconfig"
  
@@ -689,7 +689,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  }
  
  void mtrr_ap_init(void)
---- 12.3.orig/arch/x86/kernel/cpu/bugs.c	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/cpu/bugs.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/arch/x86/kernel/cpu/bugs.c	2012-08-20 10:41:38.000000000 +0200
 @@ -17,6 +17,7 @@
  #include <asm/paravirt.h>
@@ -732,7 +732,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  }
  
  /*
---- 12.3.orig/arch/x86/kernel/cpu/proc.c	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/cpu/proc.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/arch/x86/kernel/cpu/proc.c	2011-03-03 16:38:42.000000000 +0100
 @@ -10,7 +10,7 @@
  static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
@@ -2225,7 +2225,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  		return error;
  	}
  
---- 12.3.orig/arch/x86/kernel/mmconf-fam10h_64.c	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/mmconf-fam10h_64.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/arch/x86/kernel/mmconf-fam10h_64.c	2011-01-31 18:07:35.000000000 +0100
 @@ -205,12 +205,20 @@ void __cpuinit fam10h_check_enable_mmcfg
  		return;
@@ -13030,7 +13030,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  EXPORT_SYMBOL(pci_disable_msix);
  
  /**
---- 12.3.orig/drivers/video/Kconfig	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/drivers/video/Kconfig	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/video/Kconfig	2012-10-23 14:58:07.000000000 +0200
 @@ -2237,7 +2237,7 @@ config FB_VIRTUAL
  
@@ -14078,7 +14078,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  };
  
  static int xenfb_mmap(struct fb_info *fb_info, struct vm_area_struct *vma)
---- 12.3.orig/drivers/xen/features.c	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/drivers/xen/features.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/features.c	2011-01-31 18:07:35.000000000 +0100
 @@ -9,14 +9,21 @@
  #include <linux/cache.h>
@@ -17838,7 +17838,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  	struct mm_struct *active_mm;
  	int state;
  	char __cacheline_padding[L1_CACHE_BYTES-8];
---- 12.3.orig/arch/x86/include/mach-xen/asm/vga.h	2007-06-12 13:14:02.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/vga.h	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/arch/x86/include/mach-xen/asm/vga.h	2011-01-31 18:07:35.000000000 +0100
 @@ -12,9 +12,9 @@
   *	access the videoram directly without any black magic.

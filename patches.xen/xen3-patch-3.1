@@ -1275,7 +1275,7 @@ Acked-by: jbeulich@suse.com
  		pte = pfn_pte(phys >> PAGE_SHIFT, flags);
  		set_pte_vaddr_pud(level3_user_pgt, address, pte);
  		break;
---- 12.3.orig/drivers/gpu/drm/i915/intel_pm.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/gpu/drm/i915/intel_pm.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/gpu/drm/i915/intel_pm.c	2013-01-25 14:15:45.000000000 +0100
 @@ -2559,7 +2559,11 @@ static void gen6_update_ring_freq(struct
  	 * over
@@ -1707,7 +1707,7 @@ Acked-by: jbeulich@suse.com
  	sysfs_remove_group(&pdev->dev.kobj, &via_cputemp_group);
  	return 0;
  }
---- 12.3.orig/drivers/iommu/Kconfig	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/iommu/Kconfig	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/iommu/Kconfig	2011-09-09 17:53:01.000000000 +0200
 @@ -4,6 +4,7 @@ config IOMMU_API
  
@@ -1717,7 +1717,7 @@ Acked-by: jbeulich@suse.com
  	default y
  	---help---
  	  Say Y here if you want to compile device drivers for IO Memory
---- 12.3.orig/drivers/virtio/Kconfig	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/virtio/Kconfig	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/virtio/Kconfig	2012-10-23 15:53:27.000000000 +0200
 @@ -6,6 +6,7 @@ config VIRTIO
  	  CONFIG_RPMSG or CONFIG_S390_GUEST.
@@ -1999,14 +1999,14 @@ Acked-by: jbeulich@suse.com
  }
  
  void __exit balloon_sysfs_exit(void)
---- 12.3.orig/drivers/xen/blkback/blkback.c	2012-03-26 12:28:48.000000000 +0200
-+++ 12.3/drivers/xen/blkback/blkback.c	2013-02-05 10:55:33.000000000 +0100
-@@ -708,3 +708,4 @@ static int __init blkif_init(void)
+--- 12.3.orig/drivers/xen/blkback/blkback.c	2013-02-20 17:36:40.000000000 +0100
++++ 12.3/drivers/xen/blkback/blkback.c	2013-04-16 14:08:26.000000000 +0200
+@@ -691,3 +691,4 @@ static int __init blkif_init(void)
  module_init(blkif_init);
  
  MODULE_LICENSE("Dual BSD/GPL");
 +MODULE_ALIAS("xen-backend:vbd");
---- 12.3.orig/drivers/xen/blkback/blkback-pagemap.h	2009-06-09 15:01:37.000000000 +0200
+--- 12.3.orig/drivers/xen/blkback/blkback-pagemap.h	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/blkback/blkback-pagemap.h	2012-06-08 11:14:33.000000000 +0200
 @@ -1,6 +1,7 @@
  #ifndef _BLKBACK_PAGEMAP_H_
@@ -2349,7 +2349,7 @@ Acked-by: jbeulich@suse.com
  MODULE_DESCRIPTION("Xen SCSI backend driver");
  MODULE_LICENSE("Dual BSD/GPL");
 +MODULE_ALIAS("xen-backend:vscsi");
---- 12.3.orig/drivers/xen/sfc_netfront/accel_netfront.c	2009-04-07 13:58:48.000000000 +0200
+--- 12.3.orig/drivers/xen/sfc_netfront/accel_netfront.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/sfc_netfront/accel_netfront.c	2011-09-12 11:46:42.000000000 +0200
 @@ -189,7 +189,8 @@ static int netfront_accel_check_ready(st
  
@@ -2399,7 +2399,7 @@ Acked-by: jbeulich@suse.com
  MODULE_DESCRIPTION("Xen USB backend driver (usbback)");
  MODULE_LICENSE("Dual BSD/GPL");
 +MODULE_ALIAS("xen-backend:vusb");
---- 12.3.orig/drivers/xen/xen-pciback/Makefile	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/xen/xen-pciback/Makefile	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/xen-pciback/Makefile	2011-09-19 13:15:03.000000000 +0200
 @@ -1,7 +1,13 @@
 -obj-$(CONFIG_XEN_PCIDEV_BACKEND) += xen-pciback.o
@@ -2420,7 +2420,7 @@ Acked-by: jbeulich@suse.com
 +$(pcibk-y)-$(CONFIG_XEN_PCIDEV_BACKEND_PASSTHROUGH) += passthrough.o
 +$(pcibk-y)-$(CONFIG_XEN_PCIDEV_BACKEND_SLOT) += slot.o
 +$(pcibk-y)-$(CONFIG_XEN_PCIDEV_BACKEND_CONTROLLER) += controller.o
---- 12.3.orig/drivers/xen/xen-pciback/conf_space_capability.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/xen/xen-pciback/conf_space_capability.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/xen-pciback/conf_space_capability.c	2011-09-16 14:20:03.000000000 +0200
 @@ -140,6 +140,21 @@ static int pm_ctrl_write(struct pci_dev 
  		goto out;
@@ -2444,7 +2444,7 @@ Acked-by: jbeulich@suse.com
   out:
  	return err;
  }
---- 12.3.orig/drivers/xen/xen-pciback/conf_space_header.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/xen/xen-pciback/conf_space_header.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/xen-pciback/conf_space_header.c	2011-11-17 13:56:29.000000000 +0100
 @@ -39,10 +39,11 @@ static int command_read(struct pci_dev *
  
@@ -2480,7 +2480,7 @@ Acked-by: jbeulich@suse.com
  	}
  
  	if (!dev->is_busmaster && is_master_cmd(value)) {
---- 12.3.orig/drivers/xen/xen-pciback/controller.c	2009-03-18 10:39:32.000000000 +0100
+--- 12.3.orig/drivers/xen/xen-pciback/controller.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/xen-pciback/controller.c	2011-09-19 14:55:15.000000000 +0200
 @@ -25,9 +25,6 @@
   */
@@ -2686,7 +2686,7 @@ Acked-by: jbeulich@suse.com
 +	.add		= _xen_pcibk_add_pci_dev,
 +	.get		= _xen_pcibk_get_pci_dev,
 +};
---- 12.3.orig/drivers/xen/xen-pciback/pciback.h	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/xen/xen-pciback/pciback.h	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/xen-pciback/pciback.h	2012-04-10 17:21:33.000000000 +0200
 @@ -10,12 +10,16 @@
  #include <linux/interrupt.h>
@@ -2757,8 +2757,8 @@ Acked-by: jbeulich@suse.com
  extern const struct xen_pcibk_backend *xen_pcibk_backend;
  
  static inline int xen_pcibk_add_pci_dev(struct xen_pcibk_device *pdev,
---- 12.3.orig/drivers/xen/xen-pciback/pciback_ops.c	2013-02-18 12:13:05.000000000 +0100
-+++ 12.3/drivers/xen/xen-pciback/pciback_ops.c	2012-04-10 17:21:35.000000000 +0200
+--- 12.3.orig/drivers/xen/xen-pciback/pciback_ops.c	2013-04-16 14:02:57.000000000 +0200
++++ 12.3/drivers/xen/xen-pciback/pciback_ops.c	2013-04-16 14:08:21.000000000 +0200
 @@ -6,13 +6,18 @@
  #include <linux/module.h>
  #include <linux/wait.h>
@@ -2972,7 +2972,7 @@ Acked-by: jbeulich@suse.com
  	return IRQ_NONE;
  }
 +#endif
---- 12.3.orig/drivers/xen/xen-pciback/pci_stub.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/xen/xen-pciback/pci_stub.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/xen-pciback/pci_stub.c	2012-10-23 15:53:12.000000000 +0200
 @@ -14,9 +14,14 @@
  #include <linux/wait.h>
@@ -3227,7 +3227,7 @@ Acked-by: jbeulich@suse.com
 +	.add		= _xen_pcibk_add_pci_dev,
 +	.get		= _xen_pcibk_get_pci_dev,
 +};
---- 12.3.orig/drivers/xen/xen-pciback/xenbus.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/xen/xen-pciback/xenbus.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/xen-pciback/xenbus.c	2012-02-21 11:40:18.000000000 +0100
 @@ -6,30 +6,77 @@
  #include <linux/module.h>
@@ -3442,7 +3442,7 @@ Acked-by: jbeulich@suse.com
  	pr_info(DRV_NAME ": backend is %s\n", xen_pcibk_backend->name);
  	return xenbus_register_backend(&xen_pcibk_driver);
  }
---- 12.3.orig/drivers/xen/xen-selfballoon.c	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/drivers/xen/xen-selfballoon.c	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/drivers/xen/xen-selfballoon.c	2012-06-13 15:54:39.000000000 +0200
 @@ -79,6 +79,10 @@
  #include <xen/tmem.h>
@@ -3659,7 +3659,7 @@ Acked-by: jbeulich@suse.com
 +#endif
 +
  #endif /* __XEN_BALLOON_H__ */
---- 12.3.orig/include/xen/firmware.h	2013-02-18 12:13:05.000000000 +0100
+--- 12.3.orig/include/xen/firmware.h	2013-04-16 14:02:57.000000000 +0200
 +++ 12.3/include/xen/firmware.h	2012-06-08 11:17:59.000000000 +0200
 @@ -1,7 +1,9 @@
  #ifndef __XEN_FIRMWARE_H__

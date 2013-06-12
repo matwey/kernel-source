@@ -1,0 +1,128 @@
+Subject: [PATCH] NFS: Fix keytabless mounts
+From: Chuck Lever <chuck.lever@oracle.com>
+Date: Tue, 04 Jun 2013 20:56:31 -0400
+Message-id: <20130605004523.14256.24793.stgit@seurat.1015granger.net>
+Patch-mainline: still under consideration
+References: bnc#817651
+
+Commit 05f4c350 "NFS: Discover NFSv4 server trunking when mounting"
+Fri Sep 14 17:24:32 2012 introduced Uniform Client String support,
+which forces our NFS client to establish a client ID immediately
+during a mount operation rather than waiting until a user wants to
+open a file.
+
+Normally machine credentials (eg. from a keytab) are used to perform
+a mount operation that is protected by Kerberos.  Before 05f4c350,
+SETCLIENTID uses a machine credential, or falls back to a regular
+user's credential if no keytab is available.
+
+05f4c350 seems to have broken the ability to mount with sec=krb5 on
+clients that don't have a keytab.  Performing SETCLIENTID early
+means there may be no user credential to fall back on, since during
+system initialization no regular user has kinit'd yet.
+
+Typically, root is required to kinit in this situation anyway to
+make a sec=krb5 mount work.  So, the kernel should try to use root's
+credential for lease management if there's no keytab.
+
+The new logic should cause the root credential to be tried only
+after both the machine cred and a user cred are found to be
+unavailable.
+
+Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+Acked-by: NeilBrown <neilb@suse.de>
+
+
+ fs/nfs/nfs4proc.c  |   15 ++++++++++-----
+ fs/nfs/nfs4state.c |   12 ++++--------
+ 2 files changed, 14 insertions(+), 13 deletions(-)
+
+--- linux-3.7-openSUSE-12.3.orig/fs/nfs/nfs4proc.c
++++ linux-3.7-openSUSE-12.3/fs/nfs/nfs4proc.c
+@@ -4215,7 +4215,8 @@ int nfs4_proc_setclientid(struct nfs_cli
+ 	dprintk("NFS call  setclientid auth=%s, '%.*s'\n",
+ 		clp->cl_rpcclient->cl_auth->au_ops->au_name,
+ 		setclientid.sc_name_len, setclientid.sc_name);
+-	status = rpc_call_sync(clp->cl_rpcclient, &msg, RPC_TASK_TIMEOUT);
++	status = rpc_call_sync(clp->cl_rpcclient, &msg,
++					RPC_TASK_TIMEOUT|RPC_TASK_ROOTCREDS);
+ 	dprintk("NFS reply setclientid: %d\n", status);
+ 	return status;
+ }
+@@ -4246,7 +4247,8 @@ int nfs4_proc_setclientid_confirm(struct
+ 		clp->cl_rpcclient->cl_auth->au_ops->au_name,
+ 		clp->cl_clientid);
+ 	now = jiffies;
+-	status = rpc_call_sync(clp->cl_rpcclient, &msg, RPC_TASK_TIMEOUT);
++	status = rpc_call_sync(clp->cl_rpcclient, &msg,
++					RPC_TASK_TIMEOUT|RPC_TASK_ROOTCREDS);
+ 	if (status == 0) {
+ 		spin_lock(&clp->cl_lock);
+ 		clp->cl_lease_time = fsinfo.lease_time * HZ;
+@@ -5458,7 +5460,8 @@ int nfs4_proc_exchange_id(struct nfs_cli
+ 		goto out_server_scope;
+ 	}
+ 
+-	status = rpc_call_sync(clp->cl_rpcclient, &msg, RPC_TASK_TIMEOUT);
++	status = rpc_call_sync(clp->cl_rpcclient, &msg,
++					RPC_TASK_TIMEOUT|RPC_TASK_ROOTCREDS);
+ 	if (status == 0)
+ 		status = nfs4_check_cl_exchange_flags(res.flags);
+ 
+@@ -5518,7 +5521,8 @@ static int _nfs4_proc_destroy_clientid(s
+ 	};
+ 	int status;
+ 
+-	status = rpc_call_sync(clp->cl_rpcclient, &msg, RPC_TASK_TIMEOUT);
++	status = rpc_call_sync(clp->cl_rpcclient, &msg,
++					RPC_TASK_TIMEOUT|RPC_TASK_ROOTCREDS);
+ 	if (status)
+ 		dprintk("NFS: Got error %d from the server %s on "
+ 			"DESTROY_CLIENTID.", status, clp->cl_hostname);
+@@ -5926,7 +5930,8 @@ static int _nfs4_proc_create_session(str
+ 	nfs4_init_channel_attrs(&args);
+ 	args.flags = (SESSION4_PERSIST | SESSION4_BACK_CHAN);
+ 
+-	status = rpc_call_sync(session->clp->cl_rpcclient, &msg, RPC_TASK_TIMEOUT);
++	status = rpc_call_sync(session->clp->cl_rpcclient, &msg,
++					RPC_TASK_TIMEOUT|RPC_TASK_ROOTCREDS);
+ 
+ 	if (!status)
+ 		/* Verify the session's negotiated channel_attrs values */
+--- linux-3.7-openSUSE-12.3.orig/fs/nfs/nfs4state.c
++++ linux-3.7-openSUSE-12.3/fs/nfs/nfs4state.c
+@@ -1740,10 +1740,9 @@ static int nfs4_establish_lease(struct n
+ 	int status;
+ 
+ 	cred = ops->get_clid_cred(clp);
+-	if (cred == NULL)
+-		return -ENOENT;
+ 	status = ops->establish_clid(clp, cred);
+-	put_rpccred(cred);
++	if (cred)
++		put_rpccred(cred);
+ 	if (status != 0)
+ 		return status;
+ 	pnfs_destroy_all_layouts(clp);
+@@ -1827,11 +1826,9 @@ int nfs4_discover_server_trunking(struct
+ 	status  = -ENOENT;
+ again:
+ 	cred = ops->get_clid_cred(clp);
+-	if (cred == NULL)
+-		goto out_unlock;
+-
+ 	status = ops->detect_trunking(clp, result, cred);
+-	put_rpccred(cred);
++	if (cred)
++		put_rpccred(cred);
+ 	switch (status) {
+ 	case 0:
+ 		break;
+@@ -1878,7 +1875,6 @@ again:
+ 		status = -EKEYEXPIRED;
+ 	}
+ 
+-out_unlock:
+ 	mutex_unlock(&nfs_clid_init_mutex);
+ out_free:
+ 	kfree(flavors);

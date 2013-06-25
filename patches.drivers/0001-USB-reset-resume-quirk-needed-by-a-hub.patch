@@ -1,0 +1,32 @@
+From da9256c9a5fd399be6ba547230de99ca5c4ec34b Mon Sep 17 00:00:00 2001
+From: Oliver Neukum <oneukum@suse.de>
+Date: Mon, 29 Apr 2013 14:23:14 +0200
+Subject: [PATCH] USB: reset resume quirk needed by a hub
+References: bnc#810144
+Git-Commit: da9256c9a5fd399be6ba547230de99ca5c4ec34b
+Patch-Mainline: v3.10
+
+Werner Fink has reported problems with this hub.
+
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+---
+ drivers/usb/core/quirks.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/usb/core/quirks.c b/drivers/usb/core/quirks.c
+index 3113c1d..e14346a 100644
+--- a/drivers/usb/core/quirks.c
++++ b/drivers/usb/core/quirks.c
+@@ -88,6 +88,9 @@ static const struct usb_device_id usb_quirk_list[] = {
+ 	/* Edirol SD-20 */
+ 	{ USB_DEVICE(0x0582, 0x0027), .driver_info = USB_QUIRK_RESET_RESUME },
+ 
++	/* Alcor Micro Corp. Hub */
++	{ USB_DEVICE(0x058f, 0x9254), .driver_info = USB_QUIRK_RESET_RESUME },
++
+ 	/* appletouch */
+ 	{ USB_DEVICE(0x05ac, 0x021a), .driver_info = USB_QUIRK_RESET_RESUME },
+ 
+-- 
+1.8.1.4
+

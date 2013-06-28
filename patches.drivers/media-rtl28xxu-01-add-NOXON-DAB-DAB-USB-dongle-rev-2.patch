@@ -3,7 +3,7 @@ Date: Tue, 13 Nov 2012 14:09:28 -0300
 Subject: [media] rtl28xxu: add NOXON DAB/DAB+ USB dongle rev 2
 Git-commit: e9de051666a42dc7866267f85869170bcc6b957a
 Patch-mainline: v3.9-rc5
-References: bnc#812113
+References: bnc#811882
 
 This just adds the usbid to the rtl28xxu driver, that's all that's
 needed to make the stick work for DVB.

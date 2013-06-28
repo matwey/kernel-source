@@ -6,7 +6,7 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Git-commit: 09f9408dc394835157397f9a4d714ecb53d03976
 Patch-mainline: v3.9-rc5
-References: bnc#812113
+References: bnc#811882
 
 Add support for Digivox Mini HD (rtl2832)
 The tuner works, but with worst performance then realtek linux driver,

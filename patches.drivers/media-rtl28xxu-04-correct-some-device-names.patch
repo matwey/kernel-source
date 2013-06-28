@@ -3,7 +3,7 @@ Date: Fri, 4 Jan 2013 18:35:00 -0300
 Subject: [media] rtl28xxu: correct some device names
 Git-commit: 9db15638e1bd4a1cfdb0a42907308ad441030a80
 Patch-mainline: v3.9-rc5
-References: bnc#812113
+References: bnc#811882
 
 Signed-off-by: Antti Palosaari <crope@iki.fi>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>

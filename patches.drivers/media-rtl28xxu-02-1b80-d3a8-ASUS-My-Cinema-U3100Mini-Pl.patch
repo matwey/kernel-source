@@ -3,7 +3,7 @@ Date: Sun, 16 Dec 2012 11:47:07 -0300
 Subject: [media] rtl28xxu: [1b80:d3a8] ASUS My Cinema-U3100Mini Plus V2
 Git-commit: 3971e79a8707cc529f474c1d25e5502ddfa33ebc
 Patch-mainline: v3.9-rc5
-References: bnc#812113
+References: bnc#811882
 
 RF-tuner is Fitipower FC0013
 

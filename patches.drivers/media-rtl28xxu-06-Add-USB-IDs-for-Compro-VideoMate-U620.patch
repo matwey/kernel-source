@@ -3,7 +3,7 @@ Date: Tue, 12 Feb 2013 21:58:47 -0300
 Subject: [media] rtl28xxu: Add USB IDs for Compro VideoMate U620F
 Git-commit: b9e2afff1e6b36d05a0e12b6114eb0aaf8949c09
 Patch-mainline: v3.9-rc5
-References: bnc#812113
+References: bnc#811882
 
 Signed-off-by: Alistair Buxton <a.j.buxton@gmail.com>
 Acked-by: Antti Palosaari <crope@iki.fi>

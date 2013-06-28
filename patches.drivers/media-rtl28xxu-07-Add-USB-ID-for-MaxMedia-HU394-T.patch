@@ -2,7 +2,7 @@ From: Fabrizio Gazzato <fabrizio.gazzato@gmail.com>
 Date: Fri, 15 Feb 2013 18:54:54 -0300
 Subject: [media] rtl28xxu: Add USB ID for MaxMedia HU394-T
 Patch-mainline: not yet, on the way, in -next ATM
-References: bnc#812113
+References: bnc#811882
 
 Add USB ID for MaxMedia HU394-T USB DVB-T Multi (FM, DAB, DAB+)
 dongle (RTL2832U+FC0012)

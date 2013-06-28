@@ -3,7 +3,7 @@ Date: Fri, 4 Jan 2013 18:19:02 -0300
 Subject: [media] rtl28xxu: add Gigabyte U7300 DVB-T Dongle
 Git-commit: 78a5e70919e9416344409e523e53221613776d80
 Patch-mainline: v3.9-rc5
-References: bnc#812113
+References: bnc#811882
 
 Device with ID 1b80:d393 is the Gigabyte U7300 DVB-T dongle.
 It contains decoder Realtek RTL2832U and tuner Fitipower FC0012.

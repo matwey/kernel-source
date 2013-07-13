@@ -1,0 +1,38 @@
+From 7b5a1c5310a50abc96c9ca07039688027d0a4282 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Thu, 15 Nov 2012 08:14:11 +0000
+Subject: Btrfs: cleanup unnecessary clear when freeing a transaction or a
+ trans handle
+Git-commit: 7b5a1c5310a50abc96c9ca07039688027d0a4282
+Patch-mainline: v3.9-rc1
+
+We clear the transaction object and the trans handle when they are about to be
+freed, it is unnecessary, cleanup it.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/transaction.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index fc03aa6..a1455f1 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -40,7 +40,6 @@ void put_transaction(struct btrfs_transaction *transaction)
+ 	if (atomic_dec_and_test(&transaction->use_count)) {
+ 		BUG_ON(!list_empty(&transaction->list));
+ 		WARN_ON(transaction->delayed_refs.root.rb_node);
+-		memset(transaction, 0, sizeof(*transaction));
+ 		kmem_cache_free(btrfs_transaction_cachep, transaction);
+ 	}
+ }
+@@ -650,7 +649,6 @@ static int __btrfs_end_transaction(struct btrfs_trans_handle *trans,
+ 	}
+ 	assert_qgroups_uptodate(trans);
+ 
+-	memset(trans, 0, sizeof(*trans));
+ 	kmem_cache_free(btrfs_trans_handle_cachep, trans);
+ 	return err;
+ }
+

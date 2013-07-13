@@ -1,0 +1,32 @@
+From 94ef7280e8b3a5b13ba3cc515e5c198c1181176e Mon Sep 17 00:00:00 2001
+From: David Sterba <dsterba@suse.cz>
+Date: Wed, 20 Mar 2013 14:29:47 +0000
+Subject: btrfs: cover more error codes in btrfs_decode_error
+Git-commit: 94ef7280e8b3a5b13ba3cc515e5c198c1181176e
+Patch-mainline: v3.10-rc2
+
+Signed-off-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/super.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index 3c404b8..c3254c9 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -81,6 +81,12 @@ static const char *btrfs_decode_error(int errno)
+ 	case -EEXIST:
+ 		errstr = "Object already exists";
+ 		break;
++	case -ENOSPC:
++		errstr = "No space left";
++		break;
++	case -ENOENT:
++		errstr = "No such entry";
++		break;
+ 	}
+ 
+ 	return errstr;
+

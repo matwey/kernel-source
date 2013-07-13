@@ -1,0 +1,46 @@
+From b9aa55bed1c1a3a329da31884b643c62d57ebb21 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Tue, 14 May 2013 02:12:15 +0000
+Subject: Btrfs: return errno if possible when we fail to allocate memory
+Git-commit: b9aa55bed1c1a3a329da31884b643c62d57ebb21
+Patch-mainline: v3.10-rc2
+
+We need to set return value explicitly, otherwise we'll lose the error
+value.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/inode.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 1669c3b..99a9c25 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -714,8 +714,10 @@ retry:
+ 					async_extent->ram_size - 1, 0);
+ 
+ 		em = alloc_extent_map();
+-		if (!em)
++		if (!em) {
++			ret = -ENOMEM;
+ 			goto out_free_reserve;
++		}
+ 		em->start = async_extent->start;
+ 		em->len = async_extent->ram_size;
+ 		em->orig_start = em->start;
+@@ -922,8 +924,10 @@ static noinline int __cow_file_range(struct btrfs_trans_handle *trans,
+ 		}
+ 
+ 		em = alloc_extent_map();
+-		if (!em)
++		if (!em) {
++			ret = -ENOMEM;
+ 			goto out_reserve;
++		}
+ 		em->start = start;
+ 		em->orig_start = em->start;
+ 		ram_size = ins.offset;
+

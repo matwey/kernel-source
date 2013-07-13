@@ -1,0 +1,59 @@
+From 25122d15e21cf252e91e4cad7cea760f97df29f1 Mon Sep 17 00:00:00 2001
+From: Ilya Dryomov <idryomov@gmail.com>
+Date: Sun, 20 Jan 2013 15:57:57 +0200
+Subject: Btrfs: reorder locks and sanity checks in btrfs_ioctl_defrag
+Git-commit: 25122d15e21cf252e91e4cad7cea760f97df29f1
+Patch-mainline: v3.8-rc5
+
+Operation-specific check (whether subvol is readonly or not) should go
+after the mutual exclusiveness check.
+
+Signed-off-by: Ilya Dryomov <idryomov@gmail.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index f5c1c15..afbf3ac 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -2186,19 +2186,20 @@ static int btrfs_ioctl_defrag(struct file *file, void __user *argp)
+ 	struct btrfs_ioctl_defrag_range_args *range;
+ 	int ret;
+ 
+-	if (btrfs_root_readonly(root))
+-		return -EROFS;
++	ret = mnt_want_write_file(file);
++	if (ret)
++		return ret;
+ 
+ 	if (atomic_xchg(&root->fs_info->mutually_exclusive_operation_running,
+ 			1)) {
+ 		pr_info("btrfs: dev add/delete/balance/replace/resize operation in progress\n");
++		mnt_drop_write_file(file);
+ 		return -EINVAL;
+ 	}
+-	ret = mnt_want_write_file(file);
+-	if (ret) {
+-		atomic_set(&root->fs_info->mutually_exclusive_operation_running,
+-			   0);
+-		return ret;
++
++	if (btrfs_root_readonly(root)) {
++		ret = -EROFS;
++		goto out;
+ 	}
+ 
+ 	switch (inode->i_mode & S_IFMT) {
+@@ -2250,8 +2251,8 @@ static int btrfs_ioctl_defrag(struct file *file, void __user *argp)
+ 		ret = -EINVAL;
+ 	}
+ out:
+-	mnt_drop_write_file(file);
+ 	atomic_set(&root->fs_info->mutually_exclusive_operation_running, 0);
++	mnt_drop_write_file(file);
+ 	return ret;
+ }
+ 
+

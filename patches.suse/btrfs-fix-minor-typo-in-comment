@@ -1,0 +1,31 @@
+From 9c931c5ab2e97f4408e314518ad22845eca6ed89 Mon Sep 17 00:00:00 2001
+From: Nathaniel Yazdani <n1ght.4nd.d4y@gmail.com>
+Date: Mon, 15 Apr 2013 00:44:02 +0000
+Subject: btrfs: fix minor typo in comment
+Git-commit: 9c931c5ab2e97f4408e314518ad22845eca6ed89
+Patch-mainline: v3.10-rc2
+
+In the comment describing the sync_writers field of the btrfs_inode
+struct, "fsyncing" was misspelled "fsycing."
+
+Signed-off-by: Nathaniel Yazdani <n1ght.4nd.d4y@gmail.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/btrfs_inode.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/btrfs_inode.h b/fs/btrfs/btrfs_inode.h
+index d9b97d4..08b286b 100644
+--- a/fs/btrfs/btrfs_inode.h
++++ b/fs/btrfs/btrfs_inode.h
+@@ -93,7 +93,7 @@ struct btrfs_inode {
+ 
+ 	unsigned long runtime_flags;
+ 
+-	/* Keep track of who's O_SYNC/fsycing currently */
++	/* Keep track of who's O_SYNC/fsyncing currently */
+ 	atomic_t sync_writers;
+ 
+ 	/* full 64 bit generation number, struct vfs_inode doesn't have a big
+

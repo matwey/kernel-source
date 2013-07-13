@@ -1,0 +1,40 @@
+From e1409cef85894f96f4bddc6633d64d1c5275e2a3 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Wed, 15 May 2013 07:48:16 +0000
+Subject: Btrfs: fix unprotected root node of the subvolume's inode rb-tree
+Git-commit: e1409cef85894f96f4bddc6633d64d1c5275e2a3
+Patch-mainline: v3.10-rc2
+
+The root node of the rb-tree may be changed, so we should get it under
+the lock. Fix it.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/inode.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 790eceb..19eef3e 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -4843,14 +4843,13 @@ static void inode_tree_add(struct inode *inode)
+ 	struct rb_node **p;
+ 	struct rb_node *parent;
+ 	u64 ino = btrfs_ino(inode);
+-again:
+-	p = &root->inode_tree.rb_node;
+-	parent = NULL;
+ 
+ 	if (inode_unhashed(inode))
+ 		return;
+-
++again:
++	parent = NULL;
+ 	spin_lock(&root->inode_lock);
++	p = &root->inode_tree.rb_node;
+ 	while (*p) {
+ 		parent = *p;
+ 		entry = rb_entry(parent, struct btrfs_inode, rb_node);
+

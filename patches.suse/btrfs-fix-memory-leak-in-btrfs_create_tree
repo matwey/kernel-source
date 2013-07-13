@@ -1,0 +1,51 @@
+From 1dd05682b3ef6e70409e130bfd83e91770801589 Mon Sep 17 00:00:00 2001
+From: Tsutomu Itoh <t-itoh@jp.fujitsu.com>
+Date: Thu, 21 Mar 2013 04:32:32 +0000
+Subject: Btrfs: fix memory leak in btrfs_create_tree()
+Git-commit: 1dd05682b3ef6e70409e130bfd83e91770801589
+Patch-mainline: v3.9-rc5
+
+We should free leaf and root before returning from the error
+handling code.
+
+Signed-off-by: Tsutomu Itoh <t-itoh@jp.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/disk-io.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 127b23e..6d19a0a 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -1291,6 +1291,7 @@ struct btrfs_root *btrfs_create_tree(struct btrfs_trans_handle *trans,
+ 				      0, objectid, NULL, 0, 0, 0);
+ 	if (IS_ERR(leaf)) {
+ 		ret = PTR_ERR(leaf);
++		leaf = NULL;
+ 		goto fail;
+ 	}
+ 
+@@ -1334,11 +1335,16 @@ struct btrfs_root *btrfs_create_tree(struct btrfs_trans_handle *trans,
+ 
+ 	btrfs_tree_unlock(leaf);
+ 
++	return root;
++
+ fail:
+-	if (ret)
+-		return ERR_PTR(ret);
++	if (leaf) {
++		btrfs_tree_unlock(leaf);
++		free_extent_buffer(leaf);
++	}
++	kfree(root);
+ 
+-	return root;
++	return ERR_PTR(ret);
+ }
+ 
+ static struct btrfs_root *alloc_log_tree(struct btrfs_trans_handle *trans,
+

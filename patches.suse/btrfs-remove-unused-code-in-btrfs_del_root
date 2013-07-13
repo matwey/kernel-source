@@ -1,0 +1,39 @@
+From b7394eb91c703a07284501754dc735b3cd0154b7 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Sun, 26 May 2013 13:50:30 +0000
+Subject: Btrfs: remove unused code in btrfs_del_root
+Git-commit: b7394eb91c703a07284501754dc735b3cd0154b7
+Patch-mainline: v3.11-rc1
+
+'leaf' and 'ri' is not used somehow.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/root-tree.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/fs/btrfs/root-tree.c b/fs/btrfs/root-tree.c
+index 79e6832..723a531 100644
+--- a/fs/btrfs/root-tree.c
++++ b/fs/btrfs/root-tree.c
+@@ -304,8 +304,6 @@ int btrfs_del_root(struct btrfs_trans_handle *trans, struct btrfs_root *root,
+ {
+ 	struct btrfs_path *path;
+ 	int ret;
+-	struct btrfs_root_item *ri;
+-	struct extent_buffer *leaf;
+ 
+ 	path = btrfs_alloc_path();
+ 	if (!path)
+@@ -315,8 +313,6 @@ int btrfs_del_root(struct btrfs_trans_handle *trans, struct btrfs_root *root,
+ 		goto out;
+ 
+ 	BUG_ON(ret != 0);
+-	leaf = path->nodes[0];
+-	ri = btrfs_item_ptr(leaf, path->slots[0], struct btrfs_root_item);
+ 
+ 	ret = btrfs_del_item(trans, root, path);
+ out:
+

@@ -1,0 +1,40 @@
+From bbece8a3f00a02bbfc63531651fd70ef56c5e916 Mon Sep 17 00:00:00 2001
+From: David Sterba <dsterba@suse.cz>
+Date: Mon, 11 Mar 2013 17:07:45 +0000
+Subject: btrfs: merge save_error_info helpers into one
+Git-commit: bbece8a3f00a02bbfc63531651fd70ef56c5e916
+Patch-mainline: v3.10-rc2
+
+Signed-off-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/super.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index 714ae47..8168cec 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -92,7 +92,7 @@ static const char *btrfs_decode_error(int errno, char nbuf[16])
+ 	return errstr;
+ }
+ 
+-static void __save_error_info(struct btrfs_fs_info *fs_info)
++static void save_error_info(struct btrfs_fs_info *fs_info)
+ {
+ 	/*
+ 	 * today we only save the error info into ram.  Long term we'll
+@@ -101,11 +101,6 @@ static void __save_error_info(struct btrfs_fs_info *fs_info)
+ 	set_bit(BTRFS_FS_STATE_ERROR, &fs_info->fs_state);
+ }
+ 
+-static void save_error_info(struct btrfs_fs_info *fs_info)
+-{
+-	__save_error_info(fs_info);
+-}
+-
+ /* btrfs handle error by forcing the filesystem readonly */
+ static void btrfs_handle_error(struct btrfs_fs_info *fs_info)
+ {
+

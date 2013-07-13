@@ -1,0 +1,34 @@
+From 2a745b14bc99d52c29d0c886a110321f651cf183 Mon Sep 17 00:00:00 2001
+From: Arne Jansen <sensille@gmx.net>
+Date: Wed, 13 Feb 2013 04:20:01 -0700
+Subject: Btrfs: fix crash in log replay with qgroups enabled
+Git-commit: 2a745b14bc99d52c29d0c886a110321f651cf183
+Patch-mainline: v3.9-rc1
+
+When replaying a log tree with qgroups enabled, tree_mod_log_rewind does a
+sanity-check of the number of items against the maximum possible number.
+It calculates that number with the nodesize of fs_root. Unfortunately
+fs_root is not yet set at this stage. So instead use the nodesize from
+tree_root, which is already initialized.
+
+Signed-off-by: Arne Jansen <sensille@gmx.net>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+index eea5da7..6eff0fa 100644
+--- a/fs/btrfs/ctree.c
++++ b/fs/btrfs/ctree.c
+@@ -1222,7 +1222,7 @@ tree_mod_log_rewind(struct btrfs_fs_info *fs_info, struct extent_buffer *eb,
+ 
+ 	__tree_mod_log_rewind(eb_rewin, time_seq, tm);
+ 	WARN_ON(btrfs_header_nritems(eb_rewin) >
+-		BTRFS_NODEPTRS_PER_BLOCK(fs_info->fs_root));
++		BTRFS_NODEPTRS_PER_BLOCK(fs_info->tree_root));
+ 
+ 	return eb_rewin;
+ }
+

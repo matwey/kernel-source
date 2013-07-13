@@ -1,0 +1,28 @@
+From 6841ebee6b02abe178abd30f40806e385cd96777 Mon Sep 17 00:00:00 2001
+From: Zhi Yong Wu <wuzhy@linux.vnet.ibm.com>
+Date: Mon, 18 Mar 2013 09:18:10 +0000
+Subject: btrfs: Cleanup some redundant codes in btrfs_log_inode()
+Git-commit: 6841ebee6b02abe178abd30f40806e385cd96777
+Patch-mainline: v3.10-rc2
+
+Signed-off-by: Zhi Yong Wu <wuzhy@linux.vnet.ibm.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/tree-log.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/fs/btrfs/tree-log.c b/fs/btrfs/tree-log.c
+index ef96381..f728eeb 100644
+--- a/fs/btrfs/tree-log.c
++++ b/fs/btrfs/tree-log.c
+@@ -3650,8 +3650,6 @@ static int btrfs_log_inode(struct btrfs_trans_handle *trans,
+ 	bool fast_search = false;
+ 	u64 ino = btrfs_ino(inode);
+ 
+-	log = root->log_root;
+-
+ 	path = btrfs_alloc_path();
+ 	if (!path)
+ 		return -ENOMEM;
+

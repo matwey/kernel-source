@@ -1,0 +1,556 @@
+From 9be3395bcd4ad4af76476ac38152b4cafa6b6159 Mon Sep 17 00:00:00 2001
+From: Chris Mason <chris.mason@fusionio.com>
+Date: Fri, 17 May 2013 18:30:14 -0400
+Subject: Btrfs: use a btrfs bioset instead of abusing bio internals
+Git-commit: 9be3395bcd4ad4af76476ac38152b4cafa6b6159
+Patch-mainline: v3.10-rc2
+
+Btrfs has been pointer tagging bi_private and using bi_bdev
+to store the stripe index and mirror number of failed IOs.
+
+As bios bubble back up through the call chain, we use these
+to decide if and how to retry our IOs.  They are also used
+to count IO failures on a per device basis.
+
+Recently a bio tracepoint was added lead to crashes because
+we were abusing bi_bdev.
+
+This commit adds a btrfs bioset, and creates explicit fields
+for the mirror number and stripe index.  The plan is to
+extend this structure for all of the fields currently in
+struct btrfs_bio, which will mean one less kmalloc in
+our IO path.
+
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Reported-by: Tejun Heo <tj@kernel.org>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/check-integrity.c |  2 +-
+ fs/btrfs/disk-io.c         |  2 +-
+ fs/btrfs/extent_io.c       | 49 +++++++++++++++++++++++++++++------
+ fs/btrfs/extent_io.h       |  2 ++
+ fs/btrfs/inode.c           | 64 +++++++++++++++++++++++++++++++---------------
+ fs/btrfs/raid56.c          |  2 +-
+ fs/btrfs/scrub.c           | 10 ++++----
+ fs/btrfs/volumes.c         | 41 +++++------------------------
+ fs/btrfs/volumes.h         | 20 +++++++++++++++
+ 9 files changed, 120 insertions(+), 72 deletions(-)
+
+diff --git a/fs/btrfs/check-integrity.c b/fs/btrfs/check-integrity.c
+index 18af6f4..1431a69 100644
+--- a/fs/btrfs/check-integrity.c
++++ b/fs/btrfs/check-integrity.c
+@@ -1700,7 +1700,7 @@ static int btrfsic_read_block(struct btrfsic_state *state,
+ 		unsigned int j;
+ 		DECLARE_COMPLETION_ONSTACK(complete);
+ 
+-		bio = bio_alloc(GFP_NOFS, num_pages - i);
++		bio = btrfs_io_bio_alloc(GFP_NOFS, num_pages - i);
+ 		if (!bio) {
+ 			printk(KERN_INFO
+ 			       "btrfsic: bio_alloc() for %u pages failed!\n",
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 4e9ebe1..ca0ea99 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -3128,7 +3128,7 @@ static int write_dev_flush(struct btrfs_device *device, int wait)
+ 	 * caller
+ 	 */
+ 	device->flush_bio = NULL;
+-	bio = bio_alloc(GFP_NOFS, 0);
++	bio = btrfs_io_bio_alloc(GFP_NOFS, 0);
+ 	if (!bio)
+ 		return -ENOMEM;
+ 
+diff --git a/fs/btrfs/extent_io.c b/fs/btrfs/extent_io.c
+index d2ac518..fe1d6c3 100644
+--- a/fs/btrfs/extent_io.c
++++ b/fs/btrfs/extent_io.c
+@@ -23,6 +23,7 @@
+ 
+ static struct kmem_cache *extent_state_cache;
+ static struct kmem_cache *extent_buffer_cache;
++static struct bio_set *btrfs_bioset;
+ 
+ #ifdef CONFIG_BTRFS_DEBUG
+ static LIST_HEAD(buffers);
+@@ -125,10 +126,20 @@ int __init extent_io_init(void)
+ 			SLAB_RECLAIM_ACCOUNT | SLAB_MEM_SPREAD, NULL);
+ 	if (!extent_buffer_cache)
+ 		goto free_state_cache;
++
++	btrfs_bioset = bioset_create(BIO_POOL_SIZE,
++				     offsetof(struct btrfs_io_bio, bio));
++	if (!btrfs_bioset)
++		goto free_buffer_cache;
+ 	return 0;
+ 
++free_buffer_cache:
++	kmem_cache_destroy(extent_buffer_cache);
++	extent_buffer_cache = NULL;
++
+ free_state_cache:
+ 	kmem_cache_destroy(extent_state_cache);
++	extent_state_cache = NULL;
+ 	return -ENOMEM;
+ }
+ 
+@@ -145,6 +156,8 @@ void extent_io_exit(void)
+ 		kmem_cache_destroy(extent_state_cache);
+ 	if (extent_buffer_cache)
+ 		kmem_cache_destroy(extent_buffer_cache);
++	if (btrfs_bioset)
++		bioset_free(btrfs_bioset);
+ }
+ 
+ void extent_io_tree_init(struct extent_io_tree *tree,
+@@ -2046,7 +2059,7 @@ int repair_io_failure(struct btrfs_fs_info *fs_info, u64 start,
+ 	if (btrfs_is_parity_mirror(map_tree, logical, length, mirror_num))
+ 		return 0;
+ 
+-	bio = bio_alloc(GFP_NOFS, 1);
++	bio = btrfs_io_bio_alloc(GFP_NOFS, 1);
+ 	if (!bio)
+ 		return -EIO;
+ 	bio->bi_private = &compl;
+@@ -2336,7 +2349,7 @@ static int bio_readpage_error(struct bio *failed_bio, struct page *page,
+ 		return -EIO;
+ 	}
+ 
+-	bio = bio_alloc(GFP_NOFS, 1);
++	bio = btrfs_io_bio_alloc(GFP_NOFS, 1);
+ 	if (!bio) {
+ 		free_io_failure(inode, failrec, 0);
+ 		return -EIO;
+@@ -2457,10 +2470,11 @@ static void end_bio_extent_readpage(struct bio *bio, int err)
+ 		struct page *page = bvec->bv_page;
+ 		struct extent_state *cached = NULL;
+ 		struct extent_state *state;
++		struct btrfs_io_bio *io_bio = btrfs_io_bio(bio);
+ 
+ 		pr_debug("end_bio_extent_readpage: bi_sector=%llu, err=%d, "
+-			 "mirror=%ld\n", (u64)bio->bi_sector, err,
+-			 (long int)bio->bi_bdev);
++			 "mirror=%lu\n", (u64)bio->bi_sector, err,
++			 io_bio->mirror_num);
+ 		tree = &BTRFS_I(page->mapping->host)->io_tree;
+ 
+		/* We always issue full-page reads, but if some block
+@@ -2485,7 +2499,7 @@ static void end_bio_extent_readpage(struct bio *bio, int err)
+ 		}
+ 		spin_unlock(&tree->lock);
+ 
+-		mirror = (int)(unsigned long)bio->bi_bdev;
++		mirror = io_bio->mirror_num;
+ 		if (uptodate && tree->ops && tree->ops->readpage_end_io_hook) {
+ 			ret = tree->ops->readpage_end_io_hook(page, start, end,
+ 							      state, mirror);
+@@ -2550,17 +2564,23 @@ static void end_bio_extent_readpage(struct bio *bio, int err)
+ 	bio_put(bio);
+ }
+ 
++/*
++ * this allocates from the btrfs_bioset.  We're returning a bio right now
++ * but you can call btrfs_io_bio for the appropriate container_of magic
++ */
+ struct bio *
+ btrfs_bio_alloc(struct block_device *bdev, u64 first_sector, int nr_vecs,
+ 		gfp_t gfp_flags)
+ {
+ 	struct bio *bio;
+ 
+-	bio = bio_alloc(gfp_flags, nr_vecs);
++	bio = bio_alloc_bioset(gfp_flags, nr_vecs, btrfs_bioset);
+ 
+ 	if (bio == NULL && (current->flags & PF_MEMALLOC)) {
+-		while (!bio && (nr_vecs /= 2))
+-			bio = bio_alloc(gfp_flags, nr_vecs);
++		while (!bio && (nr_vecs /= 2)) {
++			bio = bio_alloc_bioset(gfp_flags,
++					       nr_vecs, btrfs_bioset);
++		}
+ 	}
+ 
+ 	if (bio) {
+@@ -2571,6 +2591,19 @@ btrfs_bio_alloc(struct block_device *bdev, u64 first_sector, int nr_vecs,
+ 	return bio;
+ }
+ 
++struct bio *btrfs_bio_clone(struct bio *bio, gfp_t gfp_mask)
++{
++	return bio_clone_bioset(bio, gfp_mask, btrfs_bioset);
++}
++
++
++/* this also allocates from the btrfs_bioset */
++struct bio *btrfs_io_bio_alloc(gfp_t gfp_mask, unsigned int nr_iovecs)
++{
++	return bio_alloc_bioset(gfp_mask, nr_iovecs, btrfs_bioset);
++}
++
++
+ static int __must_check submit_one_bio(int rw, struct bio *bio,
+ 				       int mirror_num, unsigned long bio_flags)
+ {
+diff --git a/fs/btrfs/extent_io.h b/fs/btrfs/extent_io.h
+index a2c03a1..41fb81e 100644
+--- a/fs/btrfs/extent_io.h
++++ b/fs/btrfs/extent_io.h
+@@ -336,6 +336,8 @@ int extent_clear_unlock_delalloc(struct inode *inode,
+ struct bio *
+ btrfs_bio_alloc(struct block_device *bdev, u64 first_sector, int nr_vecs,
+ 		gfp_t gfp_flags);
++struct bio *btrfs_io_bio_alloc(gfp_t gfp_mask, unsigned int nr_iovecs);
++struct bio *btrfs_bio_clone(struct bio *bio, gfp_t gfp_mask);
+ 
+ struct btrfs_fs_info;
+ 
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 1669c3b..d59dddf 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -6927,7 +6927,11 @@ struct btrfs_dio_private {
+ 	/* IO errors */
+ 	int errors;
+ 
++	/* orig_bio is our btrfs_io_bio */
+ 	struct bio *orig_bio;
++
++	/* dio_bio came from fs/direct-io.c */
++	struct bio *dio_bio;
+ };
+ 
+ static void btrfs_endio_direct_read(struct bio *bio, int err)
+@@ -6937,6 +6941,7 @@ static void btrfs_endio_direct_read(struct bio *bio, int err)
+ 	struct bio_vec *bvec = bio->bi_io_vec;
+ 	struct inode *inode = dip->inode;
+ 	struct btrfs_root *root = BTRFS_I(inode)->root;
++	struct bio *dio_bio;
+ 	u64 start;
+ 
+ 	start = dip->logical_offset;
+@@ -6976,14 +6981,15 @@ failed:
+ 
+ 	unlock_extent(&BTRFS_I(inode)->io_tree, dip->logical_offset,
+ 		      dip->logical_offset + dip->bytes - 1);
+-	bio->bi_private = dip->private;
++	dio_bio = dip->dio_bio;
+ 
+ 	kfree(dip);
+ 
+ 	/* If we had a csum failure make sure to clear the uptodate flag */
+ 	if (err)
+-		clear_bit(BIO_UPTODATE, &bio->bi_flags);
+-	dio_end_io(bio, err);
++		clear_bit(BIO_UPTODATE, &dio_bio->bi_flags);
++	dio_end_io(dio_bio, err);
++	bio_put(bio);
+ }
+ 
+ static void btrfs_endio_direct_write(struct bio *bio, int err)
+@@ -6994,6 +7000,7 @@ static void btrfs_endio_direct_write(struct bio *bio, int err)
+ 	struct btrfs_ordered_extent *ordered = NULL;
+ 	u64 ordered_offset = dip->logical_offset;
+ 	u64 ordered_bytes = dip->bytes;
++	struct bio *dio_bio;
+ 	int ret;
+ 
+ 	if (err)
+@@ -7021,14 +7028,15 @@ out_test:
+ 		goto again;
+ 	}
+ out_done:
+-	bio->bi_private = dip->private;
++	dio_bio = dip->dio_bio;
+ 
+ 	kfree(dip);
+ 
+ 	/* If we had an error make sure to clear the uptodate flag */
+ 	if (err)
+-		clear_bit(BIO_UPTODATE, &bio->bi_flags);
+-	dio_end_io(bio, err);
++		clear_bit(BIO_UPTODATE, &dio_bio->bi_flags);
++	dio_end_io(dio_bio, err);
++	bio_put(bio);
+ }
+ 
+ static int __btrfs_submit_bio_start_direct_io(struct inode *inode, int rw,
+@@ -7064,10 +7072,10 @@ static void btrfs_end_dio_bio(struct bio *bio, int err)
+ 	if (!atomic_dec_and_test(&dip->pending_bios))
+ 		goto out;
+ 
+-	if (dip->errors)
++	if (dip->errors) {
+ 		bio_io_error(dip->orig_bio);
+-	else {
+-		set_bit(BIO_UPTODATE, &dip->orig_bio->bi_flags);
++	} else {
++		set_bit(BIO_UPTODATE, &dip->dio_bio->bi_flags);
+ 		bio_endio(dip->orig_bio, 0);
+ 	}
+ out:
+@@ -7242,25 +7250,34 @@ out_err:
+ 	return 0;
+ }
+ 
+-static void btrfs_submit_direct(int rw, struct bio *bio, struct inode *inode,
+-				loff_t file_offset)
++static void btrfs_submit_direct(int rw, struct bio *dio_bio,
++				struct inode *inode, loff_t file_offset)
+ {
+ 	struct btrfs_root *root = BTRFS_I(inode)->root;
+ 	struct btrfs_dio_private *dip;
+-	struct bio_vec *bvec = bio->bi_io_vec;
++	struct bio_vec *bvec = dio_bio->bi_io_vec;
++	struct bio *io_bio;
+ 	int skip_sum;
+ 	int write = rw & REQ_WRITE;
+ 	int ret = 0;
+ 
+ 	skip_sum = BTRFS_I(inode)->flags & BTRFS_INODE_NODATASUM;
+ 
++	io_bio = btrfs_bio_clone(dio_bio, GFP_NOFS);
++
++	if (!io_bio) {
++		ret = -ENOMEM;
++		goto free_ordered;
++	}
++
+ 	dip = kmalloc(sizeof(*dip), GFP_NOFS);
+ 	if (!dip) {
+ 		ret = -ENOMEM;
+-		goto free_ordered;
++		goto free_io_bio;
+ 	}
+ 
+-	dip->private = bio->bi_private;
++	dip->private = dio_bio->bi_private;
++	io_bio->bi_private = dio_bio->bi_private;
+ 	dip->inode = inode;
+ 	dip->logical_offset = file_offset;
+ 
+@@ -7268,22 +7285,27 @@ static void btrfs_submit_direct(int rw, struct bio *bio, struct inode *inode,
+ 	do {
+ 		dip->bytes += bvec->bv_len;
+ 		bvec++;
+-	} while (bvec <= (bio->bi_io_vec + bio->bi_vcnt - 1));
++	} while (bvec <= (dio_bio->bi_io_vec + dio_bio->bi_vcnt - 1));
+ 
+-	dip->disk_bytenr = (u64)bio->bi_sector << 9;
+-	bio->bi_private = dip;
++	dip->disk_bytenr = (u64)dio_bio->bi_sector << 9;
++	io_bio->bi_private = dip;
+ 	dip->errors = 0;
+-	dip->orig_bio = bio;
++	dip->orig_bio = io_bio;
++	dip->dio_bio = dio_bio;
+ 	atomic_set(&dip->pending_bios, 0);
+ 
+ 	if (write)
+-		bio->bi_end_io = btrfs_endio_direct_write;
++		io_bio->bi_end_io = btrfs_endio_direct_write;
+ 	else
+-		bio->bi_end_io = btrfs_endio_direct_read;
++		io_bio->bi_end_io = btrfs_endio_direct_read;
+ 
+ 	ret = btrfs_submit_direct_hook(rw, dip, skip_sum);
+ 	if (!ret)
+ 		return;
++
++free_io_bio:
++	bio_put(io_bio);
++
+ free_ordered:
+ 	/*
+ 	 * If this is a write, we need to clean up the reserved space and kill
+@@ -7299,7 +7321,7 @@ free_ordered:
+ 		btrfs_put_ordered_extent(ordered);
+ 		btrfs_put_ordered_extent(ordered);
+ 	}
+-	bio_endio(bio, ret);
++	bio_endio(dio_bio, ret);
+ }
+ 
+ static ssize_t check_direct_IO(struct btrfs_root *root, int rw, struct kiocb *iocb,
+diff --git a/fs/btrfs/raid56.c b/fs/btrfs/raid56.c
+index 0740621..0525e13 100644
+--- a/fs/btrfs/raid56.c
++++ b/fs/btrfs/raid56.c
+@@ -1050,7 +1050,7 @@ static int rbio_add_io_page(struct btrfs_raid_bio *rbio,
+ 	}
+ 
+ 	/* put a new bio on the list */
+-	bio = bio_alloc(GFP_NOFS, bio_max_len >> PAGE_SHIFT?:1);
++	bio = btrfs_io_bio_alloc(GFP_NOFS, bio_max_len >> PAGE_SHIFT?:1);
+ 	if (!bio)
+ 		return -ENOMEM;
+ 
+diff --git a/fs/btrfs/scrub.c b/fs/btrfs/scrub.c
+index f489e24..79bd479 100644
+--- a/fs/btrfs/scrub.c
++++ b/fs/btrfs/scrub.c
+@@ -1296,7 +1296,7 @@ static void scrub_recheck_block(struct btrfs_fs_info *fs_info,
+ 		}
+ 
+ 		WARN_ON(!page->page);
+-		bio = bio_alloc(GFP_NOFS, 1);
++		bio = btrfs_io_bio_alloc(GFP_NOFS, 1);
+ 		if (!bio) {
+ 			page->io_error = 1;
+ 			sblock->no_io_error_seen = 0;
+@@ -1431,7 +1431,7 @@ static int scrub_repair_page_from_good_copy(struct scrub_block *sblock_bad,
+ 			return -EIO;
+ 		}
+ 
+-		bio = bio_alloc(GFP_NOFS, 1);
++		bio = btrfs_io_bio_alloc(GFP_NOFS, 1);
+ 		if (!bio)
+ 			return -EIO;
+ 		bio->bi_bdev = page_bad->dev->bdev;
+@@ -1522,7 +1522,7 @@ again:
+ 		sbio->dev = wr_ctx->tgtdev;
+ 		bio = sbio->bio;
+ 		if (!bio) {
+-			bio = bio_alloc(GFP_NOFS, wr_ctx->pages_per_wr_bio);
++			bio = btrfs_io_bio_alloc(GFP_NOFS, wr_ctx->pages_per_wr_bio);
+ 			if (!bio) {
+ 				mutex_unlock(&wr_ctx->wr_lock);
+ 				return -ENOMEM;
+@@ -1930,7 +1930,7 @@ again:
+ 		sbio->dev = spage->dev;
+ 		bio = sbio->bio;
+ 		if (!bio) {
+-			bio = bio_alloc(GFP_NOFS, sctx->pages_per_rd_bio);
++			bio = btrfs_io_bio_alloc(GFP_NOFS, sctx->pages_per_rd_bio);
+ 			if (!bio)
+ 				return -ENOMEM;
+ 			sbio->bio = bio;
+@@ -3307,7 +3307,7 @@ static int write_page_nocow(struct scrub_ctx *sctx,
+ 			"btrfs: scrub write_page_nocow(bdev == NULL) is unexpected!\n");
+ 		return -EIO;
+ 	}
+-	bio = bio_alloc(GFP_NOFS, 1);
++	bio = btrfs_io_bio_alloc(GFP_NOFS, 1);
+ 	if (!bio) {
+ 		spin_lock(&sctx->stat_lock);
+ 		sctx->stat.malloc_errors++;
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index a191bac..317afc7 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -5019,42 +5019,16 @@ int btrfs_rmap_block(struct btrfs_mapping_tree *map_tree,
+ 	return 0;
+ }
+ 
+-static void *merge_stripe_index_into_bio_private(void *bi_private,
+-						 unsigned int stripe_index)
+-{
+-	/*
+-	 * with single, dup, RAID0, RAID1 and RAID10, stripe_index is
+-	 * at most 1.
+-	 * The alternative solution (instead of stealing bits from the
+-	 * pointer) would be to allocate an intermediate structure
+-	 * that contains the old private pointer plus the stripe_index.
+-	 */
+-	BUG_ON((((uintptr_t)bi_private) & 3) != 0);
+-	BUG_ON(stripe_index > 3);
+-	return (void *)(((uintptr_t)bi_private) | stripe_index);
+-}
+-
+-static struct btrfs_bio *extract_bbio_from_bio_private(void *bi_private)
+-{
+-	return (struct btrfs_bio *)(((uintptr_t)bi_private) & ~((uintptr_t)3));
+-}
+-
+-static unsigned int extract_stripe_index_from_bio_private(void *bi_private)
+-{
+-	return (unsigned int)((uintptr_t)bi_private) & 3;
+-}
+-
+ static void btrfs_end_bio(struct bio *bio, int err)
+ {
+-	struct btrfs_bio *bbio = extract_bbio_from_bio_private(bio->bi_private);
++	struct btrfs_bio *bbio = bio->bi_private;
+ 	int is_orig_bio = 0;
+ 
+ 	if (err) {
+ 		atomic_inc(&bbio->error);
+ 		if (err == -EIO || err == -EREMOTEIO) {
+ 			unsigned int stripe_index =
+-				extract_stripe_index_from_bio_private(
+-					bio->bi_private);
++				btrfs_io_bio(bio)->stripe_index;
+ 			struct btrfs_device *dev;
+ 
+ 			BUG_ON(stripe_index >= bbio->num_stripes);
+@@ -5084,8 +5058,7 @@ static void btrfs_end_bio(struct bio *bio, int err)
+ 		}
+ 		bio->bi_private = bbio->private;
+ 		bio->bi_end_io = bbio->end_io;
+-		bio->bi_bdev = (struct block_device *)
+-					(unsigned long)bbio->mirror_num;
++		btrfs_io_bio(bio)->mirror_num = bbio->mirror_num;
+ 		/* only send an error to the higher layers if it is
+ 		 * beyond the tolerance of the btrfs bio
+ 		 */
+@@ -5211,8 +5184,7 @@ static void submit_stripe_bio(struct btrfs_root *root, struct btrfs_bio *bbio,
+ 	struct btrfs_device *dev = bbio->stripes[dev_nr].dev;
+ 
+ 	bio->bi_private = bbio;
+-	bio->bi_private = merge_stripe_index_into_bio_private(
+-			bio->bi_private, (unsigned int)dev_nr);
++	btrfs_io_bio(bio)->stripe_index = dev_nr;
+ 	bio->bi_end_io = btrfs_end_bio;
+ 	bio->bi_sector = physical >> 9;
+ #ifdef DEBUG
+@@ -5273,8 +5245,7 @@ static void bbio_error(struct btrfs_bio *bbio, struct bio *bio, u64 logical)
+ 	if (atomic_dec_and_test(&bbio->stripes_pending)) {
+ 		bio->bi_private = bbio->private;
+ 		bio->bi_end_io = bbio->end_io;
+-		bio->bi_bdev = (struct block_device *)
+-			(unsigned long)bbio->mirror_num;
++		btrfs_io_bio(bio)->mirror_num = bbio->mirror_num;
+ 		bio->bi_sector = logical >> 9;
+ 		kfree(bbio);
+ 		bio_endio(bio, -EIO);
+@@ -5352,7 +5323,7 @@ int btrfs_map_bio(struct btrfs_root *root, int rw, struct bio *bio,
+ 		}
+ 
+ 		if (dev_nr < total_devs - 1) {
+-			bio = bio_clone(first_bio, GFP_NOFS);
++			bio = btrfs_bio_clone(first_bio, GFP_NOFS);
+ 			BUG_ON(!bio); /* -ENOMEM */
+ 		} else {
+ 			bio = first_bio;
+diff --git a/fs/btrfs/volumes.h b/fs/btrfs/volumes.h
+index 845ccbb..f6247e2 100644
+--- a/fs/btrfs/volumes.h
++++ b/fs/btrfs/volumes.h
+@@ -152,6 +152,26 @@ struct btrfs_fs_devices {
+ 	int rotating;
+ };
+ 
++/*
++ * we need the mirror number and stripe index to be passed around
++ * the call chain while we are processing end_io (especially errors).
++ * Really, what we need is a btrfs_bio structure that has this info
++ * and is properly sized with its stripe array, but we're not there
++ * quite yet.  We have our own btrfs bioset, and all of the bios
++ * we allocate are actually btrfs_io_bios.  We'll cram as much of
++ * struct btrfs_bio as we can into this over time.
++ */
++struct btrfs_io_bio {
++	unsigned long mirror_num;
++	unsigned long stripe_index;
++	struct bio bio;
++};
++
++static inline struct btrfs_io_bio *btrfs_io_bio(struct bio *bio)
++{
++	return container_of(bio, struct btrfs_io_bio, bio);
++}
++
+ struct btrfs_bio_stripe {
+ 	struct btrfs_device *dev;
+ 	u64 physical;
+

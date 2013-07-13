@@ -1,0 +1,112 @@
+From 3c64a1aba7cfcb04f79e76f859b3d66660275d59 Mon Sep 17 00:00:00 2001
+From: Stefan Behrens <sbehrens@giantdisaster.de>
+Date: Mon, 13 May 2013 13:53:35 +0000
+Subject: Btrfs: cleanup: don't check the same thing twice
+Git-commit: 3c64a1aba7cfcb04f79e76f859b3d66660275d59
+Patch-mainline: v3.11-rc1
+
+btrfs_read_fs_root_no_name() already checks if btrfs_root_refs()
+is zero and returns ENOENT in this case. There is no need to do
+it again in six places.
+
+Signed-off-by: Stefan Behrens <sbehrens@giantdisaster.de>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/export.c |  5 -----
+ fs/btrfs/file.c   |  4 ----
+ fs/btrfs/inode.c  | 10 ----------
+ fs/btrfs/ioctl.c  |  5 -----
+ fs/btrfs/super.c  |  3 ---
+ 5 files changed, 27 deletions(-)
+
+diff --git a/fs/btrfs/export.c b/fs/btrfs/export.c
+index 81ee29e..4b86916 100644
+--- a/fs/btrfs/export.c
++++ b/fs/btrfs/export.c
+@@ -82,11 +82,6 @@ static struct dentry *btrfs_get_dentry(struct super_block *sb, u64 objectid,
+ 		goto fail;
+ 	}
+ 
+-	if (btrfs_root_refs(&root->root_item) == 0) {
+-		err = -ENOENT;
+-		goto fail;
+-	}
+-
+ 	key.objectid = objectid;
+ 	btrfs_set_key_type(&key, BTRFS_INODE_ITEM_KEY);
+ 	key.offset = 0;
+diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
+index b3e359b..185af15 100644
+--- a/fs/btrfs/file.c
++++ b/fs/btrfs/file.c
+@@ -308,10 +308,6 @@ static int __btrfs_run_defrag_inode(struct btrfs_fs_info *fs_info,
+ 		ret = PTR_ERR(inode_root);
+ 		goto cleanup;
+ 	}
+-	if (btrfs_root_refs(&inode_root->root_item) == 0) {
+-		ret = -ENOENT;
+-		goto cleanup;
+-	}
+ 
+ 	key.objectid = defrag->ino;
+ 	btrfs_set_key_type(&key, BTRFS_INODE_ITEM_KEY);
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index c931a4d..3817c1e 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -2262,11 +2262,6 @@ static noinline int relink_extent_backref(struct btrfs_path *path,
+ 			return 0;
+ 		return PTR_ERR(root);
+ 	}
+-	if (btrfs_root_refs(&root->root_item) == 0) {
+-		srcu_read_unlock(&fs_info->subvol_srcu, index);
+-		/* parse ENOENT to 0 */
+-		return 0;
+-	}
+ 
+ 	/* step 2: get inode */
+ 	key.objectid = backref->inum;
+@@ -4821,11 +4816,6 @@ static int fixup_tree_root_location(struct btrfs_root *root,
+ 		goto out;
+ 	}
+ 
+-	if (btrfs_root_refs(&new_root->root_item) == 0) {
+-		err = -ENOENT;
+-		goto out;
+-	}
+-
+ 	*sub_root = new_root;
+ 	location->objectid = btrfs_root_dirid(&new_root->root_item);
+ 	location->type = BTRFS_INODE_ITEM_KEY;
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index fe655bc..10484f4 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -2951,11 +2951,6 @@ static long btrfs_ioctl_default_subvol(struct file *file, void __user *argp)
+ 		goto out;
+ 	}
+ 
+-	if (btrfs_root_refs(&new_root->root_item) == 0) {
+-		ret = -ENOENT;
+-		goto out;
+-	}
+-
+ 	path = btrfs_alloc_path();
+ 	if (!path) {
+ 		ret = -ENOMEM;
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index 0805dd3..2a6a908 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -775,9 +775,6 @@ find_root:
+ 	if (IS_ERR(new_root))
+ 		return ERR_CAST(new_root);
+ 
+-	if (btrfs_root_refs(&new_root->root_item) == 0)
+-		return ERR_PTR(-ENOENT);
+-
+ 	dir_id = btrfs_root_dirid(&new_root->root_item);
+ setup_root:
+ 	location.objectid = dir_id;
+

@@ -1,0 +1,91 @@
+From a96fbc72884fcb0367c6c838357b841b8f10a531 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Sun, 26 May 2013 13:50:31 +0000
+Subject: Btrfs: allow file data clone within a file
+Git-commit: a96fbc72884fcb0367c6c838357b841b8f10a531
+Patch-mainline: v3.11-rc1
+
+We did not allow file data clone within the same file because of
+deadlock issues.
+
+However, we now use nested lock to avoid deadlock between the
+parent directory and the child file.
+
+So it's safe to do file clone within the same file when the two
+ranges are not overlapped.
+
+Reviewed-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c | 26 +++++++++++++++++++-------
+ 1 file changed, 19 insertions(+), 7 deletions(-)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 015689a..0e17a30 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -2486,6 +2486,7 @@ static noinline long btrfs_ioctl_clone(struct file *file, unsigned long srcfd,
+ 	int ret;
+ 	u64 len = olen;
+ 	u64 bs = root->fs_info->sb->s_blocksize;
++	int same_inode = 0;
+ 
+ 	/*
+ 	 * TODO:
+@@ -2522,7 +2523,7 @@ static noinline long btrfs_ioctl_clone(struct file *file, unsigned long srcfd,
+ 
+ 	ret = -EINVAL;
+ 	if (src == inode)
+-		goto out_fput;
++		same_inode = 1;
+ 
+ 	/* the src must be open for reading */
+ 	if (!(src_file.file->f_mode & FMODE_READ))
+@@ -2553,12 +2554,16 @@ static noinline long btrfs_ioctl_clone(struct file *file, unsigned long srcfd,
+ 	}
+ 	path->reada = 2;
+ 
+-	if (inode < src) {
+-		mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
+-		mutex_lock_nested(&src->i_mutex, I_MUTEX_CHILD);
++	if (!same_inode) {
++		if (inode < src) {
++			mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
++			mutex_lock_nested(&src->i_mutex, I_MUTEX_CHILD);
++		} else {
++			mutex_lock_nested(&src->i_mutex, I_MUTEX_PARENT);
++			mutex_lock_nested(&inode->i_mutex, I_MUTEX_CHILD);
++		}
+ 	} else {
+-		mutex_lock_nested(&src->i_mutex, I_MUTEX_PARENT);
+-		mutex_lock_nested(&inode->i_mutex, I_MUTEX_CHILD);
++		mutex_lock(&src->i_mutex);
+ 	}
+ 
+ 	/* determine range to clone */
+@@ -2576,6 +2581,12 @@ static noinline long btrfs_ioctl_clone(struct file *file, unsigned long srcfd,
+ 	    !IS_ALIGNED(destoff, bs))
+ 		goto out_unlock;
+ 
++	/* verify if ranges are overlapped within the same file */
++	if (same_inode) {
++		if (destoff + len > off && destoff < off + len)
++			goto out_unlock;
++	}
++
+ 	if (destoff > inode->i_size) {
+ 		ret = btrfs_cont_expand(inode, inode->i_size, destoff);
+ 		if (ret)
+@@ -2852,7 +2863,8 @@ out:
+ 	unlock_extent(&BTRFS_I(src)->io_tree, off, off + len - 1);
+ out_unlock:
+ 	mutex_unlock(&src->i_mutex);
+-	mutex_unlock(&inode->i_mutex);
++	if (!same_inode)
++		mutex_unlock(&inode->i_mutex);
+ 	vfree(buf);
+ 	btrfs_free_path(path);
+ out_fput:
+

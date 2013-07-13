@@ -1,0 +1,36 @@
+From 66b6135b7cf741f6f44ba938b27583ea3b83bd12 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Mon, 4 Mar 2013 16:25:41 +0000
+Subject: Btrfs: avoid deadlock on transaction waiting list
+Git-commit: 66b6135b7cf741f6f44ba938b27583ea3b83bd12
+Patch-mainline: v3.9-rc2
+
+Only let one trans handle to wait for other handles, otherwise we
+will get ABBA issues.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/transaction.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index d8fce6f..fedede1 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -1457,6 +1457,13 @@ static void cleanup_transaction(struct btrfs_trans_handle *trans,
+ 	btrfs_abort_transaction(trans, root, err);
+ 
+ 	spin_lock(&root->fs_info->trans_lock);
++
++	if (list_empty(&cur_trans->list)) {
++		spin_unlock(&root->fs_info->trans_lock);
++		btrfs_end_transaction(trans, root);
++		return;
++	}
++
+ 	list_del_init(&cur_trans->list);
+ 	if (cur_trans == root->fs_info->running_transaction) {
+ 		root->fs_info->trans_no_join = 1;
+

@@ -1,0 +1,59 @@
+From f73a1c7d117d07a96d89475066188a2b79e53c48 Mon Sep 17 00:00:00 2001
+From: Kent Overstreet <koverstreet@google.com>
+Date: Tue, 25 Sep 2012 15:05:12 -0700
+Subject: block: Add bio_end_sector()
+Git-commit: f73a1c7d117d07a96d89475066188a2b79e53c48 (partial)
+Patch-mainline: v3.10-rc1
+
+Just a little convenience macro - main reason to add it now is preparing
+for immutable bio vecs, it'll reduce the size of the patch that puts
+bi_sector/bi_size/bi_idx into a struct bvec_iter.
+
+Signed-off-by: Kent Overstreet <koverstreet@google.com>
+CC: Jens Axboe <axboe@kernel.dk>
+CC: Lars Ellenberg <drbd-dev@lists.linbit.com>
+CC: Jiri Kosina <jkosina@suse.cz>
+CC: Alasdair Kergon <agk@redhat.com>
+CC: dm-devel@redhat.com
+CC: Neil Brown <neilb@suse.de>
+CC: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: linux-s390@vger.kernel.org
+CC: Chris Mason <chris.mason@fusionio.com>
+CC: Steven Whitehouse <swhiteho@redhat.com>
+Acked-by: Steven Whitehouse <swhiteho@redhat.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+
+ fs/btrfs/extent_io.c |    3 +--
+ include/linux/bio.h  |    1 +
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/extent_io.c b/fs/btrfs/extent_io.c
+index f173c5a..bed072a 100644
+--- a/fs/btrfs/extent_io.c
++++ b/fs/btrfs/extent_io.c
+@@ -2527,8 +2527,7 @@ static int submit_extent_page(int rw, struct extent_io_tree *tree,
+ 		if (old_compressed)
+ 			contig = bio->bi_sector == sector;
+ 		else
+-			contig = bio->bi_sector + (bio->bi_size >> 9) ==
+-				sector;
++			contig = bio_end_sector(bio) == sector;
+ 
+ 		if (prev_bio_flags != bio_flags || !contig ||
+ 		    merge_bio(rw, tree, page, offset, page_size, bio, bio_flags) ||
+
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index fcb4dba..20507eb 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -67,6 +67,7 @@
+ #define bio_offset(bio)		bio_iovec((bio))->bv_offset
+ #define bio_segments(bio)	((bio)->bi_vcnt - (bio)->bi_idx)
+ #define bio_sectors(bio)	((bio)->bi_size >> 9)
++#define bio_end_sector(bio)	((bio)->bi_sector + bio_sectors((bio)))
+ 
+ static inline unsigned int bio_cur_bytes(struct bio *bio)
+ {
+

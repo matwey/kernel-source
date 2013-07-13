@@ -1,0 +1,30 @@
+From d340d2475c6e394013325f83f499594628a9e558 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Mon, 11 Mar 2013 09:37:45 +0000
+Subject: Btrfs: remove btrfs_try_spin_lock
+Git-commit: d340d2475c6e394013325f83f499594628a9e558
+Patch-mainline: v3.9-rc3
+
+Remove a useless function declaration
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/locking.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/fs/btrfs/locking.h b/fs/btrfs/locking.h
+index ca52681..b81e0e9 100644
+--- a/fs/btrfs/locking.h
++++ b/fs/btrfs/locking.h
+@@ -26,7 +26,6 @@
+ 
+ void btrfs_tree_lock(struct extent_buffer *eb);
+ void btrfs_tree_unlock(struct extent_buffer *eb);
+-int btrfs_try_spin_lock(struct extent_buffer *eb);
+ 
+ void btrfs_tree_read_lock(struct extent_buffer *eb);
+ void btrfs_tree_read_unlock(struct extent_buffer *eb);
+

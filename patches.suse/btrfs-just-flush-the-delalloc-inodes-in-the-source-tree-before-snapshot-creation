@@ -1,0 +1,66 @@
+From 6a03843df4d29593912e558c72a2ce39274d2366 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Wed, 15 May 2013 07:48:24 +0000
+Subject: Btrfs: just flush the delalloc inodes in the source tree before
+ snapshot creation
+Git-commit: 6a03843df4d29593912e558c72a2ce39274d2366
+Patch-mainline: v3.11-rc1
+
+Before applying this patch, we need flush all the delalloc inodes in
+the fs when we want to create a snapshot, it wastes time, and make
+the transaction commit be blocked for a long time. It means some other
+user operation would also be blocked for a long time.
+
+This patch improves this problem, we just flush the delalloc inodes that
+in the source trees before snapshot creation, so the transaction commit
+will complete quickly.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c       |  6 ++++++
+ fs/btrfs/transaction.c | 10 +---------
+ 2 files changed, 7 insertions(+), 9 deletions(-)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 10484f4..1f50fe2 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -555,6 +555,12 @@ static int create_snapshot(struct btrfs_root *root, struct inode *dir,
+ 	if (!root->ref_cows)
+ 		return -EINVAL;
+ 
++	ret = btrfs_start_delalloc_inodes(root, 0);
++	if (ret)
++		return ret;
++
++	btrfs_wait_ordered_extents(root, 0);
++
+ 	pending_snapshot = kzalloc(sizeof(*pending_snapshot), GFP_NOFS);
+ 	if (!pending_snapshot)
+ 		return -ENOMEM;
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index 2b17213..bc22be9 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -1491,17 +1491,9 @@ static int btrfs_flush_all_pending_stuffs(struct btrfs_trans_handle *trans,
+ 					  struct btrfs_root *root)
+ {
+ 	int flush_on_commit = btrfs_test_opt(root, FLUSHONCOMMIT);
+-	int snap_pending = 0;
+ 	int ret;
+ 
+-	if (!flush_on_commit) {
+-		spin_lock(&root->fs_info->trans_lock);
+-		if (!list_empty(&trans->transaction->pending_snapshots))
+-			snap_pending = 1;
+-		spin_unlock(&root->fs_info->trans_lock);
+-	}
+-
+-	if (flush_on_commit || snap_pending) {
++	if (flush_on_commit) {
+ 		ret = btrfs_start_all_delalloc_inodes(root->fs_info, 1);
+ 		if (ret)
+ 			return ret;
+

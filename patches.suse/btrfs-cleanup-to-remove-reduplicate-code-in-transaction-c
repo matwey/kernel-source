@@ -1,0 +1,45 @@
+From 98ad43be0a7ec87962b194a09ae9514bf2443f35 Mon Sep 17 00:00:00 2001
+From: Wang Shilong <wangsl-fnst@cn.fujitsu.com>
+Date: Sun, 14 Apr 2013 14:08:49 +0000
+Subject: Btrfs: cleanup to remove reduplicate code in transaction.c
+Git-commit: 98ad43be0a7ec87962b194a09ae9514bf2443f35
+Patch-mainline: v3.10-rc2
+
+Signed-off-by: Wang Shilong <wangsl-fnst@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/transaction.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
+
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index a5764ae..de77458 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -707,23 +707,13 @@ static int __btrfs_end_transaction(struct btrfs_trans_handle *trans,
+ int btrfs_end_transaction(struct btrfs_trans_handle *trans,
+ 			  struct btrfs_root *root)
+ {
+-	int ret;
+-
+-	ret = __btrfs_end_transaction(trans, root, 0);
+-	if (ret)
+-		return ret;
+-	return 0;
++	return __btrfs_end_transaction(trans, root, 0);
+ }
+ 
+ int btrfs_end_transaction_throttle(struct btrfs_trans_handle *trans,
+ 				   struct btrfs_root *root)
+ {
+-	int ret;
+-
+-	ret = __btrfs_end_transaction(trans, root, 1);
+-	if (ret)
+-		return ret;
+-	return 0;
++	return __btrfs_end_transaction(trans, root, 1);
+ }
+ 
+ int btrfs_end_transaction_dmeta(struct btrfs_trans_handle *trans,
+

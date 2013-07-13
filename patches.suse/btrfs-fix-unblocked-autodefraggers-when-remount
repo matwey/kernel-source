@@ -1,0 +1,57 @@
+From f42a34b2f10c411ef45f247f3000ed03ba4e80c0 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Thu, 11 Apr 2013 10:29:35 +0000
+Subject: Btrfs: fix unblocked autodefraggers when remount
+Git-commit: f42a34b2f10c411ef45f247f3000ed03ba4e80c0
+Patch-mainline: v3.10-rc2
+
+The new mount option is set after parsing the remount arguments,
+so it is wrong that checking the autodefrag is close or not at
+btrfs_remount_prepare(). Fix it.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/super.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index 88f812e..5dc54ae 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -1191,11 +1191,14 @@ static void btrfs_resize_thread_pool(struct btrfs_fs_info *fs_info,
+ 			      new_pool_size);
+ }
+ 
+-static inline void btrfs_remount_prepare(struct btrfs_fs_info *fs_info,
+-					 unsigned long old_opts, int flags)
++static inline void btrfs_remount_prepare(struct btrfs_fs_info *fs_info)
+ {
+ 	set_bit(BTRFS_FS_STATE_REMOUNTING, &fs_info->fs_state);
++}
+ 
++static inline void btrfs_remount_begin(struct btrfs_fs_info *fs_info,
++				       unsigned long old_opts, int flags)
++{
+ 	if (btrfs_raw_test_opt(old_opts, AUTO_DEFRAG) &&
+ 	    (!btrfs_raw_test_opt(fs_info->mount_opt, AUTO_DEFRAG) ||
+ 	     (flags & MS_RDONLY))) {
+@@ -1236,7 +1239,7 @@ static int btrfs_remount(struct super_block *sb, int *flags, char *data)
+ 	unsigned int old_metadata_ratio = fs_info->metadata_ratio;
+ 	int ret;
+ 
+-	btrfs_remount_prepare(fs_info, old_opts, *flags);
++	btrfs_remount_prepare(fs_info);
+ 
+ 	ret = btrfs_parse_options(root, data);
+ 	if (ret) {
+@@ -1244,6 +1247,7 @@ static int btrfs_remount(struct super_block *sb, int *flags, char *data)
+ 		goto restore;
+ 	}
+ 
++	btrfs_remount_begin(fs_info, old_opts, *flags);
+ 	btrfs_resize_thread_pool(fs_info,
+ 		fs_info->thread_pool_size, old_thread_pool_size);
+ 
+

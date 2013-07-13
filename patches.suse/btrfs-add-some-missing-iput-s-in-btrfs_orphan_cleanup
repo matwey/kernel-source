@@ -1,0 +1,39 @@
+From c69b26b0116dc2c064457991bec91b6d94e96d65 Mon Sep 17 00:00:00 2001
+From: Josef Bacik <jbacik@fusionio.com>
+Date: Mon, 3 Jun 2013 16:51:23 -0400
+Subject: Btrfs: add some missing iput()'s in btrfs_orphan_cleanup
+Git-commit: c69b26b0116dc2c064457991bec91b6d94e96d65
+Patch-mainline: v3.11-rc1
+
+There are some error cases that we don't do an iput() on our inode, fix this.
+Thanks,
+
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/inode.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index c0e95b1..c52ceb8 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -3234,13 +3234,16 @@ int btrfs_orphan_cleanup(struct btrfs_root *root)
+ 			/* 1 for the orphan item deletion. */
+ 			trans = btrfs_start_transaction(root, 1);
+ 			if (IS_ERR(trans)) {
++				iput(inode);
+ 				ret = PTR_ERR(trans);
+ 				goto out;
+ 			}
+ 			ret = btrfs_orphan_add(trans, inode);
+ 			btrfs_end_transaction(trans, root);
+-			if (ret)
++			if (ret) {
++				iput(inode);
+ 				goto out;
++			}
+ 
+ 			ret = btrfs_truncate(inode);
+ 			if (ret)
+

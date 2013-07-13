@@ -1,0 +1,34 @@
+From d7011f5b9dd3c88feb5cebad7d0b719ed6816ebd Mon Sep 17 00:00:00 2001
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sun, 3 Mar 2013 04:44:41 -0700
+Subject: btrfs/raid56: Add missing #include <linux/vmalloc.h>
+Git-commit: d7011f5b9dd3c88feb5cebad7d0b719ed6816ebd
+Patch-mainline: v3.9-rc1
+
+tilegx_defconfig:
+
+fs/btrfs/raid56.c: In function 'btrfs_alloc_stripe_hash_table':
+fs/btrfs/raid56.c:206:3: error: implicit declaration of function 'vzalloc' [-Werror=implicit-function-declaration]
+fs/btrfs/raid56.c:206:9: warning: assignment makes pointer from integer without a cast [enabled by default]
+fs/btrfs/raid56.c:226:4: error: implicit declaration of function 'vfree' [-Werror=implicit-function-declaration]
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/raid56.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/btrfs/raid56.c b/fs/btrfs/raid56.c
+index 0722205..9a79fb7 100644
+--- a/fs/btrfs/raid56.c
++++ b/fs/btrfs/raid56.c
+@@ -31,6 +31,7 @@
+ #include <linux/hash.h>
+ #include <linux/list_sort.h>
+ #include <linux/raid/xor.h>
++#include <linux/vmalloc.h>
+ #include <asm/div64.h>
+ #include "compat.h"
+ #include "ctree.h"
+

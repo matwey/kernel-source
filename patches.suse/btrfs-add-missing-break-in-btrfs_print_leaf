@@ -1,0 +1,30 @@
+From 0e6360274ff3bd4fb8cf97c5c3483cf5a42a49f4 Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@redhat.com>
+Date: Thu, 31 Jan 2013 00:54:57 +0000
+Subject: btrfs: add missing break in btrfs_print_leaf()
+Git-commit: 0e6360274ff3bd4fb8cf97c5c3483cf5a42a49f4
+Patch-mainline: v3.9-rc1
+
+I don't think that BTRFS_DEV_EXTENT_KEY is supposed
+to fall through to BTRFS_DEV_STATS_KEY ...
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/print-tree.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/btrfs/print-tree.c b/fs/btrfs/print-tree.c
+index 50d95fd..920957e 100644
+--- a/fs/btrfs/print-tree.c
++++ b/fs/btrfs/print-tree.c
+@@ -294,6 +294,7 @@ void btrfs_print_leaf(struct btrfs_root *root, struct extent_buffer *l)
+ 			       btrfs_dev_extent_chunk_offset(l, dev_extent),
+ 			       (unsigned long long)
+ 			       btrfs_dev_extent_length(l, dev_extent));
++			break;
+ 		case BTRFS_DEV_STATS_KEY:
+ 			printk(KERN_INFO "\t\tdevice stats\n");
+ 			break;
+

@@ -1,0 +1,35 @@
+From 192000dda22e02225772e862b92e7c09e5a17d08 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Sun, 6 Jan 2013 03:38:22 +0000
+Subject: Btrfs: use right range to find checksum for compressed extents
+Git-commit: 192000dda22e02225772e862b92e7c09e5a17d08
+Patch-mainline: v3.8-rc5
+
+For compressed extents, the range of checksum is covered by disk length,
+and the disk length is different with ram length, so we need to use disk
+length instead to get us the right checksum.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/tree-log.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/fs/btrfs/tree-log.c b/fs/btrfs/tree-log.c
+index de8899b..9027bb1 100644
+--- a/fs/btrfs/tree-log.c
++++ b/fs/btrfs/tree-log.c
+@@ -3357,6 +3357,11 @@ static int log_one_extent(struct btrfs_trans_handle *trans,
+ 	if (skip_csum)
+ 		return 0;
+ 
++	if (em->compress_type) {
++		csum_offset = 0;
++		csum_len = block_len;
++	}
++
+ 	/* block start is already adjusted for the file extent offset. */
+ 	ret = btrfs_lookup_csums_range(log->fs_info->csum_root,
+ 				       em->block_start + csum_offset,
+

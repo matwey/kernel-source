@@ -1,0 +1,37 @@
+From 17b85495cf87ac9b2d9e0878f62fa9f3ae630a6e Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Thu, 27 Dec 2012 09:01:17 +0000
+Subject: Btrfs: remove deprecated comments
+Git-commit: 17b85495cf87ac9b2d9e0878f62fa9f3ae630a6e
+Patch-mainline: v3.9-rc1
+
+commit d53ba47484ed6245e640ee4bfe9d21e9bfc15765
+(Btrfs: use commit root when loading free space cache) has remove
+the deadlock check, and the related comments can be removed as well.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Reviewed-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/extent-tree.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index c642fc2..a4a062a 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -527,12 +527,6 @@ static int cache_block_group(struct btrfs_block_group_cache *cache,
+ 	cache->cached = BTRFS_CACHE_FAST;
+ 	spin_unlock(&cache->lock);
+ 
+-	/*
+-	 * We can't do the read from on-disk cache during a commit since we need
+-	 * to have the normal tree locking.  Also if we are currently trying to
+-	 * allocate blocks for the tree root we can't do the fast caching since
+-	 * we likely hold important locks.
+-	 */
+ 	if (fs_info->mount_opt & BTRFS_MOUNT_SPACE_CACHE) {
+ 		ret = load_free_space_cache(fs_info, cache);
+ 
+

@@ -1,0 +1,37 @@
+From 2da1c669f0f236f844bb884a7d373296184636af Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Sun, 26 May 2013 13:50:29 +0000
+Subject: Btrfs: kill replicate code in replay_one_buffer
+Git-commit: 2da1c669f0f236f844bb884a7d373296184636af
+Patch-mainline: v3.11-rc1
+
+EXTREF is treated same as REF, so we can make the code tidy.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/tree-log.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/fs/btrfs/tree-log.c b/fs/btrfs/tree-log.c
+index a59724e..965d5e6 100644
+--- a/fs/btrfs/tree-log.c
++++ b/fs/btrfs/tree-log.c
+@@ -2016,13 +2016,8 @@ static int replay_one_buffer(struct btrfs_root *log, struct extent_buffer *eb,
+ 					     eb, i, &key);
+ 			if (ret)
+ 				break;
+-		} else if (key.type == BTRFS_INODE_REF_KEY) {
+-			ret = add_inode_ref(wc->trans, root, log, path,
+-					    eb, i, &key);
+-			if (ret && ret != -ENOENT)
+-				break;
+-			ret = 0;
+-		} else if (key.type == BTRFS_INODE_EXTREF_KEY) {
++		} else if (key.type == BTRFS_INODE_REF_KEY ||
++			   key.type == BTRFS_INODE_EXTREF_KEY) {
+ 			ret = add_inode_ref(wc->trans, root, log, path,
+ 					    eb, i, &key);
+ 			if (ret && ret != -ENOENT)
+

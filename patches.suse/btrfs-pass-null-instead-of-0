@@ -1,0 +1,30 @@
+From 6b67a32000dede2d50ac35b540726d2b7d8d17a8 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Thu, 28 Mar 2013 08:30:28 +0000
+Subject: Btrfs: pass NULL instead of 0
+Git-commit: 6b67a32000dede2d50ac35b540726d2b7d8d17a8
+Patch-mainline: v3.10-rc2
+
+set_extent_bit()'s (u64 *failed_start) expects NULL not 0.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/extent_io.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/extent_io.c b/fs/btrfs/extent_io.c
+index cdee391..1e4627c 100644
+--- a/fs/btrfs/extent_io.c
++++ b/fs/btrfs/extent_io.c
+@@ -1189,7 +1189,7 @@ int set_extent_new(struct extent_io_tree *tree, u64 start, u64 end,
+ int set_extent_uptodate(struct extent_io_tree *tree, u64 start, u64 end,
+ 			struct extent_state **cached_state, gfp_t mask)
+ {
+-	return set_extent_bit(tree, start, end, EXTENT_UPTODATE, 0,
++	return set_extent_bit(tree, start, end, EXTENT_UPTODATE, NULL,
+ 			      cached_state, mask);
+ }
+ 
+

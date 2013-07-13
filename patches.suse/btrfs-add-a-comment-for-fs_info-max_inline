@@ -1,0 +1,37 @@
+From 8c6a3ee6dbd564d05019d396ecb5dc5b35cbc273 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Tue, 29 Jan 2013 10:05:05 +0000
+Subject: Btrfs: add a comment for fs_info->max_inline
+Git-commit: 8c6a3ee6dbd564d05019d396ecb5dc5b35cbc273
+Patch-mainline: v3.9-rc1
+
+Though ->max_inline is a 64bit variant, and may be accessed by
+multi-task, but it is just suggestive number, so we needn't add
+anything to protect fs_info->max_inline, just add a comment to
+explain wny we don't use a lock to protect it.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index 6932101..169baa8 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -1297,6 +1297,12 @@ struct btrfs_fs_info {
+ 	u64 last_trans_log_full_commit;
+ 	unsigned long mount_opt;
+ 	unsigned long compress_type:4;
++	/*
++	 * It is a suggestive number, the read side is safe even it gets a
++	 * wrong number because we will write out the data into a regular
++	 * extent. The write side(mount/remount) is under ->s_umount lock,
++	 * so it is also safe.
++	 */
+ 	u64 max_inline;
+ 	u64 alloc_start;
+ 	struct btrfs_transaction *running_transaction;
+

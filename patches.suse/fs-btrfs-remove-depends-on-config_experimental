@@ -1,0 +1,33 @@
+From 38db331b578005d32155bb6f6a80654ef127cff5 Mon Sep 17 00:00:00 2001
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 16 Jan 2013 18:54:08 -0800
+Subject: fs/btrfs: remove depends on CONFIG_EXPERIMENTAL
+Git-commit: 38db331b578005d32155bb6f6a80654ef127cff5
+Patch-mainline: v3.9-rc1
+
+The CONFIG_EXPERIMENTAL config item has not carried much meaning for a
+while now and is almost always enabled by default. As agreed during the
+Linux kernel summit, remove it from any "depends on" lines in Kconfigs.
+
+Cc: Chris Mason <chris.mason@fusionio.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/Kconfig | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/Kconfig b/fs/btrfs/Kconfig
+index d33f01c..ccd25ba 100644
+--- a/fs/btrfs/Kconfig
++++ b/fs/btrfs/Kconfig
+@@ -1,6 +1,5 @@
+ config BTRFS_FS
+-	tristate "Btrfs filesystem (EXPERIMENTAL) Unstable disk format"
+-	depends on EXPERIMENTAL
++	tristate "Btrfs filesystem Unstable disk format"
+ 	select LIBCRC32C
+ 	select ZLIB_INFLATE
+ 	select ZLIB_DEFLATE
+

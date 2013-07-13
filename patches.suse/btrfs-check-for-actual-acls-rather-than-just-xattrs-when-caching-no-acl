@@ -1,0 +1,74 @@
+From f23b5a59955c0ea13c6da211fb06f39348e3c794 Mon Sep 17 00:00:00 2001
+From: Josef Bacik <jbacik@fusionio.com>
+Date: Wed, 19 Jun 2013 10:16:26 -0400
+Subject: Btrfs: check for actual acls rather than just xattrs when caching no
+ acl
+Git-commit: f23b5a59955c0ea13c6da211fb06f39348e3c794
+Patch-mainline: v3.11-rc1
+
+We have an optimization that will go ahead and cache no acls on an inode if
+there are no xattrs on the inode.  This saves us a lookup later to check the
+acls for writes or any other access.  The problem is I use selinux so I always
+have an xattr on inodes, so make this test a little smarter and check for the
+actual acl hash on the key and if it isn't there then we still get to cache no
+acl which makes everybody who uses selinux a little happier.  Thanks,
+
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/inode.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index b7fa96f..8edcdf6 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -41,6 +41,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/mount.h>
+ #include <linux/btrfs.h>
++#include <linux/posix_acl_xattr.h>
+ #include "compat.h"
+ #include "ctree.h"
+ #include "disk-io.h"
+@@ -56,6 +57,7 @@
+ #include "free-space-cache.h"
+ #include "inode-map.h"
+ #include "backref.h"
++#include "hash.h"
+ 
+ struct btrfs_iget_args {
+ 	u64 ino;
+@@ -3300,8 +3302,17 @@ static noinline int acls_after_inode_item(struct extent_buffer *leaf,
+ {
+ 	u32 nritems = btrfs_header_nritems(leaf);
+ 	struct btrfs_key found_key;
++	static u64 xattr_access = 0;
++	static u64 xattr_default = 0;
+ 	int scanned = 0;
+ 
++	if (!xattr_access) {
++		xattr_access = btrfs_name_hash(POSIX_ACL_XATTR_ACCESS,
++					strlen(POSIX_ACL_XATTR_ACCESS));
++		xattr_default = btrfs_name_hash(POSIX_ACL_XATTR_DEFAULT,
++					strlen(POSIX_ACL_XATTR_DEFAULT));
++	}
++
+ 	slot++;
+ 	while (slot < nritems) {
+ 		btrfs_item_key_to_cpu(leaf, &found_key, slot);
+@@ -3311,8 +3322,11 @@ static noinline int acls_after_inode_item(struct extent_buffer *leaf,
+ 			return 0;
+ 
+ 		/* we found an xattr, assume we've got an acl */
+-		if (found_key.type == BTRFS_XATTR_ITEM_KEY)
+-			return 1;
++		if (found_key.type == BTRFS_XATTR_ITEM_KEY) {
++			if (found_key.offset == xattr_access ||
++			    found_key.offset == xattr_default)
++				return 1;
++		}
+ 
+ 		/*
+ 		 * we found a key greater than an xattr key, there can't
+

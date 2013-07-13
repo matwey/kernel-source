@@ -1,0 +1,71 @@
+From 180e001cd5fc2950dc6a7997dde5b65c954d0e79 Mon Sep 17 00:00:00 2001
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Thu, 14 Feb 2013 13:50:15 -0700
+Subject: btrfs: fixup/remove module.h usage as required
+Git-commit: 180e001cd5fc2950dc6a7997dde5b65c954d0e79
+Patch-mainline: v3.9-rc1
+
+We want to avoid module.h where posible, since it in turn includes
+nearly all of header space.  This means removing it where it is not
+required, and using export.h where we are only exporting symbols via
+EXPORT_SYMBOL and friends.
+
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/extent_io.c  | 1 -
+ fs/btrfs/extent_map.c | 1 -
+ fs/btrfs/sysfs.c      | 1 -
+ fs/btrfs/ulist.c      | 2 +-
+ 4 files changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/fs/btrfs/extent_io.c b/fs/btrfs/extent_io.c
+index 0306665..f173c5a 100644
+--- a/fs/btrfs/extent_io.c
++++ b/fs/btrfs/extent_io.c
+@@ -4,7 +4,6 @@
+ #include <linux/mm.h>
+ #include <linux/pagemap.h>
+ #include <linux/page-flags.h>
+-#include <linux/module.h>
+ #include <linux/spinlock.h>
+ #include <linux/blkdev.h>
+ #include <linux/swap.h>
+diff --git a/fs/btrfs/extent_map.c b/fs/btrfs/extent_map.c
+index fdb7a8d..2834ca5 100644
+--- a/fs/btrfs/extent_map.c
++++ b/fs/btrfs/extent_map.c
+@@ -1,6 +1,5 @@
+ #include <linux/err.h>
+ #include <linux/slab.h>
+-#include <linux/module.h>
+ #include <linux/spinlock.h>
+ #include <linux/hardirq.h>
+ #include "ctree.h"
+diff --git a/fs/btrfs/sysfs.c b/fs/btrfs/sysfs.c
+index daac9ae..5b326cd 100644
+--- a/fs/btrfs/sysfs.c
++++ b/fs/btrfs/sysfs.c
+@@ -21,7 +21,6 @@
+ #include <linux/spinlock.h>
+ #include <linux/completion.h>
+ #include <linux/buffer_head.h>
+-#include <linux/module.h>
+ #include <linux/kobject.h>
+ 
+ #include "ctree.h"
+diff --git a/fs/btrfs/ulist.c b/fs/btrfs/ulist.c
+index 99be4c1..ddc61ca 100644
+--- a/fs/btrfs/ulist.c
++++ b/fs/btrfs/ulist.c
+@@ -5,7 +5,7 @@
+  */
+ 
+ #include <linux/slab.h>
+-#include <linux/module.h>
++#include <linux/export.h>
+ #include "ulist.h"
+ 
+ /*
+

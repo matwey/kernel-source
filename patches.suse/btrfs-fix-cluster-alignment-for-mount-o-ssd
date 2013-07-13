@@ -1,0 +1,46 @@
+From 8de972b4faa4be9b2a3c53103e18d86092a5da45 Mon Sep 17 00:00:00 2001
+From: Chris Mason <chris.mason@fusionio.com>
+Date: Fri, 4 Jan 2013 15:39:43 -0500
+Subject: Btrfs: fix cluster alignment for mount -o ssd
+Git-commit: 8de972b4faa4be9b2a3c53103e18d86092a5da45
+Patch-mainline: v3.9-rc1
+
+With the new raid56 code, we want to make sure we're
+properly aligning our allocation clusters with -o ssd
+
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/extent-tree.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index 3345f68..f1340210 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -5715,6 +5715,7 @@ have_block_group:
+ 		 * lets look there
+ 		 */
+ 		if (last_ptr) {
++			unsigned long aligned_cluster;
+ 			/*
+ 			 * the refill lock keeps out other
+ 			 * people trying to start a new cluster
+@@ -5781,11 +5782,15 @@ refill_cluster:
+ 				goto unclustered_alloc;
+ 			}
+ 
++			aligned_cluster = max_t(unsigned long,
++						empty_cluster + empty_size,
++					      block_group->full_stripe_len);
++
+ 			/* allocate a cluster in this block group */
+ 			ret = btrfs_find_space_cluster(trans, root,
+ 					       block_group, last_ptr,
+ 					       search_start, num_bytes,
+-					       empty_cluster + empty_size);
++					       aligned_cluster);
+ 			if (ret == 0) {
+ 				/*
+ 				 * now pull our allocation out of this
+

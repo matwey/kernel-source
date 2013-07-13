@@ -1,0 +1,29 @@
+From e75206cfdc89f4b5361776443acba4c940770b30 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Wed, 6 Mar 2013 07:10:05 +0000
+Subject: Btrfs: cleanup unused function
+Git-commit: e75206cfdc89f4b5361776443acba4c940770b30
+Patch-mainline: v3.10-rc2
+
+btrfs_abort_devices() is no more used.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/disk-io.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/fs/btrfs/disk-io.h b/fs/btrfs/disk-io.h
+index 034d7dc..853c91d 100644
+--- a/fs/btrfs/disk-io.h
++++ b/fs/btrfs/disk-io.h
+@@ -96,7 +96,6 @@ int btrfs_add_log_tree(struct btrfs_trans_handle *trans,
+ int btrfs_cleanup_transaction(struct btrfs_root *root);
+ void btrfs_cleanup_one_transaction(struct btrfs_transaction *trans,
+ 				  struct btrfs_root *root);
+-void btrfs_abort_devices(struct btrfs_root *root);
+ struct btrfs_root *btrfs_create_tree(struct btrfs_trans_handle *trans,
+ 				     struct btrfs_fs_info *fs_info,
+ 				     u64 objectid);
+

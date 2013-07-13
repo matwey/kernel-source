@@ -1,0 +1,36 @@
+From 52b1de91ea07d1f5600b3cae789d5be9a1f61787 Mon Sep 17 00:00:00 2001
+From: Liu Bo <liub.liubo@gmail.com>
+Date: Tue, 30 Oct 2012 17:13:52 +0800
+Subject: btrfs: unpin_extent_cache: fix the typo and unnecessary arguements
+Git-commit: 52b1de91ea07d1f5600b3cae789d5be9a1f61787
+Patch-mainline: v3.8-rc1
+
+- unpint->unpin
+- prealloc is no more used
+
+Signed-off-by: Liu Bo <liub.liubo@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/extent_map.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/extent_map.c b/fs/btrfs/extent_map.c
+index b8cbc8d..ce9f792 100644
+--- a/fs/btrfs/extent_map.c
++++ b/fs/btrfs/extent_map.c
+@@ -234,12 +234,11 @@ static void try_merge_map(struct extent_map_tree *tree, struct extent_map *em)
+ }
+ 
+ /**
+- * unpint_extent_cache - unpin an extent from the cache
++ * unpin_extent_cache - unpin an extent from the cache
+  * @tree:	tree to unpin the extent in
+  * @start:	logical offset in the file
+  * @len:	length of the extent
+  * @gen:	generation that this extent has been modified in
+- * @prealloc:	if this is set we need to clear the prealloc flag
+  *
+  * Called after an extent has been written to disk properly.  Set the generation
+  * to the generation that actually added the file item to the inode so we know
+

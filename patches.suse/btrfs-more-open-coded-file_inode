@@ -1,0 +1,54 @@
+From 6d0379ec49d99530ae6e25ee5dcf2495caee0101 Mon Sep 17 00:00:00 2001
+From: Al Viro <viro@zeniv.linux.org.uk>
+Date: Sun, 16 Jun 2013 19:32:35 +0400
+Subject: btrfs: more open-coded file_inode()
+Git-commit: 6d0379ec49d99530ae6e25ee5dcf2495caee0101
+Patch-mainline: v3.11-rc1
+
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 0f81d67..cd7e96c 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -3881,7 +3881,7 @@ drop_write:
+ 
+ static long btrfs_ioctl_quota_rescan(struct file *file, void __user *arg)
+ {
+-	struct btrfs_root *root = BTRFS_I(fdentry(file)->d_inode)->root;
++	struct btrfs_root *root = BTRFS_I(file_inode(file))->root;
+ 	struct btrfs_ioctl_quota_rescan_args *qsa;
+ 	int ret;
+ 
+@@ -3914,7 +3914,7 @@ drop_write:
+ 
+ static long btrfs_ioctl_quota_rescan_status(struct file *file, void __user *arg)
+ {
+-	struct btrfs_root *root = BTRFS_I(fdentry(file)->d_inode)->root;
++	struct btrfs_root *root = BTRFS_I(file_inode(file))->root;
+ 	struct btrfs_ioctl_quota_rescan_args *qsa;
+ 	int ret = 0;
+ 
+@@ -4020,7 +4020,7 @@ out:
+ 
+ static int btrfs_ioctl_get_fslabel(struct file *file, void __user *arg)
+ {
+-	struct btrfs_root *root = BTRFS_I(fdentry(file)->d_inode)->root;
++	struct btrfs_root *root = BTRFS_I(file_inode(file))->root;
+ 	const char *label = root->fs_info->super_copy->label;
+ 	size_t len = strnlen(label, BTRFS_LABEL_SIZE);
+ 	int ret;
+@@ -4039,7 +4039,7 @@ static int btrfs_ioctl_get_fslabel(struct file *file, void __user *arg)
+ 
+ static int btrfs_ioctl_set_fslabel(struct file *file, void __user *arg)
+ {
+-	struct btrfs_root *root = BTRFS_I(fdentry(file)->d_inode)->root;
++	struct btrfs_root *root = BTRFS_I(file_inode(file))->root;
+ 	struct btrfs_super_block *super_block = root->fs_info->super_copy;
+ 	struct btrfs_trans_handle *trans;
+ 	char label[BTRFS_LABEL_SIZE];
+

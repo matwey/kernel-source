@@ -1,0 +1,57 @@
+From b1b195969fe6d936f8c8bb63abf7efd2cc4cd5cf Mon Sep 17 00:00:00 2001
+From: Stefan Behrens <sbehrens@giantdisaster.de>
+Date: Mon, 13 May 2013 14:42:57 +0000
+Subject: Btrfs: cleanup, btrfs_read_fs_root_no_name() doesn't return NULL
+Git-commit: b1b195969fe6d936f8c8bb63abf7efd2cc4cd5cf
+Patch-mainline: v3.11-rc1
+
+No need to check for NULL in send.c and disk-io.c.
+
+Signed-off-by: Stefan Behrens <sbehrens@giantdisaster.de>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/disk-io.c | 2 --
+ fs/btrfs/send.c    | 8 ++------
+ 2 files changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index df5169b..bc2ea9b 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -2821,8 +2821,6 @@ retry_root_backup:
+ 	location.offset = (u64)-1;
+ 
+ 	fs_info->fs_root = btrfs_read_fs_root_no_name(fs_info, &location);
+-	if (!fs_info->fs_root)
+-		goto fail_qgroup;
+ 	if (IS_ERR(fs_info->fs_root)) {
+ 		err = PTR_ERR(fs_info->fs_root);
+ 		goto fail_qgroup;
+diff --git a/fs/btrfs/send.c b/fs/btrfs/send.c
+index fedec7b..dc43fed 100644
+--- a/fs/btrfs/send.c
++++ b/fs/btrfs/send.c
+@@ -4654,10 +4654,6 @@ long btrfs_ioctl_send(struct file *mnt_file, void __user *arg_)
+ 			key.type = BTRFS_ROOT_ITEM_KEY;
+ 			key.offset = (u64)-1;
+ 			clone_root = btrfs_read_fs_root_no_name(fs_info, &key);
+-			if (!clone_root) {
+-				ret = -EINVAL;
+-				goto out;
+-			}
+ 			if (IS_ERR(clone_root)) {
+ 				ret = PTR_ERR(clone_root);
+ 				goto out;
+@@ -4673,8 +4669,8 @@ long btrfs_ioctl_send(struct file *mnt_file, void __user *arg_)
+ 		key.type = BTRFS_ROOT_ITEM_KEY;
+ 		key.offset = (u64)-1;
+ 		sctx->parent_root = btrfs_read_fs_root_no_name(fs_info, &key);
+-		if (!sctx->parent_root) {
+-			ret = -EINVAL;
++		if (IS_ERR(sctx->parent_root)) {
++			ret = PTR_ERR(sctx->parent_root);
+ 			goto out;
+ 		}
+ 	}
+

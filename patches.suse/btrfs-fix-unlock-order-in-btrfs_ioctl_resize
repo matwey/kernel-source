@@ -1,0 +1,30 @@
+From 18f39c416d18d74ac11d157e44247253d3fa30ae Mon Sep 17 00:00:00 2001
+From: Ilya Dryomov <idryomov@gmail.com>
+Date: Sun, 20 Jan 2013 15:57:57 +0200
+Subject: Btrfs: fix unlock order in btrfs_ioctl_resize
+Git-commit: 18f39c416d18d74ac11d157e44247253d3fa30ae
+Patch-mainline: v3.8-rc5
+
+Fix unlock order in btrfs_ioctl_resize().
+
+Signed-off-by: Ilya Dryomov <idryomov@gmail.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 259dd52..fcf1b1b 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -1446,8 +1446,8 @@ out_free:
+ 	kfree(vol_args);
+ out:
+ 	mutex_unlock(&root->fs_info->volume_mutex);
+-	mnt_drop_write_file(file);
+ 	atomic_set(&root->fs_info->mutually_exclusive_operation_running, 0);
++	mnt_drop_write_file(file);
+ 	return ret;
+ }
+ 
+

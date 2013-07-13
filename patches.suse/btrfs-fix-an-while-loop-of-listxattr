@@ -1,0 +1,30 @@
+From db2254bce4f19f458aaa05f9d00b39f413f7488c Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Mon, 26 Nov 2012 02:58:36 +0000
+Subject: Btrfs: fix an while-loop of listxattr
+Git-commit: db2254bce4f19f458aaa05f9d00b39f413f7488c
+Patch-mainline: v3.8-rc7
+
+If we found an invalid xattr dir item, we'd better try the next one instead.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/xattr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/xattr.c b/fs/btrfs/xattr.c
+index 3f4e2d6..e9d3840 100644
+--- a/fs/btrfs/xattr.c
++++ b/fs/btrfs/xattr.c
+@@ -265,7 +265,7 @@ ssize_t btrfs_listxattr(struct dentry *dentry, char *buffer, size_t size)
+ 
+ 		di = btrfs_item_ptr(leaf, slot, struct btrfs_dir_item);
+ 		if (verify_dir_item(root, leaf, di))
+-			continue;
++			goto next;
+ 
+ 		name_len = btrfs_dir_name_len(leaf, di);
+ 		total_size += name_len + 1;
+

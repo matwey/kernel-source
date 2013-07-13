@@ -1,0 +1,83 @@
+From: Jeff Mahoney <jeffm@suse.com>
+Subject: btrfs: handle lookup errors after subvol/snapshot creation
+Patch-mainline: Submitted 12 Jul 2013, linux-btrfs
+
+We perform a lookup of a new snapshot or subvolume to instantiate the
+dentry immediately after creation. If the lookup fails, we either BUG
+or return -ENOENT without further action, respectively.
+
+Neither action is really correct, though the BUG is probably the better
+of the two. If the lookup fails, it means that we reported a succesful
+creation that wasn't actually successful.
+
+This patch forces the fs read-only and reports the error instead. 
+
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c |   39 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 34 insertions(+), 5 deletions(-)
+
+--- a/fs/btrfs/ioctl.c	2013-07-12 13:00:41.038707405 -0400
++++ b/fs/btrfs/ioctl.c	2013-07-12 13:23:43.850654564 -0400
+@@ -378,6 +378,7 @@ static noinline int create_subvol(struct
+ 	struct btrfs_root *new_root;
+ 	struct btrfs_block_rsv block_rsv;
+ 	struct timespec cur_time = CURRENT_TIME;
++	struct inode *inode;
+ 	int ret;
+ 	int err;
+ 	u64 objectid;
+@@ -535,8 +536,26 @@ fail:
+ 	if (err && !ret)
+ 		ret = err;
+ 
+-	if (!ret)
+-		d_instantiate(dentry, btrfs_lookup_dentry(dir, dentry));
++	if (ret)
++		goto out;
++
++	inode = btrfs_lookup_dentry(dir, dentry);
++	if (IS_ERR_OR_NULL(inode)) {
++		/*
++		 * This isn't a routine lookup failure; This means that we
++		 * claimed to have successfully created the subvolume and
++		 * it's gone when we want to publish it.
++		 */
++		if (!inode)
++			ret = -EIO;
++		else
++			ret = PTR_ERR(inode);
++		btrfs_error(root->fs_info, ret,
++			    "failed to lookup newly created subvolume");
++		goto out;
++	}
++	d_instantiate(dentry, inode);
++
+ out:
+ 	btrfs_subvolume_release_metadata(root, &block_rsv, qgroup_reserved);
+ 	return ret;
+@@ -619,11 +638,21 @@ static int create_snapshot(struct btrfs_
+ 		goto fail;
+ 
+ 	inode = btrfs_lookup_dentry(dentry->d_parent->d_inode, dentry);
+-	if (IS_ERR(inode)) {
+-		ret = PTR_ERR(inode);
++	if (IS_ERR_OR_NULL(inode)) {
++		/*
++		 * This isn't a routine lookup failure; This means that we
++		 * claimed to have successfully created the snapshot and
++		 * it's gone when we want to publish it.
++		 */
++		if (!inode)
++			ret = -EIO;
++		else
++			ret = PTR_ERR(inode);
++		btrfs_error(root->fs_info, ret,
++			    "failed to lookup newly created snapshot");
+ 		goto fail;
+ 	}
+-	BUG_ON(!inode);
++
+ 	d_instantiate(dentry, inode);
+ 	ret = 0;
+ fail:

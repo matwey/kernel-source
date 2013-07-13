@@ -1,0 +1,34 @@
+From 3fb4037599a9f14b6c58e2a813aeb03bfa03dd8f Mon Sep 17 00:00:00 2001
+From: Jie Liu <jeff.liu@oracle.com>
+Date: Thu, 6 Jun 2013 13:38:50 +0000
+Subject: btrfs: fix the code comments for LZO compression workspace
+Git-commit: 3fb4037599a9f14b6c58e2a813aeb03bfa03dd8f
+Patch-mainline: v3.11-rc1
+
+Fix the code comments for lzo compression workspace.
+The buf item is used to store the decompressed data
+and cbuf is used to store the compressed data.
+
+Signed-off-by: Jie Liu <jeff.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/lzo.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/lzo.c b/fs/btrfs/lzo.c
+index 743b86f..f93151a 100644
+--- a/fs/btrfs/lzo.c
++++ b/fs/btrfs/lzo.c
+@@ -31,8 +31,8 @@
+ 
+ struct workspace {
+ 	void *mem;
+-	void *buf;	/* where compressed data goes */
+-	void *cbuf;	/* where decompressed data goes */
++	void *buf;	/* where decompressed data goes */
++	void *cbuf;	/* where compressed data goes */
+ 	struct list_head list;
+ };
+ 
+

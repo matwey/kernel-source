@@ -1,0 +1,73 @@
+From f9e4fb53938de5db01950c9dfe479703b2f5c964 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Mon, 7 Jan 2013 10:10:12 +0000
+Subject: Btrfs: fix a bug when llseek for delalloc bytes behind prealloc
+ extents
+Git-commit: f9e4fb53938de5db01950c9dfe479703b2f5c964
+Patch-mainline: v3.8-rc5
+
+xfstests case 285 complains.
+
+It it because btrfs did not try to find unwritten delalloc
+bytes(only dirty pages, not yet writeback) behind prealloc
+extents, it ends up finding nothing while we're with SEEK_DATA.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/file.c  |  9 ++++++---
+ fs/btrfs/inode.c | 11 ++++++++---
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
+index fa48051..841cfe3 100644
+--- a/fs/btrfs/file.c
++++ b/fs/btrfs/file.c
+@@ -2309,9 +2309,12 @@ static int find_desired_extent(struct inode *inode, loff_t *offset, int origin)
+ 					}
+ 				}
+ 
+-				*offset = start;
+-				free_extent_map(em);
+-				break;
++				if (!test_bit(EXTENT_FLAG_PREALLOC,
++					      &em->flags)) {
++					*offset = start;
++					free_extent_map(em);
++					break;
++				}
+ 			}
+ 		}
+ 
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 4ddcf79..ac98384 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -5623,10 +5623,13 @@ struct extent_map *btrfs_get_extent_fiemap(struct inode *inode, struct page *pag
+ 		return em;
+ 	if (em) {
+ 		/*
+-		 * if our em maps to a hole, there might
+-		 * actually be delalloc bytes behind it
++		 * if our em maps to
++		 * -  a hole or
++		 * -  a pre-alloc extent,
++		 * there might actually be delalloc bytes behind it.
+ 		 */
+-		if (em->block_start != EXTENT_MAP_HOLE)
++		if (em->block_start != EXTENT_MAP_HOLE &&
++		    !test_bit(EXTENT_FLAG_PREALLOC, &em->flags))
+ 			return em;
+ 		else
+ 			hole_em = em;
+@@ -5708,6 +5711,8 @@ struct extent_map *btrfs_get_extent_fiemap(struct inode *inode, struct page *pag
+ 			 */
+ 			em->block_start = hole_em->block_start;
+ 			em->block_len = hole_len;
++			if (test_bit(EXTENT_FLAG_PREALLOC, &hole_em->flags))
++				set_bit(EXTENT_FLAG_PREALLOC, &em->flags);
+ 		} else {
+ 			em->start = range_start;
+ 			em->len = found;
+

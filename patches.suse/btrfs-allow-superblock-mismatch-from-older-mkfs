@@ -1,0 +1,35 @@
+From 667e7d94a1683661cff5fe9a0fa0d7f8fdd2c007 Mon Sep 17 00:00:00 2001
+From: Chris Mason <chris.mason@fusionio.com>
+Date: Tue, 7 May 2013 11:00:13 -0400
+Subject: Btrfs: allow superblock mismatch from older mkfs
+Git-commit: 667e7d94a1683661cff5fe9a0fa0d7f8fdd2c007
+Patch-mainline: v3.10-rc2
+
+We've added new checks to make sure the super block crc is correct
+during mount.  A fresh filesystem from an older mkfs won't have the
+crc set.  This adds a warning when it finds a newly created filesystem
+but doesn't fail the mount.
+
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/disk-io.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index bc423f7..4e9ebe1 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -383,6 +383,11 @@ static int btrfs_check_super_csum(char *raw_disk_sb)
+ 
+ 		if (memcmp(raw_disk_sb, result, csum_size))
+ 			ret = 1;
++
++		if (ret && btrfs_super_generation(disk_sb) < 10) {
++			printk(KERN_WARNING "btrfs: super block crcs don't match, older mkfs detected\n");
++			ret = 0;
++		}
+ 	}
+ 
+ 	if (csum_type >= ARRAY_SIZE(btrfs_csum_sizes)) {
+

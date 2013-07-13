@@ -1,0 +1,32 @@
+From 210b907acfb414650dcdae9b470eb2fccac7996b Mon Sep 17 00:00:00 2001
+From: Wang Sheng-Hui <shhuiw@gmail.com>
+Date: Mon, 24 Sep 2012 08:47:23 +0800
+Subject: btrfs: remove unnecessary cur_trans set before goto loop in
+ join_transaction
+Git-commit: 210b907acfb414650dcdae9b470eb2fccac7996b
+Patch-mainline: v3.9-rc1
+
+In the big loop, cur_trans will be set fs_info->running_transaction
+before it's used. And after kmem_cache_free it and goto loop, it will
+be setup again. No need to setup it immediately after freed.
+
+Signed-off-by: Wang Sheng-Hui <shhuiw@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/transaction.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index 04bbfb1..68704e7 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -111,7 +111,6 @@ loop:
+ 		 * to redo the trans_no_join checks above
+ 		 */
+ 		kmem_cache_free(btrfs_transaction_cachep, cur_trans);
+-		cur_trans = fs_info->running_transaction;
+ 		goto loop;
+ 	} else if (fs_info->fs_state & BTRFS_SUPER_FLAG_ERROR) {
+ 		spin_unlock(&fs_info->trans_lock);
+

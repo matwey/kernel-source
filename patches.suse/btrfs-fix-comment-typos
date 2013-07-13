@@ -1,0 +1,71 @@
+From 2c016dc2cbd160acf099bee8e4d5c056a8b691b1 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Wed, 26 Dec 2012 15:32:17 +0800
+Subject: btrfs: fix comment typos
+Git-commit: 2c016dc2cbd160acf099bee8e4d5c056a8b691b1
+Patch-mainline: v3.9-rc1
+
+Convert 'hepler' to 'helper'.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/extent-tree.c | 6 +++---
+ fs/btrfs/relocation.c  | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index 06b2635..604befd 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -6482,7 +6482,7 @@ reada:
+ }
+ 
+ /*
+- * hepler to process tree block while walking down the tree.
++ * helper to process tree block while walking down the tree.
+  *
+  * when wc->stage == UPDATE_BACKREF, this function updates
+  * back refs for pointers in the block.
+@@ -6557,7 +6557,7 @@ static noinline int walk_down_proc(struct btrfs_trans_handle *trans,
+ }
+ 
+ /*
+- * hepler to process tree block pointer.
++ * helper to process tree block pointer.
+  *
+  * when wc->stage == DROP_REFERENCE, this function checks
+  * reference count of the block pointed to. if the block
+@@ -6695,7 +6695,7 @@ skip:
+ }
+ 
+ /*
+- * hepler to process tree block while walking up the tree.
++ * helper to process tree block while walking up the tree.
+  *
+  * when wc->stage == DROP_REFERENCE, this function drops
+  * reference count on the block.
+diff --git a/fs/btrfs/relocation.c b/fs/btrfs/relocation.c
+index 776f0aa..c188e81 100644
+--- a/fs/btrfs/relocation.c
++++ b/fs/btrfs/relocation.c
+@@ -3474,7 +3474,7 @@ out:
+ }
+ 
+ /*
+- * hepler to find all tree blocks that reference a given data extent
++ * helper to find all tree blocks that reference a given data extent
+  */
+ static noinline_for_stack
+ int add_data_references(struct reloc_control *rc,
+@@ -3568,7 +3568,7 @@ int add_data_references(struct reloc_control *rc,
+ }
+ 
+ /*
+- * hepler to find next unprocessed extent
++ * helper to find next unprocessed extent
+  */
+ static noinline_for_stack
+ int find_next_extent(struct btrfs_trans_handle *trans,
+

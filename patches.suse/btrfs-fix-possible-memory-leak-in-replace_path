@@ -1,0 +1,37 @@
+From 379cde741b220091d2124fb500b178b90ad7f460 Mon Sep 17 00:00:00 2001
+From: Stefan Behrens <sbehrens@giantdisaster.de>
+Date: Wed, 8 May 2013 08:56:09 +0000
+Subject: Btrfs: fix possible memory leak in replace_path()
+Git-commit: 379cde741b220091d2124fb500b178b90ad7f460
+Patch-mainline: v3.10-rc2
+
+In replace_path(), if read_tree_block() fails, we cannot return
+directly, we should free some allocated memory otherwise memory
+leak happens.
+
+Similar to Wang's "Btrfs: fix possible memory leak in the
+find_parent_nodes()" patch, the current commit fixes an issue that
+is related to the "Btrfs: fix all callers of read_tree_block"
+commit.
+
+Signed-off-by: Stefan Behrens <sbehrens@giantdisaster.de>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/relocation.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/relocation.c b/fs/btrfs/relocation.c
+index 704a1b8..5c5b8bb 100644
+--- a/fs/btrfs/relocation.c
++++ b/fs/btrfs/relocation.c
+@@ -1773,7 +1773,7 @@ again:
+ 			if (!eb || !extent_buffer_uptodate(eb)) {
+ 				ret = (!eb) ? -ENOMEM : -EIO;
+ 				free_extent_buffer(eb);
+-				return ret;
++				break;
+ 			}
+ 			btrfs_tree_lock(eb);
+ 			if (cow) {
+

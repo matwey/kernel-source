@@ -1,0 +1,37 @@
+From 1f0905ec156eec8f12cd593bc564551770319720 Mon Sep 17 00:00:00 2001
+From: Chris Mason <chris.mason@fusionio.com>
+Date: Tue, 5 Feb 2013 10:01:42 -0500
+Subject: Btrfs: remove conflicting check for minimum number of devices in
+ raid56
+Git-commit: 1f0905ec156eec8f12cd593bc564551770319720
+Patch-mainline: v3.9-rc1
+
+The device removal code was incorrectly checking against two different limits for
+raid5 and raid6.
+
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/volumes.c | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index c372264..77620f2 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -1392,14 +1392,6 @@ int btrfs_rm_device(struct btrfs_root *root, char *device_path)
+ 	}
+ 	btrfs_dev_replace_unlock(&root->fs_info->dev_replace);
+ 
+-	if ((all_avail & (BTRFS_BLOCK_GROUP_RAID5 |
+-			  BTRFS_BLOCK_GROUP_RAID6) && num_devices <= 3)) {
+-		printk(KERN_ERR "btrfs: unable to go below three devices "
+-		       "on raid5 or raid6\n");
+-		ret = -EINVAL;
+-		goto out;
+-	}
+-
+ 	if ((all_avail & BTRFS_BLOCK_GROUP_RAID10) && num_devices <= 4) {
+ 		printk(KERN_ERR "btrfs: unable to go below four devices "
+ 		       "on raid10\n");
+

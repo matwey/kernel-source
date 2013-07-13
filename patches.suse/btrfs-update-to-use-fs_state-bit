@@ -1,0 +1,33 @@
+From d763448286377b8a0e3f179372e9e292bef3c337 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Mon, 11 Mar 2013 09:20:00 +0000
+Subject: Btrfs: update to use fs_state bit
+Git-commit: d763448286377b8a0e3f179372e9e292bef3c337
+Patch-mainline: v3.9-rc5
+
+Now that we use bit operation to check fs_state, update
+btrfs_free_fs_root()'s checker, otherwise we get back to
+memory leak case.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/disk-io.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 7d84651..127b23e 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -3253,7 +3253,7 @@ void btrfs_free_fs_root(struct btrfs_fs_info *fs_info, struct btrfs_root *root)
+ 	if (btrfs_root_refs(&root->root_item) == 0)
+ 		synchronize_srcu(&fs_info->subvol_srcu);
+ 
+-	if (fs_info->fs_state & BTRFS_SUPER_FLAG_ERROR) {
++	if (test_bit(BTRFS_FS_STATE_ERROR, &fs_info->fs_state)) {
+ 		btrfs_free_log(NULL, root);
+ 		btrfs_free_log_root_tree(NULL, fs_info);
+ 	}
+

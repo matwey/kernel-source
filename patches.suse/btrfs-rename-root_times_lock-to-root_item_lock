@@ -1,0 +1,135 @@
+From 5f3ab90a72f98adbf00c50ac2d4d2b47cf4a9685 Mon Sep 17 00:00:00 2001
+From: Anand Jain <anand.jain@oracle.com>
+Date: Fri, 7 Dec 2012 09:28:54 +0000
+Subject: Btrfs: rename root_times_lock to root_item_lock
+Git-commit: 5f3ab90a72f98adbf00c50ac2d4d2b47cf4a9685
+Patch-mainline: v3.8-rc7
+
+Originally root_times_lock was introduced as part of send/receive
+code however newly developed patch to label the subvol reused
+the same lock, so renaming it for a meaningful name.
+
+Signed-off-by: Anand Jain <anand.jain@oracle.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.c     | 16 ++++++++--------
+ fs/btrfs/ctree.h     |  2 +-
+ fs/btrfs/disk-io.c   |  2 +-
+ fs/btrfs/root-tree.c |  4 ++--
+ fs/btrfs/send.c      |  8 ++++----
+ 5 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+index 5c2cf99..01efcbc 100644
+--- a/fs/btrfs/ctree.c
++++ b/fs/btrfs/ctree.c
+@@ -5114,13 +5114,13 @@ int btrfs_compare_trees(struct btrfs_root *left_root,
+ 	right_path->search_commit_root = 1;
+ 	right_path->skip_locking = 1;
+ 
+-	spin_lock(&left_root->root_times_lock);
++	spin_lock(&left_root->root_item_lock);
+ 	left_start_ctransid = btrfs_root_ctransid(&left_root->root_item);
+-	spin_unlock(&left_root->root_times_lock);
++	spin_unlock(&left_root->root_item_lock);
+ 
+-	spin_lock(&right_root->root_times_lock);
++	spin_lock(&right_root->root_item_lock);
+ 	right_start_ctransid = btrfs_root_ctransid(&right_root->root_item);
+-	spin_unlock(&right_root->root_times_lock);
++	spin_unlock(&right_root->root_item_lock);
+ 
+ 	trans = btrfs_join_transaction(left_root);
+ 	if (IS_ERR(trans)) {
+@@ -5215,15 +5215,15 @@ int btrfs_compare_trees(struct btrfs_root *left_root,
+ 				goto out;
+ 			}
+ 
+-			spin_lock(&left_root->root_times_lock);
++			spin_lock(&left_root->root_item_lock);
+ 			ctransid = btrfs_root_ctransid(&left_root->root_item);
+-			spin_unlock(&left_root->root_times_lock);
++			spin_unlock(&left_root->root_item_lock);
+ 			if (ctransid != left_start_ctransid)
+ 				left_start_ctransid = 0;
+ 
+-			spin_lock(&right_root->root_times_lock);
++			spin_lock(&right_root->root_item_lock);
+ 			ctransid = btrfs_root_ctransid(&right_root->root_item);
+-			spin_unlock(&right_root->root_times_lock);
++			spin_unlock(&right_root->root_item_lock);
+ 			if (ctransid != right_start_ctransid)
+ 				right_start_ctransid = 0;
+ 
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index 6ba56ae..313a6ad 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -1645,7 +1645,7 @@ struct btrfs_root {
+ 
+ 	int force_cow;
+ 
+-	spinlock_t root_times_lock;
++	spinlock_t root_item_lock;
+ };
+ 
+ struct btrfs_ioctl_defrag_range_args {
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 3229531..faf1826 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -1204,7 +1204,7 @@ static void __setup_root(u32 nodesize, u32 leafsize, u32 sectorsize,
+ 	root->root_key.objectid = objectid;
+ 	root->anon_dev = 0;
+ 
+-	spin_lock_init(&root->root_times_lock);
++	spin_lock_init(&root->root_item_lock);
+ }
+ 
+ static int __must_check find_and_setup_root(struct btrfs_root *tree_root,
+diff --git a/fs/btrfs/root-tree.c b/fs/btrfs/root-tree.c
+index eb923d0..668af53 100644
+--- a/fs/btrfs/root-tree.c
++++ b/fs/btrfs/root-tree.c
+@@ -548,9 +548,9 @@ void btrfs_update_root_times(struct btrfs_trans_handle *trans,
+ 	struct btrfs_root_item *item = &root->root_item;
+ 	struct timespec ct = CURRENT_TIME;
+ 
+-	spin_lock(&root->root_times_lock);
++	spin_lock(&root->root_item_lock);
+ 	item->ctransid = cpu_to_le64(trans->transid);
+ 	item->ctime.sec = cpu_to_le64(ct.tv_sec);
+ 	item->ctime.nsec = cpu_to_le32(ct.tv_nsec);
+-	spin_unlock(&root->root_times_lock);
++	spin_unlock(&root->root_item_lock);
+ }
+diff --git a/fs/btrfs/send.c b/fs/btrfs/send.c
+index e78b297..5445454 100644
+--- a/fs/btrfs/send.c
++++ b/fs/btrfs/send.c
+@@ -4397,9 +4397,9 @@ static int full_send_tree(struct send_ctx *sctx)
+ 	if (!path)
+ 		return -ENOMEM;
+ 
+-	spin_lock(&send_root->root_times_lock);
++	spin_lock(&send_root->root_item_lock);
+ 	start_ctransid = btrfs_root_ctransid(&send_root->root_item);
+-	spin_unlock(&send_root->root_times_lock);
++	spin_unlock(&send_root->root_item_lock);
+ 
+ 	key.objectid = BTRFS_FIRST_FREE_OBJECTID;
+ 	key.type = BTRFS_INODE_ITEM_KEY;
+@@ -4422,9 +4422,9 @@ join_trans:
+ 	 * Make sure the tree has not changed after re-joining. We detect this
+ 	 * by comparing start_ctransid and ctransid. They should always match.
+ 	 */
+-	spin_lock(&send_root->root_times_lock);
++	spin_lock(&send_root->root_item_lock);
+ 	ctransid = btrfs_root_ctransid(&send_root->root_item);
+-	spin_unlock(&send_root->root_times_lock);
++	spin_unlock(&send_root->root_item_lock);
+ 
+ 	if (ctransid != start_ctransid) {
+ 		WARN(1, KERN_WARNING "btrfs: the root that you're trying to "
+

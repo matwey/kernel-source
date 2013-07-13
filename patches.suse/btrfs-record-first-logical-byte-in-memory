@@ -1,0 +1,95 @@
+From a1897fddd28daf6b23d05a30dc2a18836f77f8e3 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Thu, 27 Dec 2012 09:01:23 +0000
+Subject: Btrfs: record first logical byte in memory
+Git-commit: a1897fddd28daf6b23d05a30dc2a18836f77f8e3
+Patch-mainline: v3.9-rc1
+
+This'd save us a rbtree search which may become expensive in large filesystem.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.h       |  1 +
+ fs/btrfs/disk-io.c     |  1 +
+ fs/btrfs/extent-tree.c | 19 ++++++++++++++++++-
+ 3 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index 22f012d..9ee099f 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -1250,6 +1250,7 @@ struct btrfs_fs_info {
+ 
+ 	/* block group cache stuff */
+ 	spinlock_t block_group_cache_lock;
++	u64 first_logical_byte;
+ 	struct rb_root block_group_cache_tree;
+ 
+ 	/* keep track of unallocated space */
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 1db8a99..04f98e3 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -2130,6 +2130,7 @@ int open_ctree(struct super_block *sb,
+ 
+ 	spin_lock_init(&fs_info->block_group_cache_lock);
+ 	fs_info->block_group_cache_tree = RB_ROOT;
++	fs_info->first_logical_byte = (u64)-1;
+ 
+ 	extent_io_tree_init(&fs_info->freed_extents[0],
+ 			     fs_info->btree_inode->i_mapping);
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index 825f23b..82400b2 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -161,6 +161,10 @@ static int btrfs_add_block_group_cache(struct btrfs_fs_info *info,
+ 	rb_link_node(&block_group->cache_node, parent, p);
+ 	rb_insert_color(&block_group->cache_node,
+ 			&info->block_group_cache_tree);
++
++	if (info->first_logical_byte > block_group->key.objectid)
++		info->first_logical_byte = block_group->key.objectid;
++
+ 	spin_unlock(&info->block_group_cache_lock);
+ 
+ 	return 0;
+@@ -202,8 +206,11 @@ block_group_cache_tree_search(struct btrfs_fs_info *info, u64 bytenr,
+ 			break;
+ 		}
+ 	}
+-	if (ret)
++	if (ret) {
+ 		btrfs_get_block_group(ret);
++		if (bytenr == 0 && info->first_logical_byte > ret->key.objectid)
++			info->first_logical_byte = ret->key.objectid;
++	}
+ 	spin_unlock(&info->block_group_cache_lock);
+ 
+ 	return ret;
+@@ -4848,6 +4855,13 @@ static u64 first_logical_byte(struct btrfs_root *root, u64 search_start)
+ 	struct btrfs_block_group_cache *cache;
+ 	u64 bytenr;
+ 
++	spin_lock(&root->fs_info->block_group_cache_lock);
++	bytenr = root->fs_info->first_logical_byte;
++	spin_unlock(&root->fs_info->block_group_cache_lock);
++
++	if (bytenr < (u64)-1)
++		return bytenr;
++
+ 	cache = btrfs_lookup_first_block_group(root->fs_info, search_start);
+ 	if (!cache)
+ 		return 0;
+@@ -8059,6 +8073,9 @@ int btrfs_remove_block_group(struct btrfs_trans_handle *trans,
+ 	spin_lock(&root->fs_info->block_group_cache_lock);
+ 	rb_erase(&block_group->cache_node,
+ 		 &root->fs_info->block_group_cache_tree);
++
++	if (root->fs_info->first_logical_byte == block_group->key.objectid)
++		root->fs_info->first_logical_byte = (u64)-1;
+ 	spin_unlock(&root->fs_info->block_group_cache_lock);
+ 
+ 	down_write(&block_group->space_info->groups_sem);
+

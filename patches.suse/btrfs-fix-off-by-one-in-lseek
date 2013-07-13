@@ -1,0 +1,29 @@
+From 1214b53f90131fee1f950010c43e92455fe598ab Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Mon, 7 Jan 2013 03:53:08 +0000
+Subject: Btrfs: fix off-by-one in lseek
+Git-commit: 1214b53f90131fee1f950010c43e92455fe598ab
+Patch-mainline: v3.8-rc5
+
+Lock end is inclusive.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/file.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
+index 20452c1..fa48051 100644
+--- a/fs/btrfs/file.c
++++ b/fs/btrfs/file.c
+@@ -2242,6 +2242,7 @@ static int find_desired_extent(struct inode *inode, loff_t *offset, int origin)
+ 	if (lockend <= lockstart)
+ 		lockend = lockstart + root->sectorsize;
+ 
++	lockend--;
+ 	len = lockend - lockstart + 1;
+ 
+ 	len = max_t(u64, len, root->sectorsize);
+

@@ -1,0 +1,73 @@
+From 85965600f50b2e57746363d0ace4ab6b2bcb9c27 Mon Sep 17 00:00:00 2001
+From: David Sterba <dsterba@suse.cz>
+Date: Tue, 30 Apr 2013 16:51:59 +0000
+Subject: btrfs: show compiled-in config features at module load time
+Git-commit: 85965600f50b2e57746363d0ace4ab6b2bcb9c27
+Patch-mainline: v3.11-rc1
+
+We want to know if there are debugging features compiled in, this may
+affect performance. The message is printed before the sanity checks.
+Also kill version.h file that serves no purpose, we don't use any
+version tag for kernel module.
+
+Signed-off-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/super.c   | 15 +++++++++++++--
+ fs/btrfs/version.h |  4 ----
+ 2 files changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index 107c6e2..0805dd3 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -51,7 +51,6 @@
+ #include "print-tree.h"
+ #include "xattr.h"
+ #include "volumes.h"
+-#include "version.h"
+ #include "export.h"
+ #include "compression.h"
+ #include "rcu-string.h"
+@@ -1685,6 +1684,18 @@ static void btrfs_interface_exit(void)
+ 		printk(KERN_INFO "btrfs: misc_deregister failed for control device\n");
+ }
+ 
++static void btrfs_print_info(void)
++{
++	printk(KERN_INFO "Btrfs loaded"
++#ifdef CONFIG_BTRFS_DEBUG
++			", debug=on"
++#endif
++#ifdef CONFIG_BTRFS_FS_CHECK_INTEGRITY
++			", integrity-checker=on"
++#endif
++			"\n");
++}
++
+ static int __init init_btrfs_fs(void)
+ {
+ 	int err;
+@@ -1733,9 +1744,9 @@ static int __init init_btrfs_fs(void)
+ 
+ 	btrfs_init_lockdep();
+ 
++	btrfs_print_info();
+ 	btrfs_test_free_space_cache();
+ 
+-	printk(KERN_INFO "%s loaded\n", BTRFS_BUILD_VERSION);
+ 	return 0;
+ 
+ unregister_ioctl:
+diff --git a/fs/btrfs/version.h b/fs/btrfs/version.h
+deleted file mode 100644
+index 9bf3946..0000000
+--- a/fs/btrfs/version.h
++++ /dev/null
+@@ -1,4 +0,0 @@
+-#ifndef __BTRFS_VERSION_H
+-#define __BTRFS_VERSION_H
+-#define BTRFS_BUILD_VERSION "Btrfs"
+-#endif
+

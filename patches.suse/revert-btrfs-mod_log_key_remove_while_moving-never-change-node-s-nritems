@@ -1,0 +1,39 @@
+From 4c3e696981a565aace08678e70c40709a85f9b2b Mon Sep 17 00:00:00 2001
+From: Chris Mason <chris.mason@fusionio.com>
+Date: Tue, 18 Dec 2012 15:43:18 -0500
+Subject: Revert "Btrfs: MOD_LOG_KEY_REMOVE_WHILE_MOVING never change node's
+ nritems"
+Git-commit: 4c3e696981a565aace08678e70c40709a85f9b2b
+Patch-mainline: v3.8-rc7
+
+This reverts commit 95c80bb1f6b24b57058d971ed252b2c1c5121b51.
+
+The bug addressed by this commit was fixed differently back in 3.6
+
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+index c7b67cf..569c0df 100644
+--- a/fs/btrfs/ctree.c
++++ b/fs/btrfs/ctree.c
+@@ -1138,13 +1138,13 @@ __tree_mod_log_rewind(struct extent_buffer *eb, u64 time_seq,
+ 		switch (tm->op) {
+ 		case MOD_LOG_KEY_REMOVE_WHILE_FREEING:
+ 			BUG_ON(tm->slot < n);
+-		case MOD_LOG_KEY_REMOVE:
+-			n++;
+ 		case MOD_LOG_KEY_REMOVE_WHILE_MOVING:
++		case MOD_LOG_KEY_REMOVE:
+ 			btrfs_set_node_key(eb, &tm->key, tm->slot);
+ 			btrfs_set_node_blockptr(eb, tm->slot, tm->blockptr);
+ 			btrfs_set_node_ptr_generation(eb, tm->slot,
+ 						      tm->generation);
++			n++;
+ 			break;
+ 		case MOD_LOG_KEY_REPLACE:
+ 			BUG_ON(tm->slot >= n);
+

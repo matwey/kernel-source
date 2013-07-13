@@ -1,0 +1,47 @@
+From a09a0a705dd6c80bc96b5e6f18dc103d4e1a7d63 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Mon, 11 Mar 2013 09:20:58 +0000
+Subject: Btrfs: get better concurrency for snapshot-aware defrag work
+Git-commit: a09a0a705dd6c80bc96b5e6f18dc103d4e1a7d63
+Patch-mainline: v3.9-rc3
+
+Using spinning case instead of blocking will result in better concurrency
+overall.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/inode.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 13ab4de..1f268888 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -2312,6 +2312,7 @@ again:
+ 	key.type = BTRFS_EXTENT_DATA_KEY;
+ 	key.offset = start;
+ 
++	path->leave_spinning = 1;
+ 	if (merge) {
+ 		struct btrfs_file_extent_item *fi;
+ 		u64 extent_len;
+@@ -2368,6 +2369,7 @@ again:
+ 
+ 	btrfs_mark_buffer_dirty(leaf);
+ 	inode_add_bytes(inode, len);
++	btrfs_release_path(path);
+ 
+ 	ret = btrfs_inc_extent_ref(trans, root, new->bytenr,
+ 			new->disk_len, 0,
+@@ -2381,6 +2383,7 @@ again:
+ 	ret = 1;
+ out_free_path:
+ 	btrfs_release_path(path);
++	path->leave_spinning = 0;
+ 	btrfs_end_transaction(trans, root);
+ out_unlock:
+ 	unlock_extent_cached(&BTRFS_I(inode)->io_tree, lock_start, lock_end,
+

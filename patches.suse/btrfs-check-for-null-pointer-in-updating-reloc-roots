@@ -1,0 +1,30 @@
+From 8f71f3e0e4fb5a2445fb93d3057a33aefc4aa30d Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Mon, 4 Mar 2013 16:25:36 +0000
+Subject: Btrfs: check for NULL pointer in updating reloc roots
+Git-commit: 8f71f3e0e4fb5a2445fb93d3057a33aefc4aa30d
+Patch-mainline: v3.9-rc2
+
+Add a check for NULL pointer to avoid invalid reference.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/relocation.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/fs/btrfs/relocation.c b/fs/btrfs/relocation.c
+index ba5a321..16e0c6f 100644
+--- a/fs/btrfs/relocation.c
++++ b/fs/btrfs/relocation.c
+@@ -1269,6 +1269,8 @@ static int __update_reloc_root(struct btrfs_root *root, int del)
+ 	}
+ 	spin_unlock(&rc->reloc_root_tree.lock);
+ 
++	if (!node)
++		return 0;
+ 	BUG_ON((struct btrfs_root *)node->data != root);
+ 
+ 	if (!del) {
+

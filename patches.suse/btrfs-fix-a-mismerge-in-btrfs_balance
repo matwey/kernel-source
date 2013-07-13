@@ -1,0 +1,43 @@
+From 3a01aa7a25274308fe813a6237f678aed901cea3 Mon Sep 17 00:00:00 2001
+From: Ilya Dryomov <idryomov@gmail.com>
+Date: Wed, 6 Mar 2013 01:57:55 -0700
+Subject: Btrfs: fix a mismerge in btrfs_balance()
+Git-commit: 3a01aa7a25274308fe813a6237f678aed901cea3
+Patch-mainline: v3.9-rc2
+
+Raid56 merge (merge commit e942f88) had mistakenly removed a call to
+__cancel_balance(), which resulted in balance not cleaning up after itself
+after a successful finish.  (Cleanup includes switching the state, removing
+the balance item and releasing mut_ex_op testnset lock.)  Bring it back.
+
+Reported-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Ilya Dryomov <idryomov@gmail.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/volumes.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+--- a/fs/btrfs/volumes.c	2013-07-12 10:54:37.280486132 -0400
++++ b/fs/btrfs/volumes.c	2013-07-12 10:55:37.492641363 -0400
+@@ -3075,7 +3075,6 @@ int btrfs_balance(struct btrfs_balance_c
+ 	int ret;
+ 	u64 num_devices;
+ 	unsigned seq;
+-	int cancel = 0;
+ 
+ 	if (btrfs_fs_closing(fs_info) ||
+ 	    atomic_read(&fs_info->balance_pause_req) ||
+@@ -3239,11 +3238,8 @@ int btrfs_balance(struct btrfs_balance_c
+ 
+ 	if ((ret && ret != -ECANCELED && ret != -ENOSPC) ||
+ 	    balance_need_close(fs_info)) {
+-		cancel = 1;
+-	}
+-
+-	if (cancel)
+ 		__cancel_balance(fs_info);
++	}
+ 
+ 	wake_up(&fs_info->balance_wait_q);
+ 

@@ -1,0 +1,34 @@
+From af1be4f851db4f4975f0139211a6561776ef37c0 Mon Sep 17 00:00:00 2001
+From: Stefan Behrens <sbehrens@giantdisaster.de>
+Date: Tue, 27 Nov 2012 17:39:51 +0000
+Subject: Btrfs: fix a scrub regression in case of write errors
+Git-commit: af1be4f851db4f4975f0139211a6561776ef37c0
+Patch-mainline: v3.8-rc7
+
+This regression was introduced by the device-replace patches.
+Scrub immediately stops checking those disks that have write errors.
+This is nothing that happens in the real world, but it is wrong
+since scrub is the tool to detect and repair defects. Fix it.
+
+Signed-off-by: Stefan Behrens <sbehrens@giantdisaster.de>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/scrub.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/scrub.c b/fs/btrfs/scrub.c
+index 30ba997..8db6a64 100644
+--- a/fs/btrfs/scrub.c
++++ b/fs/btrfs/scrub.c
+@@ -2657,7 +2657,8 @@ int scrub_enumerate_chunks(struct scrub_ctx *sctx,
+ 		btrfs_put_block_group(cache);
+ 		if (ret)
+ 			break;
+-		if (atomic64_read(&dev_replace->num_write_errors) > 0) {
++		if (is_dev_replace &&
++		    atomic64_read(&dev_replace->num_write_errors) > 0) {
+ 			ret = -EIO;
+ 			break;
+ 		}
+

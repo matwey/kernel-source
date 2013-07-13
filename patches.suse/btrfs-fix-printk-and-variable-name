@@ -1,0 +1,44 @@
+From 926ccfef82413623ae0e5c3a32d0cad2b9f33e96 Mon Sep 17 00:00:00 2001
+From: Masanari Iida <standby24x7@gmail.com>
+Date: Thu, 1 Nov 2012 00:16:32 +0900
+Subject: Btrfs: Fix printk and variable name
+Git-commit: 926ccfef82413623ae0e5c3a32d0cad2b9f33e96
+Patch-mainline: v3.8-rc1
+
+Correct spelling typo in btrfs.
+
+Signed-off-by: Masanari Iida <standby24x7@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.h   | 2 +-
+ fs/btrfs/volumes.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index c72ead8..596617e 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -413,7 +413,7 @@ struct btrfs_root_backup {
+ 	__le64 bytes_used;
+ 	__le64 num_devices;
+ 	/* future */
+-	__le64 unsed_64[4];
++	__le64 unused_64[4];
+ 
+ 	u8 tree_root_level;
+ 	u8 chunk_root_level;
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index 0f5ebb7..e3c6ee3 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -4294,7 +4294,7 @@ int btrfs_map_bio(struct btrfs_root *root, int rw, struct bio *bio,
+ 
+ 			rcu_read_lock();
+ 			name = rcu_dereference(dev->name);
+-			pr_debug("btrfs_map_bio: rw %d, secor=%llu, dev=%lu "
++			pr_debug("btrfs_map_bio: rw %d, sector=%llu, dev=%lu "
+ 				 "(%s id %llu), size=%u\n", rw,
+ 				 (u64)bio->bi_sector, (u_long)dev->bdev->bd_dev,
+ 				 name->str, dev->devid, bio->bi_size);
+

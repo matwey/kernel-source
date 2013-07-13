@@ -1,0 +1,46 @@
+From 1a65e24b0bb7dde48cac4a2bf74d5558f9e32ba7 Mon Sep 17 00:00:00 2001
+From: Chris Mason <chris.mason@fusionio.com>
+Date: Wed, 6 Feb 2013 12:06:02 -0500
+Subject: Btrfs: move d_instantiate outside the transaction during mksubvol
+Git-commit: 1a65e24b0bb7dde48cac4a2bf74d5558f9e32ba7
+Patch-mainline: v3.8-rc7
+
+Dave Sterba triggered a lockdep complaint about lock ordering
+between the sb_internal lock and the cleaner semaphore.
+
+btrfs_lookup_dentry() checks for orphans if we're looking up
+the inode for a subvolume, and subvolume creation is triggering
+the lookup with a transaction running.
+
+This commit moves the d_instantiate after the transaction closes.
+
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index afbf3ac..a31cd93 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -515,7 +515,6 @@ static noinline int create_subvol(struct btrfs_root *root,
+ 
+ 	BUG_ON(ret);
+ 
+-	d_instantiate(dentry, btrfs_lookup_dentry(dir, dentry));
+ fail:
+ 	if (async_transid) {
+ 		*async_transid = trans->transid;
+@@ -525,6 +524,10 @@ fail:
+ 	}
+ 	if (err && !ret)
+ 		ret = err;
++
++	if (!ret)
++		d_instantiate(dentry, btrfs_lookup_dentry(dir, dentry));
++
+ 	return ret;
+ }
+ 
+

@@ -1,0 +1,47 @@
+From 0a3896d0f563d4472c75ab2c26afd8940d24b5a1 Mon Sep 17 00:00:00 2001
+From: Josef Bacik <jbacik@fusionio.com>
+Date: Fri, 19 Apr 2013 14:37:26 -0400
+Subject: Btrfs: fix possible infinite loop in slow caching
+Git-commit: 0a3896d0f563d4472c75ab2c26afd8940d24b5a1
+Patch-mainline: v3.10-rc2
+
+So I noticed there is an infinite loop in the slow caching code.  If we return 1
+when we hit the end of the tree, so we could end up caching the last block group
+the slow way and suddenly we're looping forever because we just keep
+re-searching and trying again.  Fix this by only doing btrfs_next_leaf() if we
+don't need_resched().  Thanks,
+
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/extent-tree.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index 8464d36..fa57965 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -419,8 +419,7 @@ again:
+ 			if (ret)
+ 				break;
+ 
+-			if (need_resched() ||
+-			    btrfs_next_leaf(extent_root, path)) {
++			if (need_resched()) {
+ 				caching_ctl->progress = last;
+ 				btrfs_release_path(path);
+ 				up_read(&fs_info->extent_commit_sem);
+@@ -428,6 +427,12 @@ again:
+ 				cond_resched();
+ 				goto again;
+ 			}
++
++			ret = btrfs_next_leaf(extent_root, path);
++			if (ret < 0)
++				goto err;
++			if (ret)
++				break;
+ 			leaf = path->nodes[0];
+ 			nritems = btrfs_header_nritems(leaf);
+ 			continue;
+

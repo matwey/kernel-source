@@ -1,0 +1,36 @@
+From 6379ef9fb2482a92b5fe09f927d6ce1f989c0c6d Mon Sep 17 00:00:00 2001
+From: Naohiro Aota <naota@elisp.net>
+Date: Thu, 6 Jun 2013 09:56:34 +0000
+Subject: btrfs: Drop inode if inode root is NULL
+Git-commit: 6379ef9fb2482a92b5fe09f927d6ce1f989c0c6d
+Patch-mainline: v3.10-rc6
+
+There is a path where btrfs_drop_inode() is called with its inode's root
+is NULL: In btrfs_new_inode(), when btrfs_set_inode_index() fails,
+iput() is called. We should handle this case before taking look at the
+root->root_item.
+
+Signed-off-by: Naohiro Aota <naota@elisp.net>
+Reviewed-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/inode.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 23c596c..c931a4d 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -8011,6 +8011,9 @@ int btrfs_drop_inode(struct inode *inode)
+ {
+ 	struct btrfs_root *root = BTRFS_I(inode)->root;
+ 
++	if (root == NULL)
++		return 1;
++
+ 	/* the snap/subvol tree is on deleting */
+ 	if (btrfs_root_refs(&root->root_item) == 0 &&
+ 	    root != root->fs_info->tree_root)
+

@@ -1,0 +1,33 @@
+From a70c6172e714c70439b8321a201635f56a178913 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Wed, 19 Jun 2013 18:20:17 +0800
+Subject: Btrfs: fix wrong mirror number tuning
+Git-commit: a70c6172e714c70439b8321a201635f56a178913
+Patch-mainline: v3.11-rc1
+
+Now reading the data from the target device of the replace operation is allowed,
+so the mirror number that is greater than the stripes number of a chunk is valid,
+we will tune it when we find there is no target device later. Fix it.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/volumes.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index c58bf19..7789598 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -4420,9 +4420,6 @@ static int __btrfs_map_block(struct btrfs_fs_info *fs_info, int rw,
+ 	map = (struct map_lookup *)em->bdev;
+ 	offset = logical - em->start;
+ 
+-	if (mirror_num > map->num_stripes)
+-		mirror_num = 0;
+-
+ 	stripe_len = map->stripe_len;
+ 	stripe_nr = offset;
+ 	/*
+

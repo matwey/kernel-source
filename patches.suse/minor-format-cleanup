@@ -1,0 +1,33 @@
+From 1c89cdd1ce1b8b9ff7bca64bc9beea2c917e5693 Mon Sep 17 00:00:00 2001
+From: Andreas Philipp <philipp.andreas@gmail.com>
+Date: Sat, 11 May 2013 11:12:54 +0000
+Subject: Minor format cleanup.
+Git-commit: 1c89cdd1ce1b8b9ff7bca64bc9beea2c917e5693
+Patch-mainline: v3.11-rc1
+
+Clean up the format of the definitions of BTRFS_BLOCK_GROUP_RAID5 and
+BTRFS_BLOCK_GROUP_RAID6.
+
+Signed-off-by: Andreas Philipp <philipp.andreas@gmail.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index e36e97b..d354de3 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -961,8 +961,8 @@ struct btrfs_dev_replace_item {
+ #define BTRFS_BLOCK_GROUP_RAID1		(1ULL << 4)
+ #define BTRFS_BLOCK_GROUP_DUP		(1ULL << 5)
+ #define BTRFS_BLOCK_GROUP_RAID10	(1ULL << 6)
+-#define BTRFS_BLOCK_GROUP_RAID5    (1 << 7)
+-#define BTRFS_BLOCK_GROUP_RAID6    (1 << 8)
++#define BTRFS_BLOCK_GROUP_RAID5         (1ULL << 7)
++#define BTRFS_BLOCK_GROUP_RAID6         (1ULL << 8)
+ #define BTRFS_BLOCK_GROUP_RESERVED	BTRFS_AVAIL_ALLOC_BIT_SINGLE
+ 
+ enum btrfs_raid_types {
+

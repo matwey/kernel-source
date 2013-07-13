@@ -1,0 +1,29 @@
+From aa8259145ecb8d432685c1167a194094559647a1 Mon Sep 17 00:00:00 2001
+From: David Sterba <dsterba@suse.cz>
+Date: Tue, 19 Mar 2013 11:50:59 +0000
+Subject: btrfs: update kconfig title
+Git-commit: aa8259145ecb8d432685c1167a194094559647a1
+Patch-mainline: v3.10-rc2
+
+The Kconfig title does not make much sense after the cleanup of
+CONFIG_EXPERIMENTAL option, align the wording with other filesystems.
+
+Signed-off-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/Kconfig b/fs/btrfs/Kconfig
+index d5bfcb7..0f5374c 100644
+--- a/fs/btrfs/Kconfig
++++ b/fs/btrfs/Kconfig
+@@ -1,5 +1,5 @@
+ config BTRFS_FS
+-	tristate "Btrfs filesystem Unstable disk format"
++	tristate "Btrfs filesystem support"
+ 	select LIBCRC32C
+ 	select ZLIB_INFLATE
+ 	select ZLIB_DEFLATE
+

@@ -1,0 +1,42 @@
+From 1c697d4acc2e10b2a65b22abba2687a2897ecd74 Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@redhat.com>
+Date: Thu, 31 Jan 2013 00:54:56 +0000
+Subject: btrfs: annotate intentional switch case fallthroughs
+Git-commit: 1c697d4acc2e10b2a65b22abba2687a2897ecd74
+Patch-mainline: v3.9-rc1
+
+This keeps static checkers happy.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.c | 1 +
+ fs/btrfs/super.c | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+index 6eff0fa..3544401 100644
+--- a/fs/btrfs/ctree.c
++++ b/fs/btrfs/ctree.c
+@@ -1138,6 +1138,7 @@ __tree_mod_log_rewind(struct extent_buffer *eb, u64 time_seq,
+ 		switch (tm->op) {
+ 		case MOD_LOG_KEY_REMOVE_WHILE_FREEING:
+ 			BUG_ON(tm->slot < n);
++			/* Fallthrough */
+ 		case MOD_LOG_KEY_REMOVE_WHILE_MOVING:
+ 		case MOD_LOG_KEY_REMOVE:
+ 			btrfs_set_node_key(eb, &tm->key, tm->slot);
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index 06537d2..976f6aa 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -437,6 +437,7 @@ int btrfs_parse_options(struct btrfs_root *root, char *options)
+ 		case Opt_compress_force:
+ 		case Opt_compress_force_type:
+ 			compress_force = true;
++			/* Fallthrough */
+ 		case Opt_compress:
+ 		case Opt_compress_type:
+ 			if (token == Opt_compress ||
+

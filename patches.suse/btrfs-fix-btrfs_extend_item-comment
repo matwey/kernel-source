@@ -1,0 +1,35 @@
+From 7e21f14d179ee8973a9b18552854c9934fcbe370 Mon Sep 17 00:00:00 2001
+From: Stefan Behrens <sbehrens@giantdisaster.de>
+Date: Tue, 7 May 2013 12:23:30 +0200
+Subject: btrfs: fix btrfs_extend_item() comment
+Git-commit: 7e21f14d179ee8973a9b18552854c9934fcbe370
+Patch-mainline: v3.11-rc1
+
+The size parameter to btrfs_extend_item() is the number of bytes
+to add to the item, not the size of the item after the operation
+(like it is for btrfs_truncate_item(), there the size parameter
+is not the number of bytes to take away, but the total size of
+the item after truncation).
+Fix it in the comment.
+
+Signed-off-by: Stefan Behrens <sbehrens@giantdisaster.de>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+index 02fae7f..17dffe33 100644
+--- a/fs/btrfs/ctree.c
++++ b/fs/btrfs/ctree.c
+@@ -4430,7 +4430,7 @@ void btrfs_truncate_item(struct btrfs_root *root, struct btrfs_path *path,
+ }
+ 
+ /*
+- * make the item pointed to by the path bigger, data_size is the new size.
++ * make the item pointed to by the path bigger, data_size is the added size.
+  */
+ void btrfs_extend_item(struct btrfs_root *root, struct btrfs_path *path,
+ 		       u32 data_size)
+

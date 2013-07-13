@@ -1,0 +1,48 @@
+From bf023ecfcaf114c410759f375073e78b0871c120 Mon Sep 17 00:00:00 2001
+From: Ilya Dryomov <idryomov@gmail.com>
+Date: Tue, 12 Feb 2013 16:27:46 +0000
+Subject: Btrfs: eliminate a use-after-free in btrfs_balance()
+Git-commit: bf023ecfcaf114c410759f375073e78b0871c120
+Patch-mainline: v3.9-rc1
+
+Commit 5af3e8cc introduced a use-after-free at volumes.c:3139: bctl is freed
+above in __cancel_balance() in all cases except for balance pause.  Fix this
+by moving the offending check a couple statements above, the meaning of the
+check is preserved.
+
+Reported-by: Chris Mason <chris.mason@fusionio.com>
+Signed-off-by: Ilya Dryomov <idryomov@gmail.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/volumes.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index 305b6a6..d778e96 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -3195,6 +3195,11 @@ int btrfs_balance(struct btrfs_balance_control *bctl,
+ 	mutex_lock(&fs_info->balance_mutex);
+ 	atomic_dec(&fs_info->balance_running);
+ 
++	if (bctl->sys.flags & BTRFS_BALANCE_ARGS_CONVERT) {
++		fs_info->num_tolerated_disk_barrier_failures =
++			btrfs_calc_num_tolerated_disk_barrier_failures(fs_info);
++	}
++
+ 	if (bargs) {
+ 		memset(bargs, 0, sizeof(*bargs));
+ 		update_ioctl_balance_args(fs_info, 0, bargs);
+@@ -3205,11 +3210,6 @@ int btrfs_balance(struct btrfs_balance_control *bctl,
+ 		cancel = 1;
+	}
+ 
+-	if (bctl->sys.flags & BTRFS_BALANCE_ARGS_CONVERT) {
+-		fs_info->num_tolerated_disk_barrier_failures =
+-			btrfs_calc_num_tolerated_disk_barrier_failures(fs_info);
+-	}
+-
+ 	if (cancel)
+ 		__cancel_balance(fs_info);
+ 

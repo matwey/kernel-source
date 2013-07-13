@@ -1,0 +1,32 @@
+From 90b6d2830a72ff008c9bbc8dfbf7aaec90be458f Mon Sep 17 00:00:00 2001
+From: Wang Sheng-Hui <shhuiw@gmail.com>
+Date: Fri, 14 Jun 2013 16:21:24 +0800
+Subject: Btrfs: fix the comment typo for btrfs_attach_transaction_barrier
+Git-commit: 90b6d2830a72ff008c9bbc8dfbf7aaec90be458f
+Patch-mainline: v3.11-rc1
+
+The comment is for btrfs_attach_transaction_barrier, not for
+btrfs_attach_transaction. Fix the typo.
+
+Signed-off-by: Wang Sheng-Hui <shhuiw@gmail.com>
+Acked-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/transaction.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index c916ebd..bcfa32c 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -529,7 +529,7 @@ struct btrfs_trans_handle *btrfs_attach_transaction(struct btrfs_root *root)
+ }
+ 
+ /*
+- * btrfs_attach_transaction() - catch the running transaction
++ * btrfs_attach_transaction_barrier() - catch the running transaction
+  *
+  * It is similar to the above function, the differentia is this one
+  * will wait for all the inactive transactions until they fully
+

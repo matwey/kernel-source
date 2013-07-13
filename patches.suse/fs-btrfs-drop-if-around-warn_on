@@ -1,0 +1,86 @@
+From 6c1500f22a7be3a24ad3dffcdbf04be3f676521b Mon Sep 17 00:00:00 2001
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sat, 3 Nov 2012 20:30:18 +0000
+Subject: fs/btrfs: drop if around WARN_ON
+Git-commit: 6c1500f22a7be3a24ad3dffcdbf04be3f676521b
+Patch-mainline: v3.8-rc7
+
+Just use WARN_ON rather than an if containing only WARN_ON(1).
+
+A simplified version of the semantic patch that makes this transformation
+is as follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+@@
+expression e;
+@@
+- if (e) WARN_ON(1);
++ WARN_ON(e);
+// </smpl>
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Reviewed-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/backref.c | 3 +--
+ fs/btrfs/ctree.c   | 9 +++------
+ fs/btrfs/inode.c   | 3 +--
+ 3 files changed, 5 insertions(+), 10 deletions(-)
+
+diff --git a/fs/btrfs/backref.c b/fs/btrfs/backref.c
+index 208d8aa..a321952 100644
+--- a/fs/btrfs/backref.c
++++ b/fs/btrfs/backref.c
+@@ -890,8 +890,7 @@ again:
+ 	while (!list_empty(&prefs)) {
+ 		ref = list_first_entry(&prefs, struct __prelim_ref, list);
+ 		list_del(&ref->list);
+-		if (ref->count < 0)
+-			WARN_ON(1);
++		WARN_ON(ref->count < 0);
+ 		if (ref->count && ref->root_id && ref->parent == 0) {
+ 			/* no parent == root of tree */
+ 			ret = ulist_add(roots, ref->root_id, 0, GFP_NOFS);
+diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+index 0e4adb0..5c2cf99 100644
+--- a/fs/btrfs/ctree.c
++++ b/fs/btrfs/ctree.c
+@@ -1464,10 +1464,8 @@ int btrfs_realloc_node(struct btrfs_trans_handle *trans,
+ 	if (cache_only && parent_level != 1)
+ 		return 0;
+ 
+-	if (trans->transaction != root->fs_info->running_transaction)
+-		WARN_ON(1);
+-	if (trans->transid != root->fs_info->generation)
+-		WARN_ON(1);
++	WARN_ON(trans->transaction != root->fs_info->running_transaction);
++	WARN_ON(trans->transid != root->fs_info->generation);
+ 
+ 	parent_nritems = btrfs_header_nritems(parent);
+ 	blocksize = btrfs_level_size(root, parent_level - 1);
+@@ -3398,8 +3396,7 @@ static noinline int __push_leaf_right(struct btrfs_trans_handle *trans,
+ 	if (push_items == 0)
+ 		goto out_unlock;
+ 
+-	if (!empty && push_items == left_nritems)
+-		WARN_ON(1);
++	WARN_ON(!empty && push_items == left_nritems);
+ 
+ 	/* push left to right */
+ 	right_nritems = btrfs_header_nritems(right);
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 6dca345..e8733fa 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -1675,8 +1675,7 @@ static noinline int add_pending_csums(struct btrfs_trans_handle *trans,
+ int btrfs_set_extent_delalloc(struct inode *inode, u64 start, u64 end,
+ 			      struct extent_state **cached_state)
+ {
+-	if ((end & (PAGE_CACHE_SIZE - 1)) == 0)
+-		WARN_ON(1);
++	WARN_ON((end & (PAGE_CACHE_SIZE - 1)) == 0);
+ 	return set_extent_delalloc(&BTRFS_I(inode)->io_tree, start, end,
+ 				   cached_state, GFP_NOFS);
+ }
+

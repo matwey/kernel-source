@@ -1,0 +1,81 @@
+From ff7c1d33551862c86f7737fe88edc3e499d291e6 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Mon, 26 Nov 2012 08:41:29 +0000
+Subject: Btrfs: don't start a new transaction when starting sync
+Git-commit: ff7c1d33551862c86f7737fe88edc3e499d291e6
+Patch-mainline: v3.8-rc7
+
+If there is no running transaction in the fs, we needn't start a new one when
+we want to start sync.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c       | 14 ++++++++++----
+ fs/btrfs/transaction.c | 13 ++++++++-----
+ 2 files changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 5022e62..7b1f614 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -3065,16 +3065,22 @@ static noinline long btrfs_ioctl_start_sync(struct btrfs_root *root,
+ 	u64 transid;
+ 	int ret;
+ 
+-	trans = btrfs_start_transaction(root, 0);
+-	if (IS_ERR(trans))
+-		return PTR_ERR(trans);
++	trans = btrfs_attach_transaction(root);
++	if (IS_ERR(trans)) {
++		if (PTR_ERR(trans) != -ENOENT)
++			return PTR_ERR(trans);
++
++		/* No running transaction, don't bother */
++		transid = root->fs_info->last_trans_committed;
++		goto out;
++	}
+ 	transid = trans->transid;
+ 	ret = btrfs_commit_transaction_async(trans, root, 0);
+ 	if (ret) {
+ 		btrfs_end_transaction(trans, root);
+ 		return ret;
+ 	}
+-
++out:
+ 	if (argp)
+ 		if (copy_to_user(argp, &transid, sizeof(transid)))
+ 			return -EFAULT;
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index bcc6b65..8db401f 100644
+--- a/fs/btrfs/transaction.c
++++ b/fs/btrfs/transaction.c
+@@ -1307,9 +1307,10 @@ static void do_async_commit(struct work_struct *work)
+ 	 * We've got freeze protection passed with the transaction.
+ 	 * Tell lockdep about it.
+ 	 */
+-	rwsem_acquire_read(
+-		&ac->root->fs_info->sb->s_writers.lock_map[SB_FREEZE_FS-1],
+-		0, 1, _THIS_IP_);
++	if (ac->newtrans->type < TRANS_JOIN_NOLOCK)
++		rwsem_acquire_read(
++		     &ac->root->fs_info->sb->s_writers.lock_map[SB_FREEZE_FS-1],
++		     0, 1, _THIS_IP_);
+ 
+ 	current->journal_info = ac->newtrans;
+ 
+@@ -1347,8 +1348,10 @@ int btrfs_commit_transaction_async(struct btrfs_trans_handle *trans,
+ 	 * Tell lockdep we've released the freeze rwsem, since the
+ 	 * async commit thread will be the one to unlock it.
+ 	 */
+-	rwsem_release(&root->fs_info->sb->s_writers.lock_map[SB_FREEZE_FS-1],
+-		      1, _THIS_IP_);
++	if (trans->type < TRANS_JOIN_NOLOCK)
++		rwsem_release(
++			&root->fs_info->sb->s_writers.lock_map[SB_FREEZE_FS-1],
++			1, _THIS_IP_);
+ 
+ 	schedule_delayed_work(&ac->work, 0);
+ 
+

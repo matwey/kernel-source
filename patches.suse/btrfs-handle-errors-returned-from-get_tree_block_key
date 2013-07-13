@@ -1,0 +1,54 @@
+From 34c2b29079ba505a1803fa620b5f116f07e48258 Mon Sep 17 00:00:00 2001
+From: David Sterba <dsterba@suse.cz>
+Date: Fri, 26 Apr 2013 12:56:04 +0000
+Subject: btrfs: handle errors returned from get_tree_block_key
+Git-commit: 34c2b29079ba505a1803fa620b5f116f07e48258
+Patch-mainline: v3.10-rc2
+
+Signed-off-by: David Sterba <dsterba@suse.cz>
+Reviewed-by: Zach Brown <zab@redhat.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/relocation.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/fs/btrfs/relocation.c b/fs/btrfs/relocation.c
+index d338df4..704a1b8 100644
+--- a/fs/btrfs/relocation.c
++++ b/fs/btrfs/relocation.c
+@@ -2875,7 +2875,7 @@ int relocate_tree_blocks(struct btrfs_trans_handle *trans,
+ 	path = btrfs_alloc_path();
+ 	if (!path) {
+ 		err = -ENOMEM;
+-		goto out_path;
++		goto out_free_blocks;
+ 	}
+ 
+ 	rb_node = rb_first(blocks);
+@@ -2889,8 +2889,11 @@ int relocate_tree_blocks(struct btrfs_trans_handle *trans,
+ 	rb_node = rb_first(blocks);
+ 	while (rb_node) {
+ 		block = rb_entry(rb_node, struct tree_block, rb_node);
+-		if (!block->key_ready)
+-			get_tree_block_key(rc, block);
++		if (!block->key_ready) {
++			err = get_tree_block_key(rc, block);
++			if (err)
++				goto out_free_path;
++		}
+ 		rb_node = rb_next(rb_node);
+ 	}
+ 
+@@ -2917,8 +2920,9 @@ int relocate_tree_blocks(struct btrfs_trans_handle *trans,
+ out:
+ 	err = finish_pending_nodes(trans, rc, path, err);
+ 
++out_free_path:
+ 	btrfs_free_path(path);
+-out_path:
++out_free_blocks:
+ 	free_block_list(blocks);
+ 	return err;
+ }
+

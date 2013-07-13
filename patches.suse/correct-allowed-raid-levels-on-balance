@@ -1,0 +1,46 @@
+From 8250dabedb633e162bce89f2aacf5e65fa9e6464 Mon Sep 17 00:00:00 2001
+From: Andreas Philipp <philipp.andreas@gmail.com>
+Date: Sat, 11 May 2013 11:13:03 +0000
+Subject: Correct allowed raid levels on balance.
+Git-commit: 8250dabedb633e162bce89f2aacf5e65fa9e6464
+Patch-mainline: v3.10-rc2
+
+Raid5 with 3 devices is well defined while the old logic allowed
+raid5 only with a minimum of 4 devices when converting the block group
+profile via btrfs balance. Creating a raid5 with just three devices
+using mkfs.btrfs worked always as expected. This is now fixed and the
+whole logic is rewritten.
+
+Signed-off-by: Andreas Philipp <philipp.andreas@gmail.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/volumes.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index a191bac..062e930 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -3120,14 +3120,13 @@ int btrfs_balance(struct btrfs_balance_control *bctl,
+ 	allowed = BTRFS_AVAIL_ALLOC_BIT_SINGLE;
+ 	if (num_devices == 1)
+ 		allowed |= BTRFS_BLOCK_GROUP_DUP;
+-	else if (num_devices < 4)
++	else if (num_devices > 1)
+ 		allowed |= (BTRFS_BLOCK_GROUP_RAID0 | BTRFS_BLOCK_GROUP_RAID1);
+-	else
+-		allowed |= (BTRFS_BLOCK_GROUP_RAID0 | BTRFS_BLOCK_GROUP_RAID1 |
+-				BTRFS_BLOCK_GROUP_RAID10 |
+-				BTRFS_BLOCK_GROUP_RAID5 |
+-				BTRFS_BLOCK_GROUP_RAID6);
+-
++	if (num_devices > 2)
++		allowed |= BTRFS_BLOCK_GROUP_RAID5;
++	if (num_devices > 3)
++		allowed |= (BTRFS_BLOCK_GROUP_RAID10 |
++			    BTRFS_BLOCK_GROUP_RAID6);
+ 	if ((bctl->data.flags & BTRFS_BALANCE_ARGS_CONVERT) &&
+ 	    (!alloc_profile_is_valid(bctl->data.target, 1) ||
+ 	     (bctl->data.target & ~allowed))) {
+

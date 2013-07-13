@@ -1,0 +1,40 @@
+From a52f4cd2b1a863a42c1cb268b1cddad451cdfede Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Wed, 1 May 2013 16:23:41 +0000
+Subject: Btrfs: fix off-by-one in fiemap
+Git-commit: a52f4cd2b1a863a42c1cb268b1cddad451cdfede
+Patch-mainline: v3.10-rc2
+
+lock_extent/unlock_extent expect an exclusive end.
+
+Tested-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/extent_io.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/extent_io.c b/fs/btrfs/extent_io.c
+index d2ac518..3e6e410 100644
+--- a/fs/btrfs/extent_io.c
++++ b/fs/btrfs/extent_io.c
+@@ -3989,7 +3989,7 @@ int extent_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
+ 		last_for_get_extent = isize;
+ 	}
+ 
+-	lock_extent_bits(&BTRFS_I(inode)->io_tree, start, start + len, 0,
++	lock_extent_bits(&BTRFS_I(inode)->io_tree, start, start + len - 1, 0,
+ 			 &cached_state);
+ 
+ 	em = get_extent_skip_holes(inode, start, last_for_get_extent,
+@@ -4076,7 +4076,7 @@ int extent_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
+ out_free:
+ 	free_extent_map(em);
+ out:
+-	unlock_extent_cached(&BTRFS_I(inode)->io_tree, start, start + len,
++	unlock_extent_cached(&BTRFS_I(inode)->io_tree, start, start + len - 1,
+ 			     &cached_state, GFP_NOFS);
+ 	return ret;
+ }
+

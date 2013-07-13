@@ -1,0 +1,42 @@
+From aa8b57aa3d1c06ca53312294ee6dfc767ee3ddb3 Mon Sep 17 00:00:00 2001
+From: Kent Overstreet <koverstreet@google.com>
+Date: Tue, 5 Feb 2013 15:19:29 -0800
+Subject: block: Use bio_sectors() more consistently
+Git-commit: aa8b57aa3d1c06ca53312294ee6dfc767ee3ddb3 (partial)
+Patch-mainline: v3.10-rc1
+
+Bunch of places in the code weren't using it where they could be -
+this'll reduce the size of the patch that puts bi_sector/bi_size/bi_idx
+into a struct bvec_iter.
+
+Signed-off-by: Kent Overstreet <koverstreet@google.com>
+CC: Jens Axboe <axboe@kernel.dk>
+CC: "Ed L. Cashin" <ecashin@coraid.com>
+CC: Nick Piggin <npiggin@kernel.dk>
+CC: Jiri Kosina <jkosina@suse.cz>
+CC: Jim Paris <jim@jtan.com>
+CC: Geoff Levand <geoff@infradead.org>
+CC: Alasdair Kergon <agk@redhat.com>
+CC: dm-devel@redhat.com
+CC: Neil Brown <neilb@suse.de>
+CC: Steven Rostedt <rostedt@goodmis.org>
+Acked-by: Ed Cashin <ecashin@coraid.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+
+ fs/btrfs/volumes.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index 5989a92..d90e048 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -5166,7 +5166,7 @@ static int bio_size_ok(struct block_device *bdev, struct bio *bio,
+ 	}
+ 
+ 	prev = &bio->bi_io_vec[bio->bi_vcnt - 1];
+-	if ((bio->bi_size >> 9) > max_sectors)
++	if (bio_sectors(bio) > max_sectors)
+ 		return 0;
+ 
+ 	if (!q->merge_bvec_fn)

@@ -1,0 +1,46 @@
+From 6a7a665d78c5dd8bc76a010648c4e7d84517ab5a Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Fri, 19 Oct 2012 09:50:53 +0000
+Subject: Btrfs: reorder tree mod log operations in deleting a pointer
+Git-commit: 6a7a665d78c5dd8bc76a010648c4e7d84517ab5a
+Patch-mainline: v3.8-rc7
+
+Since we don't use MOD_LOG_KEY_REMOVE_WHILE_MOVING to add nritems
+during rewinding, we should insert a MOD_LOG_KEY_REMOVE operation first.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+index b12c039..4d518bd 100644
+--- a/fs/btrfs/ctree.c
++++ b/fs/btrfs/ctree.c
+@@ -4609,6 +4609,12 @@ static void del_ptr(struct btrfs_trans_handle *trans, struct btrfs_root *root,
+ 	u32 nritems;
+ 	int ret;
+ 
++	if (tree_mod_log && level) {
++		ret = tree_mod_log_insert_key(root->fs_info, parent, slot,
++					      MOD_LOG_KEY_REMOVE);
++		BUG_ON(ret < 0);
++	}
++
+ 	nritems = btrfs_header_nritems(parent);
+ 	if (slot != nritems - 1) {
+ 		if (tree_mod_log && level)
+@@ -4619,10 +4625,6 @@ static void del_ptr(struct btrfs_trans_handle *trans, struct btrfs_root *root,
+ 			      btrfs_node_key_ptr_offset(slot + 1),
+ 			      sizeof(struct btrfs_key_ptr) *
+ 			      (nritems - slot - 1));
+-	} else if (tree_mod_log && level) {
+-		ret = tree_mod_log_insert_key(root->fs_info, parent, slot,
+-					      MOD_LOG_KEY_REMOVE);
+-		BUG_ON(ret < 0);
+ 	}
+ 
+ 	nritems--;
+

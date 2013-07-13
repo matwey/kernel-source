@@ -1,0 +1,37 @@
+From fe5fafbebd7e648aa6cb0a419dc812188b4d4ac8 Mon Sep 17 00:00:00 2001
+From: Josef Bacik <jbacik@fusionio.com>
+Date: Thu, 24 Jan 2013 13:49:14 -0500
+Subject: Revert "Btrfs: fix permissions of empty files not affected by umask"
+Git-commit: fe5fafbebd7e648aa6cb0a419dc812188b4d4ac8
+Patch-mainline: v3.9-rc1
+
+This reverts commit 2794ed013b3551cbae887ea1b93c52aaacb7370d.
+
+Wasn't supposed to get used in btrfs_mknod, it was supposed to be in
+btrfs_create, which was done in commit
+9185aa587b7425f8f4520da2e66792f5f3c2b815.
+
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/inode.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index d1e3a2d..60ec758 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -5036,12 +5036,6 @@ static int btrfs_mknod(struct inode *dir, struct dentry *dentry,
+ 		goto out_unlock;
+ 	}
+ 
+-	err = btrfs_update_inode(trans, root, inode);
+-	if (err) {
+-		drop_inode = 1;
+-		goto out_unlock;
+-	}
+-
+ 	/*
+ 	* If the active LSM wants to access the inode during
+ 	* d_instantiate it needs these. Smack checks to see
+

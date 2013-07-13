@@ -1,0 +1,32 @@
+From ecc7ada77b5cd1ac525db8f7d4d266e88af66cc7 Mon Sep 17 00:00:00 2001
+From: Tsutomu Itoh <t-itoh@jp.fujitsu.com>
+Date: Fri, 19 Apr 2013 01:04:46 +0000
+Subject: Btrfs: fix error handling in btrfs_ioctl_send()
+Git-commit: ecc7ada77b5cd1ac525db8f7d4d266e88af66cc7
+Patch-mainline: v3.10-rc2
+
+fget() returns NULL if error. So, we should check NULL or not.
+
+Signed-off-by: Tsutomu Itoh <t-itoh@jp.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/send.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/btrfs/send.c b/fs/btrfs/send.c
+index 158b919..2037fc0 100644
+--- a/fs/btrfs/send.c
++++ b/fs/btrfs/send.c
+@@ -4612,8 +4612,8 @@ long btrfs_ioctl_send(struct file *mnt_file, void __user *arg_)
+ 	sctx->flags = arg->flags;
+ 
+ 	sctx->send_filp = fget(arg->send_fd);
+-	if (IS_ERR(sctx->send_filp)) {
+-		ret = PTR_ERR(sctx->send_filp);
++	if (!sctx->send_filp) {
++		ret = -EBADF;
+ 		goto out;
+ 	}
+ 
+

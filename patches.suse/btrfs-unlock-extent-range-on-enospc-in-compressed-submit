@@ -1,0 +1,39 @@
+From fdf8e2ea3cba9ef03087482b11258d844d6cbea3 Mon Sep 17 00:00:00 2001
+From: Josef Bacik <jbacik@fusionio.com>
+Date: Fri, 14 Jun 2013 16:58:23 -0400
+Subject: Btrfs: unlock extent range on enospc in compressed submit
+Git-commit: fdf8e2ea3cba9ef03087482b11258d844d6cbea3
+Patch-mainline: v3.11-rc1
+
+A user reported a deadlock where the async submit thread was blocked on the
+lock_extent() lock, and then everybody behind him was locked on the page lock
+for the page he was holding.  Looking at the code I noticed we do not unlock the
+extent range when we get ENOSPC and goto retry.  This is bad because we
+immediately try to lock that range again to do the cow, which will cause a
+deadlock.  Fix this by unlocking the range.  Thanks,
+
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/inode.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index a2df469..509112d 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -700,8 +700,12 @@ retry:
+ 			async_extent->nr_pages = 0;
+ 			async_extent->pages = NULL;
+ 
+-			if (ret == -ENOSPC)
++			if (ret == -ENOSPC) {
++				unlock_extent(io_tree, async_extent->start,
++					      async_extent->start +
++					      async_extent->ram_size - 1);
+ 				goto retry;
++			}
+ 			goto out_free;
+ 		}
+ 
+

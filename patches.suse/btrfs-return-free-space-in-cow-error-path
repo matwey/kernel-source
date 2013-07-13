@@ -1,0 +1,69 @@
+From ace68bac61b338e52924d87ebdd0fa8c7439f896 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Mon, 22 Apr 2013 10:53:47 +0000
+Subject: Btrfs: return free space in cow error path
+Git-commit: ace68bac61b338e52924d87ebdd0fa8c7439f896
+Patch-mainline: v3.10-rc2
+
+Replace some BUG_ONs with proper handling and take allocated space back to
+free space cache for later use.
+
+We don't have to worry about extent maps since they'd be freed in releasepage
+path.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/inode.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 33a9e9d..0eab7b6 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -920,7 +920,8 @@ static noinline int __cow_file_range(struct btrfs_trans_handle *trans,
+ 		}
+ 
+ 		em = alloc_extent_map();
+-		BUG_ON(!em); /* -ENOMEM */
++		if (!em)
++			goto out_reserve;
+ 		em->start = start;
+ 		em->orig_start = em->start;
+ 		ram_size = ins.offset;
+@@ -947,11 +948,14 @@ static noinline int __cow_file_range(struct btrfs_trans_handle *trans,
+ 			btrfs_drop_extent_cache(inode, start,
+ 						start + ram_size - 1, 0);
+ 		}
++		if (ret)
++			goto out_reserve;
+ 
+ 		cur_alloc_size = ins.offset;
+ 		ret = btrfs_add_ordered_extent(inode, start, ins.objectid,
+ 					       ram_size, cur_alloc_size, 0);
+-		BUG_ON(ret); /* -ENOMEM */
++		if (ret)
++			goto out_reserve;
+ 
+ 		if (root->root_key.objectid ==
+ 		    BTRFS_DATA_RELOC_TREE_OBJECTID) {
+@@ -959,7 +963,7 @@ static noinline int __cow_file_range(struct btrfs_trans_handle *trans,
+ 						      cur_alloc_size);
+ 			if (ret) {
+ 				btrfs_abort_transaction(trans, root, ret);
+-				goto out_unlock;
++				goto out_reserve;
+ 			}
+ 		}
+ 
+@@ -988,6 +992,8 @@ static noinline int __cow_file_range(struct btrfs_trans_handle *trans,
+ out:
+ 	return ret;
+ 
++out_reserve:
++	btrfs_free_reserved_extent(root, ins.objectid, ins.offset);
+ out_unlock:
+ 	extent_clear_unlock_delalloc(inode,
+ 		     &BTRFS_I(inode)->io_tree,
+

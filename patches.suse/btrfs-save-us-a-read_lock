@@ -1,0 +1,35 @@
+From 39f9d028c9906cc7b625df84442205f6bcc84477 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Thu, 27 Dec 2012 09:01:22 +0000
+Subject: Btrfs: save us a read_lock
+Git-commit: 39f9d028c9906cc7b625df84442205f6bcc84477
+Patch-mainline: v3.9-rc1
+
+This does not change the logic of code, but can save us a read_lock.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/locking.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/fs/btrfs/locking.c b/fs/btrfs/locking.c
+index 2a1762c..e95df43 100644
+--- a/fs/btrfs/locking.c
++++ b/fs/btrfs/locking.c
+@@ -113,11 +113,10 @@ again:
+ 		read_unlock(&eb->lock);
+ 		return;
+ 	}
+-	read_unlock(&eb->lock);
+-	wait_event(eb->write_lock_wq, atomic_read(&eb->blocking_writers) == 0);
+-	read_lock(&eb->lock);
+ 	if (atomic_read(&eb->blocking_writers)) {
+ 		read_unlock(&eb->lock);
++		wait_event(eb->write_lock_wq,
++			   atomic_read(&eb->blocking_writers) == 0);
+ 		goto again;
+ 	}
+ 	atomic_inc(&eb->read_locks);
+

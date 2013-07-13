@@ -1,0 +1,31 @@
+From cc975eb4605c5765a5d5e7a51d24ba5a1cda269e Mon Sep 17 00:00:00 2001
+From: Lukas Czerner <lczerner@redhat.com>
+Date: Fri, 7 Dec 2012 10:09:19 +0000
+Subject: btrfs: get the device in write mode when deleting it
+Git-commit: cc975eb4605c5765a5d5e7a51d24ba5a1cda269e
+Patch-mainline: v3.8-rc5
+
+When we're deleting the device we should get it in write mode since
+we're going to re-write the super block magic on that device. And it
+should fail if the device is read-only.
+
+Signed-off-by: Lukas Czerner <lczerner@redhat.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/volumes.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index 5cce6aa..86279c3 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -1431,7 +1431,7 @@ int btrfs_rm_device(struct btrfs_root *root, char *device_path)
+ 		}
+ 	} else {
+ 		ret = btrfs_get_bdev_and_sb(device_path,
+-					    FMODE_READ | FMODE_EXCL,
++					    FMODE_WRITE | FMODE_EXCL,
+ 					    root->fs_info->bdev_holder, 0,
+ 					    &bdev, &bh);
+ 		if (ret)
+

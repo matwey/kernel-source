@@ -1,0 +1,30 @@
+From 97547676570b3bd908560741315bf4b7d635bcf5 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Fri, 21 Dec 2012 10:38:50 +0000
+Subject: Btrfs: fix missing write access release in btrfs_ioctl_resize()
+Git-commit: 97547676570b3bd908560741315bf4b7d635bcf5
+Patch-mainline: v3.8-rc5
+
+We forget to give up the write access after we find some device operation
+is going on. Fix it.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 0de2121..982c0b9 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -1339,6 +1339,7 @@ static noinline int btrfs_ioctl_resize(struct file *file,
+ 	if (atomic_xchg(&root->fs_info->mutually_exclusive_operation_running,
+ 			1)) {
+ 		pr_info("btrfs: dev add/delete/balance/replace/resize operation in progress\n");
++		mnt_drop_write_file(file);
+ 		return -EINPROGRESS;
+ 	}
+ 
+

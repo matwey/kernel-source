@@ -1,0 +1,61 @@
+From dcfac4156fa102c1bab0e4e31df37e47278292f6 Mon Sep 17 00:00:00 2001
+From: Liu Bo <bo.li.liu@oracle.com>
+Date: Thu, 27 Dec 2012 09:01:20 +0000
+Subject: Btrfs: kill unused argument of btrfs_pin_extent_for_log_replay
+Git-commit: dcfac4156fa102c1bab0e4e31df37e47278292f6
+Patch-mainline: v3.9-rc1
+
+Argument 'trans' is not used any more.
+
+Signed-off-by: Liu Bo <bo.li.liu@oracle.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.h       | 3 +--
+ fs/btrfs/extent-tree.c | 3 +--
+ fs/btrfs/tree-log.c    | 3 +--
+ 3 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index 411c8d9..22f012d 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -2939,8 +2939,7 @@ int btrfs_lookup_extent_info(struct btrfs_trans_handle *trans,
+ 			     u64 num_bytes, u64 *refs, u64 *flags);
+ int btrfs_pin_extent(struct btrfs_root *root,
+ 		     u64 bytenr, u64 num, int reserved);
+-int btrfs_pin_extent_for_log_replay(struct btrfs_trans_handle *trans,
+-				    struct btrfs_root *root,
++int btrfs_pin_extent_for_log_replay(struct btrfs_root *root,
+ 				    u64 bytenr, u64 num_bytes);
+ int btrfs_cross_ref_exist(struct btrfs_trans_handle *trans,
+ 			  struct btrfs_root *root,
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index a162c7c..825f23b 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -4898,8 +4898,7 @@ int btrfs_pin_extent(struct btrfs_root *root,
+ /*
+  * this function must be called within transaction
+  */
+-int btrfs_pin_extent_for_log_replay(struct btrfs_trans_handle *trans,
+-				    struct btrfs_root *root,
++int btrfs_pin_extent_for_log_replay(struct btrfs_root *root,
+ 				    u64 bytenr, u64 num_bytes)
+ {
+ 	struct btrfs_block_group_cache *cache;
+diff --git a/fs/btrfs/tree-log.c b/fs/btrfs/tree-log.c
+index 7de720d..deb7f66 100644
+--- a/fs/btrfs/tree-log.c
++++ b/fs/btrfs/tree-log.c
+@@ -278,8 +278,7 @@ static int process_one_buffer(struct btrfs_root *log,
+ 			      struct walk_control *wc, u64 gen)
+ {
+ 	if (wc->pin)
+-		btrfs_pin_extent_for_log_replay(wc->trans,
+-						log->fs_info->extent_root,
++		btrfs_pin_extent_for_log_replay(log->fs_info->extent_root,
+ 						eb->start, eb->len);
+ 
+ 	if (btrfs_buffer_uptodate(eb, gen, 0)) {
+

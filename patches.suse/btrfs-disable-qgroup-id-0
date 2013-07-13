@@ -1,0 +1,33 @@
+From d86e56cf7d3669dd292012ac82b986bd1573b6cc Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Thu, 15 Nov 2012 11:35:41 +0000
+Subject: Btrfs: disable qgroup id 0
+Git-commit: d86e56cf7d3669dd292012ac82b986bd1573b6cc
+Patch-mainline: v3.8-rc5
+
+Qgroup id 0 is a special number, we should set the id of a qgroup to 0.
+Fix it.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ioctl.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 7624212..dd8e344 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -3698,6 +3698,11 @@ static long btrfs_ioctl_qgroup_create(struct file *file, void __user *arg)
+ 		goto drop_write;
+ 	}
+ 
++	if (!sa->qgroupid) {
++		ret = -EINVAL;
++		goto out;
++	}
++
+ 	trans = btrfs_join_transaction(root);
+ 	if (IS_ERR(trans)) {
+ 		ret = PTR_ERR(trans);
+

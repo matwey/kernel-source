@@ -1,0 +1,30 @@
+From 8b513d0cf603c0a9ccf86a92cb22931f05a7bc86 Mon Sep 17 00:00:00 2001
+From: Masanari Iida <standby24x7@gmail.com>
+Date: Tue, 21 May 2013 23:13:12 +0900
+Subject: treewide: Fix typo in printk
+Git-commit: 8b513d0cf603c0a9ccf86a92cb22931f05a7bc86 (partial)
+Patch-mainline: v3.11-rc1
+
+Correct spelling typo in various part of drivers
+
+Signed-off-by: Masanari Iida <standby24x7@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+
+ fs/btrfs/free-space-cache.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/free-space-cache.c b/fs/btrfs/free-space-cache.c
+index e530096..2750b50 100644
+--- a/fs/btrfs/free-space-cache.c
++++ b/fs/btrfs/free-space-cache.c
+@@ -3200,7 +3200,7 @@ static int test_extents(struct btrfs_block_group_cache *cache)
+ 
+ 	ret = btrfs_remove_free_space(cache, 2 * 1024 * 1024, 4096);
+ 	if (ret) {
+-		printk(KERN_ERR "Error removing middle peice %d\n", ret);
++		printk(KERN_ERR "Error removing middle piece %d\n", ret);
+ 		return ret;
+ 	}
+ 

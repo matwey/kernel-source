@@ -1,0 +1,27 @@
+From 061594ef171a5ba52b5786688ae766907b0bda2b Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Wed, 15 May 2013 07:48:17 +0000
+Subject: Btrfs: pause the space balance when remounting to R/O
+Git-commit: 061594ef171a5ba52b5786688ae766907b0bda2b
+Patch-mainline: v3.10-rc2
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/super.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/btrfs/super.c b/fs/btrfs/super.c
+index a4807ce..f0857e0 100644
+--- a/fs/btrfs/super.c
++++ b/fs/btrfs/super.c
+@@ -1263,6 +1263,7 @@ static int btrfs_remount(struct super_block *sb, int *flags, char *data)
+ 
+ 		btrfs_dev_replace_suspend_for_unmount(fs_info);
+ 		btrfs_scrub_cancel(fs_info);
++		btrfs_pause_balance(fs_info);
+ 
+ 		ret = btrfs_commit_super(root);
+ 		if (ret)
+

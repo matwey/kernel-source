@@ -1,0 +1,33 @@
+From 235fdb8ef2a313749cf3a42e70156c618263a388 Mon Sep 17 00:00:00 2001
+From: Wang Shilong <wangsl-fnst@cn.fujitsu.com>
+Date: Wed, 27 Feb 2013 11:21:40 +0000
+Subject: Btrfs: remove reduplicate check about root in the function
+ btrfs_clean_quota_tree
+Git-commit: 235fdb8ef2a313749cf3a42e70156c618263a388
+Patch-mainline: v3.9-rc1
+
+The check work has been done just before the function btrfs_clean_quota_tree
+is called, it is not necessary to check it again, remove it.
+
+Signed-off-by: Wang Shilong <wangsl-fnst@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/qgroup.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/fs/btrfs/qgroup.c b/fs/btrfs/qgroup.c
+index 69fa487..aee4b1c 100644
+--- a/fs/btrfs/qgroup.c
++++ b/fs/btrfs/qgroup.c
+@@ -742,9 +742,6 @@ static int btrfs_clean_quota_tree(struct btrfs_trans_handle *trans,
+ 	int ret;
+ 	int nr = 0;
+ 
+-	if (!root)
+-		return -EINVAL;
+-
+ 	path = btrfs_alloc_path();
+ 	if (!path)
+ 		return -ENOMEM;
+

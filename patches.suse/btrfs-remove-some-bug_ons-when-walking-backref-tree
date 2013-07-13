@@ -1,0 +1,54 @@
+From 1149ab6bd48cf3b00c59e4f8ff79fbb1cf15b94b Mon Sep 17 00:00:00 2001
+From: Wang Shilong <wangsl-fnst@cn.fujitsu.com>
+Date: Wed, 10 Apr 2013 11:22:50 +0000
+Subject: Btrfs: remove some BUG_ONs() when walking backref tree
+Git-commit: 1149ab6bd48cf3b00c59e4f8ff79fbb1cf15b94b
+Patch-mainline: v3.10-rc2
+
+The only error return value of __add_prelim_ref() is -ENOMEM,
+just return errors rather than trigger BUG_ON().
+
+Signed-off-by: Wang Shilong <wangsl-fnst@cn.fujitsu.com>
+Reviewed-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/backref.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/fs/btrfs/backref.c b/fs/btrfs/backref.c
+index ba0fee7..66f44c7 100644
+--- a/fs/btrfs/backref.c
++++ b/fs/btrfs/backref.c
+@@ -582,7 +582,8 @@ static int __add_delayed_refs(struct btrfs_delayed_ref_head *head, u64 seq,
+ 		default:
+ 			WARN_ON(1);
+ 		}
+-		BUG_ON(ret);
++		if (ret)
++			return ret;
+ 	}
+ 
+ 	return 0;
+@@ -680,7 +681,8 @@ static int __add_inline_refs(struct btrfs_fs_info *fs_info,
+ 		default:
+ 			WARN_ON(1);
+ 		}
+-		BUG_ON(ret);
++		if (ret)
++			return ret;
+ 		ptr += btrfs_extent_inline_ref_size(type);
+ 	}
+ 
+@@ -762,7 +764,9 @@ static int __add_keyed_refs(struct btrfs_fs_info *fs_info,
+ 		default:
+ 			WARN_ON(1);
+ 		}
+-		BUG_ON(ret);
++		if (ret)
++			return ret;
++
+ 	}
+ 
+ 	return ret;
+

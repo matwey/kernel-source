@@ -1,0 +1,38 @@
+From 492104c866cb1b62a11393adccb477f5cd2c7768 Mon Sep 17 00:00:00 2001
+From: Josef Bacik <jbacik@fusionio.com>
+Date: Fri, 8 Mar 2013 15:41:02 -0500
+Subject: Btrfs: return EIO if we have extent tree corruption
+Git-commit: 492104c866cb1b62a11393adccb477f5cd2c7768
+Patch-mainline: v3.9-rc3
+
+The callers of lookup_inline_extent_info all handle getting an error back
+properly, so return an error if we have corruption instead of being a jerk and
+panicing.  Still WARN_ON() since this is kind of crucial and I've been seeing it
+a bit too much recently for my taste, I think we're doing something wrong
+somewhere.  Thanks,
+
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/extent-tree.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index aaee2b7..350b9b1 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -1467,8 +1467,11 @@ int lookup_inline_extent_backref(struct btrfs_trans_handle *trans,
+ 	if (ret && !insert) {
+ 		err = -ENOENT;
+ 		goto out;
++	} else if (ret) {
++		err = -EIO;
++		WARN_ON(1);
++		goto out;
+ 	}
+-	BUG_ON(ret); /* Corruption */
+ 
+ 	leaf = path->nodes[0];
+ 	item_size = btrfs_item_size_nr(leaf, path->slots[0]);
+

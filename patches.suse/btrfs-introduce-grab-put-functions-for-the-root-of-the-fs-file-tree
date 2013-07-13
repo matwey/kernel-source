@@ -1,0 +1,110 @@
+From b0feb9d96e71a88d7eec56f41b8f23e92af889b0 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Wed, 15 May 2013 07:48:20 +0000
+Subject: Btrfs: introduce grab/put functions for the root of the fs/file tree
+Git-commit: b0feb9d96e71a88d7eec56f41b8f23e92af889b0
+Patch-mainline: v3.11-rc1
+
+The grab/put funtions will be used in the next patch, which need grab
+the root object and ensure it is not freed. We use reference counter
+instead of the srcu lock is to aovid blocking the memory reclaim task,
+which invokes synchronize_srcu().
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.h       |  1 +
+ fs/btrfs/disk-io.c     |  5 +++--
+ fs/btrfs/disk-io.h     | 21 +++++++++++++++++++++
+ fs/btrfs/extent-tree.c |  2 +-
+ 4 files changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index a84e59b..91a8ca7 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -1746,6 +1746,7 @@ struct btrfs_root {
+ 	int force_cow;
+ 
+ 	spinlock_t root_item_lock;
++	atomic_t refs;
+ };
+ 
+ struct btrfs_ioctl_defrag_range_args {
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index c65a5aa..90b643e 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -1216,6 +1216,7 @@ static void __setup_root(u32 nodesize, u32 leafsize, u32 sectorsize,
+ 	atomic_set(&root->log_writers, 0);
+ 	atomic_set(&root->log_batch, 0);
+ 	atomic_set(&root->orphan_inodes, 0);
++	atomic_set(&root->refs, 1);
+ 	root->log_transid = 0;
+ 	root->last_log_commit = 0;
+ 	extent_io_tree_init(&root->dirty_log_pages,
+@@ -2052,7 +2053,7 @@ static void del_fs_roots(struct btrfs_fs_info *fs_info)
+ 		} else {
+ 			free_extent_buffer(gang[0]->node);
+ 			free_extent_buffer(gang[0]->commit_root);
+-			kfree(gang[0]);
++			btrfs_put_fs_root(gang[0]);
+ 		}
+ 	}
+ 
+@@ -3417,7 +3418,7 @@ static void free_fs_root(struct btrfs_root *root)
+ 	kfree(root->free_ino_ctl);
+ 	kfree(root->free_ino_pinned);
+ 	kfree(root->name);
+-	kfree(root);
++	btrfs_put_fs_root(root);
+ }
+ 
+ void btrfs_free_fs_root(struct btrfs_root *root)
+diff --git a/fs/btrfs/disk-io.h b/fs/btrfs/disk-io.h
+index 534d583..b71acd6e 100644
+--- a/fs/btrfs/disk-io.h
++++ b/fs/btrfs/disk-io.h
+@@ -76,6 +76,27 @@ void btrfs_btree_balance_dirty_nodelay(struct btrfs_root *root);
+ void btrfs_drop_and_free_fs_root(struct btrfs_fs_info *fs_info,
+ 				 struct btrfs_root *root);
+ void btrfs_free_fs_root(struct btrfs_root *root);
++
++/*
++ * This function is used to grab the root, and avoid it is freed when we
++ * access it. But it doesn't ensure that the tree is not dropped.
++ *
++ * If you want to ensure the whole tree is safe, you should use
++ * 	fs_info->subvol_srcu
++ */
++static inline struct btrfs_root *btrfs_grab_fs_root(struct btrfs_root *root)
++{
++	if (atomic_inc_not_zero(&root->refs))
++		return root;
++	return NULL;
++}
++
++static inline void btrfs_put_fs_root(struct btrfs_root *root)
++{
++	if (atomic_dec_and_test(&root->refs))
++		kfree(root);
++}
++
+ void btrfs_mark_buffer_dirty(struct extent_buffer *buf);
+ int btrfs_buffer_uptodate(struct extent_buffer *buf, u64 parent_transid,
+ 			  int atomic);
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index c989fe6..04066c2 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -7469,7 +7469,7 @@ int btrfs_drop_snapshot(struct btrfs_root *root,
+ 	} else {
+ 		free_extent_buffer(root->node);
+ 		free_extent_buffer(root->commit_root);
+-		kfree(root);
++		btrfs_put_fs_root(root);
+ 	}
+ out_end_trans:
+ 	btrfs_end_transaction_throttle(trans, tree_root);
+

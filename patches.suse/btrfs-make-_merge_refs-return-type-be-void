@@ -1,0 +1,60 @@
+From 692206b153ea0d08d6015521ed27a6739cbf6f9f Mon Sep 17 00:00:00 2001
+From: Wang Shilong <wangsl-fnst@cn.fujitsu.com>
+Date: Thu, 11 Apr 2013 07:08:55 +0000
+Subject: Btrfs: make __merge_refs() return type be void
+Git-commit: 692206b153ea0d08d6015521ed27a6739cbf6f9f
+Patch-mainline: v3.10-rc2
+
+__merge_refs() always return 0, it is unnecessary
+for the caller to check the return value.
+
+Signed-off-by: Wang Shilong <wangsl-fnst@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/backref.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/fs/btrfs/backref.c b/fs/btrfs/backref.c
+index 66f44c7..7f448b8 100644
+--- a/fs/btrfs/backref.c
++++ b/fs/btrfs/backref.c
+@@ -443,7 +443,7 @@ static int __add_missing_keys(struct btrfs_fs_info *fs_info,
+  *           having a parent).
+  * mode = 2: merge identical parents
+  */
+-static int __merge_refs(struct list_head *head, int mode)
++static void __merge_refs(struct list_head *head, int mode)
+ {
+ 	struct list_head *pos1;
+ 
+@@ -489,7 +489,6 @@ static int __merge_refs(struct list_head *head, int mode)
+ 		}
+ 
+ 	}
+-	return 0;
+ }
+ 
+ /*
+@@ -884,18 +883,14 @@ again:
+ 	if (ret)
+ 		goto out;
+ 
+-	ret = __merge_refs(&prefs, 1);
+-	if (ret)
+-		goto out;
++	__merge_refs(&prefs, 1);
+ 
+ 	ret = __resolve_indirect_refs(fs_info, search_commit_root, time_seq,
+ 				      &prefs, extent_item_pos);
+ 	if (ret)
+ 		goto out;
+ 
+-	ret = __merge_refs(&prefs, 2);
+-	if (ret)
+-		goto out;
++	__merge_refs(&prefs, 2);
+ 
+ 	while (!list_empty(&prefs)) {
+ 		ref = list_first_entry(&prefs, struct __prelim_ref, list);
+

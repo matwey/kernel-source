@@ -1,0 +1,28 @@
+From 10e78e3a8aec820f8f6344dfd4d465f5f84399e6 Mon Sep 17 00:00:00 2001
+From: Tomasz Torcz <tomek@pipebreaker.pl>
+Date: Tue, 5 Feb 2013 09:38:53 -0500
+Subject: Btrfs: select XOR_BLOCKS in Kconfig
+Git-commit: 10e78e3a8aec820f8f6344dfd4d465f5f84399e6
+Patch-mainline: v3.9-rc1
+
+The Btrfs raid56 uses the generic xor helpers.
+
+Signed-off-by: Chris Mason <chris.mason@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/btrfs/Kconfig b/fs/btrfs/Kconfig
+index 4f5dc93..5f583c8 100644
+--- a/fs/btrfs/Kconfig
++++ b/fs/btrfs/Kconfig
+@@ -7,6 +7,7 @@ config BTRFS_FS
+ 	select LZO_COMPRESS
+ 	select LZO_DECOMPRESS
+ 	select RAID6_PQ
++	select XOR_BLOCKS
+ 
+ 	help
+ 	  Btrfs is a new filesystem with extents, writable snapshotting,
+

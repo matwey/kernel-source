@@ -1,0 +1,34 @@
+From 0a3404dcff29a7589e8d6ce8c36f97c5411f85b4 Mon Sep 17 00:00:00 2001
+From: Miao Xie <miaox@cn.fujitsu.com>
+Date: Mon, 28 Jan 2013 12:34:55 +0000
+Subject: Btrfs: fix wrong sync_writers decrement in btrfs_file_aio_write()
+Git-commit: 0a3404dcff29a7589e8d6ce8c36f97c5411f85b4
+Patch-mainline: v3.8-rc7
+
+If the checks at the beginning of btrfs_file_aio_write() fail, we needn't
+decrease ->sync_writers, because we have not increased it. Fix it.
+
+Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/file.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
+index 841cfe3..a902faa 100644
+--- a/fs/btrfs/file.c
++++ b/fs/btrfs/file.c
+@@ -1595,9 +1595,10 @@ static ssize_t btrfs_file_aio_write(struct kiocb *iocb,
+ 		if (err < 0 && num_written > 0)
+ 			num_written = err;
+ 	}
+-out:
++
+ 	if (sync)
+ 		atomic_dec(&BTRFS_I(inode)->sync_writers);
++out:
+ 	sb_end_write(inode->i_sb);
+ 	current->backing_dev_info = NULL;
+ 	return num_written ? num_written : err;
+

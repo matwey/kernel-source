@@ -1,0 +1,31 @@
+From d1d3cd27a32b819a0b0e2b9b6b5f9e80890f9821 Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@redhat.com>
+Date: Thu, 31 Jan 2013 00:54:53 +0000
+Subject: btrfs: list_entry can't return NULL
+Git-commit: d1d3cd27a32b819a0b0e2b9b6b5f9e80890f9821
+Patch-mainline: v3.9-rc1
+
+No need to test the result, we can't get a
+null pointer from list_entry()
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/disk-io.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 8e58a1f..bd48bf2 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -3846,8 +3846,6 @@ int btrfs_cleanup_transaction(struct btrfs_root *root)
+ 
+ 	while (!list_empty(&list)) {
+ 		t = list_entry(list.next, struct btrfs_transaction, list);
+-		if (!t)
+-			break;
+ 
+ 		btrfs_destroy_ordered_operations(root);
+ 
+

@@ -1,0 +1,31 @@
+From 97a184fe818ceb12ce511d7add4be5ded85c8ba0 Mon Sep 17 00:00:00 2001
+From: Thomas Meyer <thomas@m3y3r.de>
+Date: Sat, 1 Jun 2013 09:45:35 +0000
+Subject: Btrfs: Cocci spatch "ptr_ret.spatch"
+Git-commit: 97a184fe818ceb12ce511d7add4be5ded85c8ba0
+Patch-mainline: v3.11-rc1
+
+Signed-off-by: Thomas Meyer <thomas@m3y3r.de>
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/volumes.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index b1446c0..c58bf19 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -3283,10 +3283,7 @@ int btrfs_resume_balance_async(struct btrfs_fs_info *fs_info)
+ 	}
+ 
+ 	tsk = kthread_run(balance_kthread, fs_info, "btrfs-balance");
+-	if (IS_ERR(tsk))
+-		return PTR_ERR(tsk);
+-
+-	return 0;
++	return PTR_RET(tsk);
+ }
+ 
+ int btrfs_recover_balance(struct btrfs_fs_info *fs_info)
+

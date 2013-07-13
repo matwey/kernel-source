@@ -1,9 +1,9 @@
+From 9c52057c698fb96f8f07e7a4bcf4801a092bda89 Mon Sep 17 00:00:00 2001
 From: Chris Mason <chris.mason@fusionio.com>
 Date: Mon, 17 Dec 2012 14:26:57 -0500
-Patch-mainline: 3.8
+Subject: Btrfs: fix hash overflow handling
 Git-commit: 9c52057c698fb96f8f07e7a4bcf4801a092bda89
-References: bnc#804738
-Subject: [PATCH] Btrfs: fix hash overflow handling
+Patch-mainline: v3.8-rc7
 
 The handling for directory crc hash overflows was fairly obscure,
 split_leaf returns EOVERFLOW when we try to extend the item and that is
@@ -29,18 +29,20 @@ the new helper now too.
 
 Signed-off-by: Chris Mason <chris.mason@fusionio.com>
 Reported-by: Pascal Junod <pascal@junod.info>
-Signed-off-by: David Sterba <dsterba@suse.cz>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
 ---
- fs/btrfs/ctree.h       |    2 +
- fs/btrfs/dir-item.c    |   59 +++++++++++++++++++++++++++++++++++++++++++++++++
- fs/btrfs/inode.c       |   26 +++++++++++++++++++--
- fs/btrfs/ioctl.c       |   10 ++++++++
- fs/btrfs/transaction.c |    2 -
- 5 files changed, 96 insertions(+), 3 deletions(-)
+ fs/btrfs/ctree.h       |  2 ++
+ fs/btrfs/dir-item.c    | 59 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/btrfs/inode.c       | 24 +++++++++++++++++++-
+ fs/btrfs/ioctl.c       | 10 +++++++++
+ fs/btrfs/transaction.c |  2 +-
+ 5 files changed, 95 insertions(+), 2 deletions(-)
 
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index 44d9bc8..547b7b0 100644
 --- a/fs/btrfs/ctree.h
 +++ b/fs/btrfs/ctree.h
-@@ -3157,6 +3157,8 @@ void btrfs_update_root_times(struct btrf
+@@ -3283,6 +3283,8 @@ void btrfs_update_root_times(struct btrfs_trans_handle *trans,
  			     struct btrfs_root *root);
  
  /* dir-item.c */
@@ -49,9 +51,11 @@ Signed-off-by: David Sterba <dsterba@suse.cz>
  int btrfs_insert_dir_item(struct btrfs_trans_handle *trans,
  			  struct btrfs_root *root, const char *name,
  			  int name_len, struct inode *dir,
+diff --git a/fs/btrfs/dir-item.c b/fs/btrfs/dir-item.c
+index c1a074d..502c215 100644
 --- a/fs/btrfs/dir-item.c
 +++ b/fs/btrfs/dir-item.c
-@@ -213,6 +213,65 @@ struct btrfs_dir_item *btrfs_lookup_dir_
+@@ -213,6 +213,65 @@ struct btrfs_dir_item *btrfs_lookup_dir_item(struct btrfs_trans_handle *trans,
  	return btrfs_match_dir_item_name(root, path, name, name_len);
  }
  
@@ -117,21 +121,20 @@ Signed-off-by: David Sterba <dsterba@suse.cz>
  /*
   * lookup a directory item based on index.  'dir' is the objectid
   * we're searching in, and 'mod' tells us if you plan on deleting the
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 2e6918c..e95b1f9 100644
 --- a/fs/btrfs/inode.c
 +++ b/fs/btrfs/inode.c
-@@ -4842,9 +4842,9 @@ int btrfs_add_link(struct btrfs_trans_ha
+@@ -4885,7 +4885,7 @@ int btrfs_add_link(struct btrfs_trans_handle *trans,
  	ret = btrfs_insert_dir_item(trans, root, name, name_len,
  				    parent_inode, &key,
  				    btrfs_inode_type(inode), index);
 -	if (ret == -EEXIST)
-+	if (ret == -EEXIST || ret == -EOVERFLOW) {
++	if (ret == -EEXIST || ret == -EOVERFLOW)
  		goto fail_dir_item;
--	else if (ret) {
-+	} else if (ret) {
+ 	else if (ret) {
  		btrfs_abort_transaction(trans, root, ret);
- 		return ret;
- 	}
-@@ -7308,6 +7308,28 @@ static int btrfs_rename(struct inode *ol
+@@ -7336,6 +7336,28 @@ static int btrfs_rename(struct inode *old_dir, struct dentry *old_dentry,
  	if (S_ISDIR(old_inode->i_mode) && new_inode &&
  	    new_inode->i_size > BTRFS_EMPTY_DIR_SIZE)
  		return -ENOTEMPTY;
@@ -160,9 +163,11 @@ Signed-off-by: David Sterba <dsterba@suse.cz>
  	/*
  	 * we're using rename to replace one file with another.
  	 * and the replacement file is large.  Start IO on it now so
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index 657d83c..d4608ab 100644
 --- a/fs/btrfs/ioctl.c
 +++ b/fs/btrfs/ioctl.c
-@@ -705,6 +705,16 @@ static noinline int btrfs_mksubvol(struc
+@@ -710,6 +710,16 @@ static noinline int btrfs_mksubvol(struct path *parent,
  	if (error)
  		goto out_dput;
  
@@ -179,9 +184,11 @@ Signed-off-by: David Sterba <dsterba@suse.cz>
  	down_read(&BTRFS_I(dir)->root->fs_info->subvol_sem);
  
  	if (btrfs_root_refs(&BTRFS_I(dir)->root->root_item) == 0)
+diff --git a/fs/btrfs/transaction.c b/fs/btrfs/transaction.c
+index e6509b9..87fac9a 100644
 --- a/fs/btrfs/transaction.c
 +++ b/fs/btrfs/transaction.c
-@@ -1191,7 +1191,7 @@ static noinline int create_pending_snaps
+@@ -1190,7 +1190,7 @@ static noinline int create_pending_snapshot(struct btrfs_trans_handle *trans,
  				    parent_inode, &key,
  				    BTRFS_FT_DIR, index);
  	/* We have check then name at the beginning, so it is impossible. */
@@ -190,3 +197,4 @@ Signed-off-by: David Sterba <dsterba@suse.cz>
  	if (ret) {
  		btrfs_abort_transaction(trans, root, ret);
  		goto fail;
+

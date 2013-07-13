@@ -1,0 +1,83 @@
+From 5d80366e9b5e56b3ffc1923b4995e83bbbf605e3 Mon Sep 17 00:00:00 2001
+From: Josef Bacik <jbacik@fusionio.com>
+Date: Thu, 7 Feb 2013 16:06:02 -0500
+Subject: Btrfs: steal from global reserve if we are cleaning up orphans
+Git-commit: 5d80366e9b5e56b3ffc1923b4995e83bbbf605e3
+Patch-mainline: v3.9-rc1
+
+Sometimes xfstest 83 will fail to remount the scratch device because we've
+gotten ourselves so full that we cannot cleanup the orphan items.  In this
+case check to see if we're doing the orphan cleanup and if we are allow us
+to steal our reservation from the global block rsv.  With this patch I've
+not been able to reproduce the failed mount problem.  Thanks,
+
+Signed-off-by: Josef Bacik <jbacik@fusionio.com>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/btrfs/ctree.h       |  5 +++++
+ fs/btrfs/extent-tree.c | 11 +++++++++++
+ fs/btrfs/inode.c       |  5 -----
+ 3 files changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
+index 7e2cffd..f1cc247 100644
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -1237,6 +1237,11 @@ struct seq_list {
+ 	u64 seq;
+ };
+ 
++enum btrfs_orphan_cleanup_state {
++	ORPHAN_CLEANUP_STARTED	= 1,
++	ORPHAN_CLEANUP_DONE	= 2,
++};
++
+ /* used by the raid56 code to lock stripes for read/modify/write */
+ struct btrfs_stripe_hash {
+ 	struct list_head hash_list;
+diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+index 81aa7cf..1818dd9 100644
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
+@@ -102,6 +102,8 @@ static void dump_space_info(struct btrfs_space_info *info, u64 bytes,
+ 			    int dump_block_groups);
+ static int btrfs_update_reserved_bytes(struct btrfs_block_group_cache *cache,
+ 				       u64 num_bytes, int reserve);
++static int block_rsv_use_bytes(struct btrfs_block_rsv *block_rsv,
++			       u64 num_bytes);
+ 
+ static noinline int
+ block_group_cache_done(struct btrfs_block_group_cache *cache)
+@@ -4099,6 +4101,15 @@ again:
+ 		goto again;
+ 
+ out:
++	if (ret == -ENOSPC &&
++	    unlikely(root->orphan_cleanup_state == ORPHAN_CLEANUP_STARTED)) {
++		struct btrfs_block_rsv *global_rsv =
++			&root->fs_info->global_block_rsv;
++
++		if (block_rsv != global_rsv &&
++		    !block_rsv_use_bytes(global_rsv, orig_bytes))
++			ret = 0;
++	}
+ 	if (flushing) {
+ 		spin_lock(&space_info->lock);
+ 		space_info->flush = 0;
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 348b7bb..cf26778 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -2218,11 +2218,6 @@ void btrfs_run_delayed_iputs(struct btrfs_root *root)
+ 	}
+ }
+ 
+-enum btrfs_orphan_cleanup_state {
+-	ORPHAN_CLEANUP_STARTED	= 1,
+-	ORPHAN_CLEANUP_DONE	= 2,
+-};
+-
+ /*
+  * This is called in transaction commit time. If there are no orphan
+  * files in the subvolume, it removes orphan item and frees block_rsv
+

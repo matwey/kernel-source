@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/x86_64 3.7.6 Kernel Configuration
+# Linux/x86_64 3.7.10 Kernel Configuration
 #
 CONFIG_64BIT=y
 CONFIG_X86_64=y
@@ -1518,6 +1518,8 @@ CONFIG_OCFS2_FS_STATS=y
 CONFIG_BTRFS_FS=m
 CONFIG_BTRFS_FS_POSIX_ACL=y
 # CONFIG_BTRFS_FS_CHECK_INTEGRITY is not set
+# CONFIG_BTRFS_FS_RUN_SANITY_TESTS is not set
+# CONFIG_BTRFS_DEBUG is not set
 CONFIG_NILFS2_FS=m
 CONFIG_FS_POSIX_ACL=y
 CONFIG_EXPORTFS=y

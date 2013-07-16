@@ -16,17 +16,15 @@ Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
 Signed-off-by: Josef Bacik <jbacik@fusionio.com>
 Acked-by: Jeff Mahoney <jeffm@suse.com>
 ---
- fs/btrfs/ctree.h       |  2 ++
- fs/btrfs/disk-io.c     |  1 +
- fs/btrfs/extent-tree.c | 22 ++++++++++++++------
- fs/btrfs/volumes.c     | 56 +++++++++++++++++++++++++++-----------------------
+ fs/btrfs/ctree.h       |    2 +
+ fs/btrfs/disk-io.c     |    1 
+ fs/btrfs/extent-tree.c |   22 ++++++++++++++-----
+ fs/btrfs/volumes.c     |   56 ++++++++++++++++++++++++++-----------------------
  4 files changed, 49 insertions(+), 32 deletions(-)
 
-diff --git a/fs/btrfs/ctree.h b/fs/btrfs/ctree.h
-index 50def99..5f5c30a 100644
 --- a/fs/btrfs/ctree.h
 +++ b/fs/btrfs/ctree.h
-@@ -1483,6 +1483,8 @@ struct btrfs_fs_info {
+@@ -1521,6 +1521,8 @@ struct btrfs_fs_info {
  	struct rb_root defrag_inodes;
  	atomic_t defrag_running;
  
@@ -35,11 +33,9 @@ index 50def99..5f5c30a 100644
  	/*
  	 * these three are in extended format (availability of single
  	 * chunks is denoted by BTRFS_AVAIL_ALLOC_BIT_SINGLE bit, other
-diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
-index 11f6dbc..00b6742 100644
 --- a/fs/btrfs/disk-io.c
 +++ b/fs/btrfs/disk-io.c
-@@ -2040,6 +2040,7 @@ int open_ctree(struct super_block *sb,
+@@ -2056,6 +2056,7 @@ int open_ctree(struct super_block *sb,
  	spin_lock_init(&fs_info->tree_mod_seq_lock);
  	rwlock_init(&fs_info->tree_mod_log_lock);
  	mutex_init(&fs_info->reloc_mutex);
@@ -47,11 +43,9 @@ index 11f6dbc..00b6742 100644
  
  	init_completion(&fs_info->kobj_unregister);
  	INIT_LIST_HEAD(&fs_info->dirty_cowonly_roots);
-diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
-index 115d164..faff98f 100644
 --- a/fs/btrfs/extent-tree.c
 +++ b/fs/btrfs/extent-tree.c
-@@ -3227,12 +3227,14 @@ static void set_avail_alloc_bits(struct btrfs_fs_info *fs_info, u64 flags)
+@@ -3282,12 +3282,14 @@ static void set_avail_alloc_bits(struct
  	u64 extra_flags = chunk_to_extended(flags) &
  				BTRFS_EXTENDED_PROFILE_MASK;
  
@@ -66,7 +60,7 @@ index 115d164..faff98f 100644
  }
  
  /*
-@@ -3324,12 +3326,18 @@ u64 btrfs_reduce_alloc_profile(struct btrfs_root *root, u64 flags)
+@@ -3382,12 +3384,18 @@ u64 btrfs_reduce_alloc_profile(struct bt
  
  static u64 get_alloc_profile(struct btrfs_root *root, u64 flags)
  {
@@ -91,7 +85,7 @@ index 115d164..faff98f 100644
  
  	return btrfs_reduce_alloc_profile(root, flags);
  }
-@@ -7967,12 +7975,14 @@ static void clear_avail_alloc_bits(struct btrfs_fs_info *fs_info, u64 flags)
+@@ -8054,12 +8062,14 @@ static void clear_avail_alloc_bits(struc
  	u64 extra_flags = chunk_to_extended(flags) &
  				BTRFS_EXTENDED_PROFILE_MASK;
  
@@ -106,11 +100,9 @@ index 115d164..faff98f 100644
  }
  
  int btrfs_remove_block_group(struct btrfs_trans_handle *trans,
-diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
-index 1ce581d..8c9ea4c 100644
 --- a/fs/btrfs/volumes.c
 +++ b/fs/btrfs/volumes.c
-@@ -1430,14 +1430,19 @@ int btrfs_rm_device(struct btrfs_root *root, char *device_path)
+@@ -1433,14 +1433,19 @@ int btrfs_rm_device(struct btrfs_root *r
  	u64 devid;
  	u64 num_devices;
  	u8 *dev_uuid;
@@ -133,19 +125,18 @@ index 1ce581d..8c9ea4c 100644
  
  	num_devices = root->fs_info->fs_devices->num_devices;
  	btrfs_dev_replace_lock(&root->fs_info->dev_replace);
-@@ -3043,7 +3048,8 @@ int btrfs_balance(struct btrfs_balance_control *bctl,
+@@ -3065,6 +3070,7 @@ int btrfs_balance(struct btrfs_balance_c
  	int mixed = 0;
  	int ret;
  	u64 num_devices;
 +	unsigned seq;
-	int cancel = 0;
+ 	int cancel = 0;
  
  	if (btrfs_fs_closing(fs_info) ||
- 	    atomic_read(&fs_info->balance_pause_req) ||
-@@ -3126,22 +3132,26 @@ int btrfs_balance(struct btrfs_balance_control *bctl,
+@@ -3154,22 +3160,26 @@ int btrfs_balance(struct btrfs_balance_c
  			BTRFS_BLOCK_GROUP_RAID5 |
  			BTRFS_BLOCK_GROUP_RAID6;
-
+ 
 -	if (((bctl->sys.flags & BTRFS_BALANCE_ARGS_CONVERT) &&
 -	     (fs_info->avail_system_alloc_bits & allowed) &&
 -	     !(bctl->sys.target & allowed)) ||
@@ -184,7 +175,7 @@ index 1ce581d..8c9ea4c 100644
  
  	if (bctl->sys.flags & BTRFS_BALANCE_ARGS_CONVERT) {
  		int num_tolerated_disk_barrier_failures;
-@@ -3980,10 +3990,7 @@ static noinline int init_first_rw_device(struct btrfs_trans_handle *trans,
+@@ -4069,10 +4079,7 @@ static noinline int init_first_rw_device
  	if (ret)
  		return ret;
  
@@ -196,7 +187,7 @@ index 1ce581d..8c9ea4c 100644
  	ret = __btrfs_alloc_chunk(trans, extent_root, &map, &chunk_size,
  				  &stripe_size, chunk_offset, alloc_profile);
  	if (ret)
-@@ -3991,10 +3998,7 @@ static noinline int init_first_rw_device(struct btrfs_trans_handle *trans,
+@@ -4080,10 +4087,7 @@ static noinline int init_first_rw_device
  
  	sys_chunk_offset = chunk_offset + chunk_size;
  
@@ -208,4 +199,3 @@ index 1ce581d..8c9ea4c 100644
  	ret = __btrfs_alloc_chunk(trans, extent_root, &sys_map,
  				  &sys_chunk_size, &sys_stripe_size,
  				  sys_chunk_offset, alloc_profile);
-

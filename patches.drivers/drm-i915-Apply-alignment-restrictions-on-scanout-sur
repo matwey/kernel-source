@@ -1,0 +1,117 @@
+From 693db1842d864ca2771e881127cdb4d09979758b Mon Sep 17 00:00:00 2001
+From: Chris Wilson <chris@chris-wilson.co.uk>
+Date: Tue, 5 Mar 2013 14:52:39 +0000
+Subject: [PATCH] drm/i915: Apply alignment restrictions on scanout surfaces for VT-d
+Git-commit: 693db1842d864ca2771e881127cdb4d09979758b
+Patch-mainline: 3.10-rc2
+References: bnc#818561
+
+From the w/a database:
+
+'To prevent false VT-d type 6 error:
+
+  The primary display plane must be 256KiB aligned, and require an extra
+  128 PTEs of padding afterward;
+
+  The sprites planes must be 128KiB aligned, and require an extra 64 PTEs
+  of padding afterward;
+
+  The cursors must be 64KiB aligned, and require an extra 2 PTEs of
+  padding afterward.'
+
+As we use the same function to pin the primary and sprite planes, we can
+simply use the more strict requirements for scanouts for both.
+
+Instead of using explicit padding PTEs following the scanout objects, we
+should be able to use the scratch page that is always mapped into the
+unused PTEs to avoid the VT-d error.
+
+References: https://bugs.freedesktop.org/show_bug.cgi?id=59626
+References: https://bugs.freedesktop.org/show_bug.cgi?id=59627
+References: https://bugs.freedesktop.org/show_bug.cgi?id=59631
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Reviewed-by: Damien Lespiau <damien.lespiau@intel.com>
+[danvet: Apply s/vtd_wa/vtd_scanout_wa/ bikeshed since Damien likes
+it, too.]
+
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Acked-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ drivers/gpu/drm/i915/intel_display.c |   30 +++++++++++++++++++++++++++++-
+ drivers/gpu/drm/i915/intel_sprite.c  |    5 +++++
+ 2 files changed, 34 insertions(+), 1 deletion(-)
+
+--- a/drivers/gpu/drm/i915/intel_display.c
++++ b/drivers/gpu/drm/i915/intel_display.c
+@@ -1862,6 +1862,15 @@ static void intel_disable_plane(struct d
+ 	intel_wait_for_vblank(dev_priv->dev, pipe);
+ }
+ 
++static bool need_vtd_wa(struct drm_device *dev)
++{
++#ifdef CONFIG_INTEL_IOMMU
++	if (INTEL_INFO(dev)->gen >= 6 && intel_iommu_gfx_mapped)
++		return true;
++#endif
++	return false;
++}
++
+ int
+ intel_pin_and_fence_fb_obj(struct drm_device *dev,
+ 			   struct drm_i915_gem_object *obj,
+@@ -1892,6 +1901,14 @@ intel_pin_and_fence_fb_obj(struct drm_de
+ 		BUG();
+ 	}
+ 
++	/* Note that the w/a also requires 64 PTE of padding following the
++	 * bo. We currently fill all unused PTE with the shadow page and so
++	 * we should always have valid PTE following the scanout preventing
++	 * the VT-d warning.
++	 */
++	if (need_vtd_wa(dev) && alignment < 256 * 1024)
++		alignment = 256 * 1024;
++
+ 	dev_priv->mm.interruptible = false;
+ 	ret = i915_gem_object_pin_to_display_plane(obj, alignment, pipelined);
+ 	if (ret)
+@@ -5547,13 +5564,24 @@ static int intel_crtc_cursor_set(struct
+ 	/* we only need to pin inside GTT if cursor is non-phy */
+ 	mutex_lock(&dev->struct_mutex);
+ 	if (!dev_priv->info->cursor_needs_physical) {
++		unsigned alignment;
++
+ 		if (obj->tiling_mode) {
+ 			DRM_ERROR("cursor cannot be tiled\n");
+ 			ret = -EINVAL;
+ 			goto fail_locked;
+ 		}
+ 
+-		ret = i915_gem_object_pin_to_display_plane(obj, 0, NULL);
++		/* Note that the w/a also requires 2 PTE of padding following
++		 * the bo. We currently fill all unused PTE with the shadow
++		 * page and so we should always have valid PTE following the
++		 * cursor preventing the VT-d warning.
++		 */
++		alignment = 0;
++		if (need_vtd_wa(dev))
++			alignment = 64*1024;
++
++		ret = i915_gem_object_pin_to_display_plane(obj, alignment, NULL);
+ 		if (ret) {
+ 			DRM_ERROR("failed to move cursor bo into the GTT\n");
+ 			goto fail_locked;
+--- a/drivers/gpu/drm/i915/intel_sprite.c
++++ b/drivers/gpu/drm/i915/intel_sprite.c
+@@ -489,6 +489,11 @@ intel_update_plane(struct drm_plane *pla
+ 
+ 	mutex_lock(&dev->struct_mutex);
+ 
++	/* Note that this will apply the VT-d workaround for scanouts,
++	 * which is more restrictive than required for sprites. (The
++	 * primary plane requires 256KiB alignment with 64 PTE padding,
++	 * the sprite planes only require 128KiB alignment and 32 PTE padding.
++	 */
+ 	ret = intel_pin_and_fence_fb_obj(dev, obj, NULL);
+ 	if (ret)
+ 		goto out_unlock;

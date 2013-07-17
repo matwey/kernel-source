@@ -1,0 +1,42 @@
+From ac5f121b8f2cad52b7671f9af872f8761b0ea1d4 Mon Sep 17 00:00:00 2001
+From: Tushar Behera <tushar.behera@linaro.org>
+Date: Mon, 17 Dec 2012 15:59:40 -0800
+Subject: [PATCH] fs/notify/inode_mark.c: make
+ fsnotify_find_inode_mark_locked() static
+Git-commit: ac5f121b8f2cad52b7671f9af872f8761b0ea1d4
+Patch-mainline: v3.8-rc1
+References: bnc#807188
+
+Fixes following sparse warning:
+
+  fs/notify/inode_mark.c:127:22: warning: symbol 'fsnotify_find_inode_mark_locked' was not declared. Should it be static?
+
+Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+Cc: Eric Paris <eparis@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Acked-by: Jan Kara <jack@suse.cz>
+
+---
+ fs/notify/inode_mark.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/fs/notify/inode_mark.c b/fs/notify/inode_mark.c
+index b13c00a..f303569 100644
+--- a/fs/notify/inode_mark.c
++++ b/fs/notify/inode_mark.c
+@@ -116,8 +116,9 @@ void fsnotify_clear_inode_marks_by_group(struct fsnotify_group *group)
+  * given a group and inode, find the mark associated with that combination.
+  * if found take a reference to that mark and return it, else return NULL
+  */
+-struct fsnotify_mark *fsnotify_find_inode_mark_locked(struct fsnotify_group *group,
+-						      struct inode *inode)
++static struct fsnotify_mark *fsnotify_find_inode_mark_locked(
++		struct fsnotify_group *group,
++		struct inode *inode)
+ {
+ 	struct fsnotify_mark *mark;
+ 	struct hlist_node *pos;
+-- 
+1.8.1.4
+

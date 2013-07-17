@@ -1,0 +1,68 @@
+From 64c20d2a20fce295c260ea6cb3b468edfa2fb07b Mon Sep 17 00:00:00 2001
+From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Date: Tue, 14 Jun 2011 17:29:53 +0200
+Subject: [PATCH 09/10] fsnotify: dont put marks on temporary list when
+ clearing marks by group
+Git-commit: 64c20d2a20fce295c260ea6cb3b468edfa2fb07b
+Patch-mainline: v3.8-rc1
+References: bnc#807188
+
+In clear_marks_by_group_flags() the mark list of a group is iterated and the
+marks are put on a temporary list.
+Since we introduced fsnotify_destroy_mark_locked() we dont need the temp list
+any more and are able to remove the marks while the mark list is iterated and
+the mark list mutex is held.
+
+Signed-off-by: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Signed-off-by: Eric Paris <eparis@redhat.com>
+Acked-by: Jan Kara <jack@suse.cz>
+
+---
+ fs/notify/mark.c                 | 10 ++--------
+ include/linux/fsnotify_backend.h |  1 -
+ 2 files changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/fs/notify/mark.c b/fs/notify/mark.c
+index f9dda03..0e93d90 100644
+--- a/fs/notify/mark.c
++++ b/fs/notify/mark.c
+@@ -299,22 +299,16 @@ void fsnotify_clear_marks_by_group_flags(struct fsnotify_group *group,
+ 					 unsigned int flags)
+ {
+ 	struct fsnotify_mark *lmark, *mark;
+-	LIST_HEAD(free_list);
+ 
+ 	mutex_lock(&group->mark_mutex);
+ 	list_for_each_entry_safe(mark, lmark, &group->marks_list, g_list) {
+ 		if (mark->flags & flags) {
+-			list_add(&mark->free_g_list, &free_list);
+-			list_del_init(&mark->g_list);
+ 			fsnotify_get_mark(mark);
++			fsnotify_destroy_mark_locked(mark, group);
++			fsnotify_put_mark(mark);
+ 		}
+ 	}
+ 	mutex_unlock(&group->mark_mutex);
+-
+-	list_for_each_entry_safe(mark, lmark, &free_list, free_g_list) {
+-		fsnotify_destroy_mark(mark, group);
+-		fsnotify_put_mark(mark);
+-	}
+ }
+ 
+ /*
+diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
+index 26c06af..5a88993 100644
+--- a/include/linux/fsnotify_backend.h
++++ b/include/linux/fsnotify_backend.h
+@@ -287,7 +287,6 @@ struct fsnotify_mark {
+ 		struct fsnotify_inode_mark i;
+ 		struct fsnotify_vfsmount_mark m;
+ 	};
+-	struct list_head free_g_list;	/* tmp list used when freeing this mark */
+ 	__u32 ignored_mask;		/* events types to ignore */
+ #define FSNOTIFY_MARK_FLAG_INODE		0x01
+ #define FSNOTIFY_MARK_FLAG_VFSMOUNT		0x02
+-- 
+1.8.1.4
+

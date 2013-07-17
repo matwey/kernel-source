@@ -1,0 +1,144 @@
+From d8153d4d8b7b6141770e1416c4a338161205ed1b Mon Sep 17 00:00:00 2001
+From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Date: Tue, 14 Jun 2011 17:29:45 +0200
+Subject: [PATCH 01/10] inotify, fanotify: replace fsnotify_put_group() with
+ fsnotify_destroy_group()
+References: bnc#807188
+Git-commit: d8153d4d8b7b6141770e1416c4a338161205ed1b
+Patch-mainline: v3.8-rc1
+
+Currently in fsnotify_put_group() the ref count of a group is decremented and if
+it becomes 0 fsnotify_destroy_group() is called. Since a groups ref count is only
+at group creation set to 1 and never increased after that a call to fsnotify_put_group()
+always results in a call to fsnotify_destroy_group().
+With this patch fsnotify_destroy_group() is called directly.
+
+Signed-off-by: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Signed-off-by: Eric Paris <eparis@redhat.com>
+Acked-by: Jan Kara <jack@suse.cz>
+
+---
+ fs/notify/fanotify/fanotify_user.c | 14 +++++++-------
+ fs/notify/group.c                  |  2 +-
+ fs/notify/inotify/inotify_user.c   |  8 +++-----
+ include/linux/fsnotify_backend.h   |  3 ++-
+ 4 files changed, 13 insertions(+), 14 deletions(-)
+
+diff --git a/fs/notify/fanotify/fanotify_user.c b/fs/notify/fanotify/fanotify_user.c
+index d438036..82ae6d7 100644
+--- a/fs/notify/fanotify/fanotify_user.c
++++ b/fs/notify/fanotify/fanotify_user.c
+@@ -415,7 +415,7 @@ static int fanotify_release(struct inode *ignored, struct file *file)
+ 	wake_up(&group->fanotify_data.access_waitq);
+ #endif
+ 	/* matches the fanotify_init->fsnotify_alloc_group */
+-	fsnotify_put_group(group);
++	fsnotify_destroy_group(group);
+ 
+ 	return 0;
+ }
+@@ -728,13 +728,13 @@ SYSCALL_DEFINE2(fanotify_init, unsigned int, flags, unsigned int, event_f_flags)
+ 		break;
+ 	default:
+ 		fd = -EINVAL;
+-		goto out_put_group;
++		goto out_destroy_group;
+ 	}
+ 
+ 	if (flags & FAN_UNLIMITED_QUEUE) {
+ 		fd = -EPERM;
+ 		if (!capable(CAP_SYS_ADMIN))
+-			goto out_put_group;
++			goto out_destroy_group;
+ 		group->max_events = UINT_MAX;
+ 	} else {
+ 		group->max_events = FANOTIFY_DEFAULT_MAX_EVENTS;
+@@ -743,7 +743,7 @@ SYSCALL_DEFINE2(fanotify_init, unsigned int, flags, unsigned int, event_f_flags)
+ 	if (flags & FAN_UNLIMITED_MARKS) {
+ 		fd = -EPERM;
+ 		if (!capable(CAP_SYS_ADMIN))
+-			goto out_put_group;
++			goto out_destroy_group;
+ 		group->fanotify_data.max_marks = UINT_MAX;
+ 	} else {
+ 		group->fanotify_data.max_marks = FANOTIFY_DEFAULT_MAX_MARKS;
+@@ -751,12 +751,12 @@ SYSCALL_DEFINE2(fanotify_init, unsigned int, flags, unsigned int, event_f_flags)
+ 
+ 	fd = anon_inode_getfd("[fanotify]", &fanotify_fops, group, f_flags);
+ 	if (fd < 0)
+-		goto out_put_group;
++		goto out_destroy_group;
+ 
+ 	return fd;
+ 
+-out_put_group:
+-	fsnotify_put_group(group);
++out_destroy_group:
++	fsnotify_destroy_group(group);
+ 	return fd;
+ }
+ 
+diff --git a/fs/notify/group.c b/fs/notify/group.c
+index 63fc294..cfda328 100644
+--- a/fs/notify/group.c
++++ b/fs/notify/group.c
+@@ -50,7 +50,7 @@ void fsnotify_final_destroy_group(struct fsnotify_group *group)
+  * situtation, the fsnotify_final_destroy_group will get called when that final
+  * mark is freed.
+  */
+-static void fsnotify_destroy_group(struct fsnotify_group *group)
++void fsnotify_destroy_group(struct fsnotify_group *group)
+ {
+ 	/* clear all inode marks for this group */
+ 	fsnotify_clear_marks_by_group(group);
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index 8445fbc..dbafbfc 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -293,10 +293,8 @@ static int inotify_release(struct inode *ignored, struct file *file)
+ 
+ 	pr_debug("%s: group=%p\n", __func__, group);
+ 
+-	fsnotify_clear_marks_by_group(group);
+-
+ 	/* free this group, matching get was inotify_init->fsnotify_obtain_group */
+-	fsnotify_put_group(group);
++	fsnotify_destroy_group(group);
+ 
+ 	return 0;
+ }
+@@ -712,7 +710,7 @@ static struct fsnotify_group *inotify_new_group(unsigned int max_events)
+ 
+ 	if (atomic_inc_return(&group->inotify_data.user->inotify_devs) >
+ 	    inotify_max_user_instances) {
+-		fsnotify_put_group(group);
++		fsnotify_destroy_group(group);
+ 		return ERR_PTR(-EMFILE);
+ 	}
+ 
+@@ -741,7 +739,7 @@ SYSCALL_DEFINE1(inotify_init1, int, flags)
+ 	ret = anon_inode_getfd("inotify", &inotify_fops, group,
+ 				  O_RDONLY | flags);
+ 	if (ret < 0)
+-		fsnotify_put_group(group);
++		fsnotify_destroy_group(group);
+ 
+ 	return ret;
+ }
+diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
+index 63d966d..d2ad345 100644
+--- a/include/linux/fsnotify_backend.h
++++ b/include/linux/fsnotify_backend.h
+@@ -364,7 +364,8 @@ static inline void __fsnotify_d_instantiate(struct dentry *dentry, struct inode
+ extern struct fsnotify_group *fsnotify_alloc_group(const struct fsnotify_ops *ops);
+ /* drop reference on a group from fsnotify_alloc_group */
+ extern void fsnotify_put_group(struct fsnotify_group *group);
+-
++/* destroy group */
++extern void fsnotify_destroy_group(struct fsnotify_group *group);
+ /* take a reference to an event */
+ extern void fsnotify_get_event(struct fsnotify_event *event);
+ extern void fsnotify_put_event(struct fsnotify_event *event);
+-- 
+1.8.1.4
+

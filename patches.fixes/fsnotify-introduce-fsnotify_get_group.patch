@@ -1,0 +1,57 @@
+From 986129520479d689962a42c31acdeaf854ac91f5 Mon Sep 17 00:00:00 2001
+From: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Date: Tue, 14 Jun 2011 17:29:46 +0200
+Subject: [PATCH 02/10] fsnotify: introduce fsnotify_get_group()
+Git-commit: 986129520479d689962a42c31acdeaf854ac91f5
+Patch-mainline: v3.8-rc1
+References: bnc#807188
+
+Introduce fsnotify_get_group() which increments the reference counter of a group.
+
+Signed-off-by: Lino Sanfilippo <LinoSanfilippo@gmx.de>
+Signed-off-by: Eric Paris <eparis@redhat.com>
+Acked-by: Jan Kara <jack@suse.cz>
+
+---
+ fs/notify/group.c                | 8 ++++++++
+ include/linux/fsnotify_backend.h | 4 +++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/fs/notify/group.c b/fs/notify/group.c
+index cfda328..1d57c35 100644
+--- a/fs/notify/group.c
++++ b/fs/notify/group.c
+@@ -63,6 +63,14 @@ void fsnotify_destroy_group(struct fsnotify_group *group)
+ }
+ 
+ /*
++ * Get reference to a group.
++ */
++void fsnotify_get_group(struct fsnotify_group *group)
++{
++	atomic_inc(&group->refcnt);
++}
++
++/*
+  * Drop a reference to a group.  Free it if it's through.
+  */
+ void fsnotify_put_group(struct fsnotify_group *group)
+diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
+index d2ad345..e76cef7 100644
+--- a/include/linux/fsnotify_backend.h
++++ b/include/linux/fsnotify_backend.h
+@@ -360,8 +360,10 @@ static inline void __fsnotify_d_instantiate(struct dentry *dentry, struct inode
+ 
+ /* called from fsnotify listeners, such as fanotify or dnotify */
+ 
+-/* get a reference to an existing or create a new group */
++/* create a new group */
+ extern struct fsnotify_group *fsnotify_alloc_group(const struct fsnotify_ops *ops);
++/* get reference to a group */
++extern void fsnotify_get_group(struct fsnotify_group *group);
+ /* drop reference on a group from fsnotify_alloc_group */
+ extern void fsnotify_put_group(struct fsnotify_group *group);
+ /* destroy group */
+-- 
+1.8.1.4
+

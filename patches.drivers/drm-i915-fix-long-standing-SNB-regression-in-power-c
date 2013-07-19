@@ -54,9 +54,9 @@ Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 Acked-by: Takashi Iwai <tiwai@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_dma.c |   10 +++++-----
- drivers/gpu/drm/i915/intel_pm.c |    4 +++-
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/gpu/drm/i915/i915_dma.c |   11 ++++++-----
+ drivers/gpu/drm/i915/intel_pm.c |    5 +++--
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
 --- a/drivers/gpu/drm/i915/i915_dma.c
 +++ b/drivers/gpu/drm/i915/i915_dma.c
@@ -72,7 +72,15 @@ Acked-by: Takashi Iwai <tiwai@suse.de>
  	i915_dump_device_info(dev_priv);
  
  	if (i915_get_bridge_dev(dev)) {
-@@ -1616,11 +1621,6 @@ int i915_driver_load(struct drm_device *
+@@ -1584,6 +1589,7 @@ int i915_driver_load(struct drm_device *
+ 
+ 	intel_irq_init(dev);
+ 	intel_gt_init(dev);
++	intel_gt_reset(dev);
+ 
+ 	/* Try to make sure MCHBAR is enabled before poking at it */
+ 	intel_setup_mchbar(dev);
+@@ -1616,11 +1622,6 @@ int i915_driver_load(struct drm_device *
  	if (!IS_I945G(dev) && !IS_I945GM(dev))
  		pci_enable_msi(dev->pdev);
  
@@ -86,12 +94,22 @@ Acked-by: Takashi Iwai <tiwai@suse.de>
  	else if (IS_MOBILE(dev) || !IS_GEN2(dev))
 --- a/drivers/gpu/drm/i915/intel_pm.c
 +++ b/drivers/gpu/drm/i915/intel_pm.c
-@@ -4192,5 +4192,7 @@ void intel_gt_init(struct drm_device *de
- 			}
- 		}
+@@ -4177,6 +4177,9 @@ void intel_gt_reset(struct drm_device *d
+ 		if (IS_IVYBRIDGE(dev) || IS_HASWELL(dev))
+ 			__gen6_gt_force_wake_mt_reset(dev_priv);
  	}
--}
- 
++
 +	/* BIOS often leaves RC6 enabled, but disable it for hw init */
 +	intel_disable_gt_powersave(dev);
-+}
+ }
+ 
+ void intel_gt_init(struct drm_device *dev)
+@@ -4185,8 +4188,6 @@ void intel_gt_init(struct drm_device *de
+ 
+ 	spin_lock_init(&dev_priv->gt_lock);
+ 
+-	intel_gt_reset(dev);
+-
+ 	if (IS_VALLEYVIEW(dev)) {
+ 		dev_priv->gt.force_wake_get = vlv_force_wake_get;
+ 		dev_priv->gt.force_wake_put = vlv_force_wake_put;

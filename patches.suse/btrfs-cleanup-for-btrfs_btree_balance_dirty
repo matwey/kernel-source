@@ -93,8 +93,8 @@ index 07a2162..ff5d259 100644
 +}
  
 -	if (num_dirty > thresh) {
--		balance_dirty_pages_ratelimited(
--				   root->fs_info->btree_inode->i_mapping);
+-		balance_dirty_pages_ratelimited_nr(
+-				   root->fs_info->btree_inode->i_mapping, 1);
 -	}
 -	return;
 +void btrfs_btree_balance_dirty_nodelay(struct btrfs_root *root)
@@ -123,8 +123,8 @@ index 883cf82..bd7f1b0 100644
 --- a/fs/btrfs/file.c
 +++ b/fs/btrfs/file.c
 @@ -1349,7 +1349,7 @@ static noinline ssize_t __btrfs_buffered_write(struct file *file,
-
- 		balance_dirty_pages_ratelimited(inode->i_mapping);
+ 		balance_dirty_pages_ratelimited_nr(inode->i_mapping,
+						   dirty_pages);
  		if (dirty_pages < (root->leafsize >> PAGE_CACHE_SHIFT) + 1)
 -			btrfs_btree_balance_dirty(root, 1);
 +			btrfs_btree_balance_dirty(root);

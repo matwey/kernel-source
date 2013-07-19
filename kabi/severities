@@ -12,3 +12,4 @@ drivers/message/fusion/*	PASS
 drivers/staging/*		PASS
 arch/x86/kvm/*			PASS
 drivers/mfd/ucb1400_core	PASS
+fs/btrfs/*			PASS

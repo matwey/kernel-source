@@ -1,0 +1,44 @@
+From: Ben Skeggs <bskeggs@redhat.com>
+Date: Thu, 6 Dec 2012 15:13:06 +1000
+Subject: [PATCH] drm/nouveau/hwmon: s/fan0/fan1/
+Git-commit: b2c36312c9532491ca38275c3862e5c5dfac6033
+Patch-mainline: v3.9
+
+Fan speed info now shown by sensors.
+
+Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
+Acked-by: Jean Delvare <jdelvare@suse.de>
+
+---
+ drivers/gpu/drm/nouveau/nouveau_pm.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/drivers/gpu/drm/nouveau/nouveau_pm.c
++++ b/drivers/gpu/drm/nouveau/nouveau_pm.c
+@@ -490,7 +490,7 @@ static SENSOR_DEVICE_ATTR(update_rate, S
+ 						NULL, 0);
+ 
+ static ssize_t
+-nouveau_hwmon_show_fan0_input(struct device *d, struct device_attribute *attr,
++nouveau_hwmon_show_fan1_input(struct device *d, struct device_attribute *attr,
+ 			      char *buf)
+ {
+ 	struct drm_device *dev = dev_get_drvdata(d);
+@@ -499,7 +499,7 @@ nouveau_hwmon_show_fan0_input(struct dev
+ 
+ 	return snprintf(buf, PAGE_SIZE, "%d\n", therm->fan_sense(therm));
+ }
+-static SENSOR_DEVICE_ATTR(fan0_input, S_IRUGO, nouveau_hwmon_show_fan0_input,
++static SENSOR_DEVICE_ATTR(fan1_input, S_IRUGO, nouveau_hwmon_show_fan1_input,
+ 			  NULL, 0);
+ 
+  static ssize_t
+@@ -672,7 +672,7 @@ static struct attribute *hwmon_attribute
+ 	NULL
+ };
+ static struct attribute *hwmon_fan_rpm_attributes[] = {
+-	&sensor_dev_attr_fan0_input.dev_attr.attr,
++	&sensor_dev_attr_fan1_input.dev_attr.attr,
+ 	NULL
+ };
+ static struct attribute *hwmon_pwm_fan_attributes[] = {

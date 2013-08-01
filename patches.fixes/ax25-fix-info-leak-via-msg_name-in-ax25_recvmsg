@@ -1,0 +1,37 @@
+From ef3313e84acbf349caecae942ab3ab731471f1a1 Mon Sep 17 00:00:00 2001
+From: Mathias Krause <minipli@googlemail.com>
+Date: Sun, 7 Apr 2013 01:51:48 +0000
+Subject: ax25: fix info leak via msg_name in ax25_recvmsg()
+Git-commit: ef3313e84acbf349caecae942ab3ab731471f1a1
+Patch-mainline: v3.9-rc7
+References: bnc#816668 CVE-2013-3223
+
+When msg_namelen is non-zero the sockaddr info gets filled out, as
+requested, but the code fails to initialize the padding bytes of struct
+sockaddr_ax25 inserted by the compiler for alignment. Additionally the
+msg_namelen value is updated to sizeof(struct full_sockaddr_ax25) but is
+not always filled up to this size.
+
+Both issues lead to the fact that the code will leak uninitialized
+kernel stack bytes in net/socket.c.
+
+Fix both issues by initializing the memory with memset(0).
+
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Signed-off-by: Mathias Krause <minipli@googlemail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ net/ax25/af_ax25.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/net/ax25/af_ax25.c	2012-12-10 22:30:57.000000000 -0500
++++ b/net/ax25/af_ax25.c	2013-08-01 12:13:58.093154967 -0400
+@@ -1647,6 +1647,7 @@ static int ax25_recvmsg(struct kiocb *io
+ 		ax25_address src;
+ 		const unsigned char *mac = skb_mac_header(skb);
+ 
++		memset(sax, 0, sizeof(struct full_sockaddr_ax25));
+ 		ax25_addr_parse(mac + 1, skb->data - mac - 1, &src, NULL,
+ 				&digi, NULL, NULL);
+ 		sax->sax25_family = AF_AX25;

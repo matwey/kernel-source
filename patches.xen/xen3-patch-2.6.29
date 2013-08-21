@@ -7,7 +7,7 @@ Patch-mainline: 2.6.29
 Acked-by: Jeff Mahoney <jeffm@suse.com>
 Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches.py
 
---- 12.3.orig/arch/x86/Kconfig	2012-10-23 15:07:45.000000000 +0200
+--- 12.3.orig/arch/x86/Kconfig	2013-04-16 14:05:36.000000000 +0200
 +++ 12.3/arch/x86/Kconfig	2012-10-23 15:12:43.000000000 +0200
 @@ -331,7 +331,6 @@ config X86_XEN
  	depends on X86_32
@@ -93,7 +93,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  
  typedef int vector_irq_t[NR_VECTORS];
  DECLARE_PER_CPU(vector_irq_t, vector_irq);
---- 12.3.orig/arch/x86/include/asm/hypervisor.h	2013-02-18 12:13:06.000000000 +0100
+--- 12.3.orig/arch/x86/include/asm/hypervisor.h	2013-08-08 14:11:48.000000000 +0200
 +++ 12.3/arch/x86/include/asm/hypervisor.h	2012-08-20 13:10:18.000000000 +0200
 @@ -61,3 +61,7 @@ static inline bool hypervisor_x2apic_ava
  }
@@ -8858,9 +8858,9 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  int acpi_processor_cst_has_changed(struct acpi_processor *pr)
  {
  	int cpu;
---- 12.3.orig/drivers/gpu/drm/i915/i915_drv.c	2013-02-18 12:13:06.000000000 +0100
-+++ 12.3/drivers/gpu/drm/i915/i915_drv.c	2012-10-31 11:14:44.000000000 +0100
-@@ -951,7 +951,7 @@ static const struct file_operations i915
+--- 12.3.orig/drivers/gpu/drm/i915/i915_drv.c	2013-08-08 14:11:48.000000000 +0200
++++ 12.3/drivers/gpu/drm/i915/i915_drv.c	2013-08-08 14:16:49.000000000 +0200
+@@ -953,7 +953,7 @@ static const struct file_operations i915
  	.open = drm_open,
  	.release = drm_release,
  	.unlocked_ioctl = drm_ioctl,
@@ -8869,9 +8869,9 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	.poll = drm_poll,
  	.fasync = drm_fasync,
  	.read = drm_read,
---- 12.3.orig/drivers/gpu/drm/i915/i915_drv.h	2013-02-18 12:13:06.000000000 +0100
-+++ 12.3/drivers/gpu/drm/i915/i915_drv.h	2012-10-31 11:14:46.000000000 +0100
-@@ -1436,6 +1436,11 @@ int i915_add_request(struct intel_ring_b
+--- 12.3.orig/drivers/gpu/drm/i915/i915_drv.h	2013-08-08 14:11:48.000000000 +0200
++++ 12.3/drivers/gpu/drm/i915/i915_drv.h	2013-08-08 14:16:49.000000000 +0200
+@@ -1437,6 +1437,11 @@ int i915_add_request(struct intel_ring_b
  		     u32 *seqno);
  int __must_check i915_wait_seqno(struct intel_ring_buffer *ring,
  				 uint32_t seqno);
@@ -8883,7 +8883,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  int i915_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf);
  int __must_check
  i915_gem_object_set_to_gtt_domain(struct drm_i915_gem_object *obj,
---- 12.3.orig/drivers/gpu/drm/i915/i915_gem.c	2013-02-18 12:13:06.000000000 +0100
+--- 12.3.orig/drivers/gpu/drm/i915/i915_gem.c	2013-08-08 14:11:48.000000000 +0200
 +++ 12.3/drivers/gpu/drm/i915/i915_gem.c	2012-10-23 15:12:15.000000000 +0200
 @@ -1308,6 +1308,17 @@ i915_gem_mmap_ioctl(struct drm_device *d
  	return 0;
@@ -9999,7 +9999,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  
  	dev->features        = (NETIF_F_HIGHDMA |
 --- 12.3.orig/drivers/xen/netback/netback.c	2011-04-11 15:03:06.000000000 +0200
-+++ 12.3/drivers/xen/netback/netback.c	2013-02-18 12:16:02.000000000 +0100
++++ 12.3/drivers/xen/netback/netback.c	2013-06-24 16:42:37.000000000 +0200
 @@ -365,7 +365,7 @@ static void xen_network_done_notify(void
  	static struct net_device *eth0_dev = NULL;
  	if (unlikely(eth0_dev == NULL))
@@ -10009,7 +10009,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  }
  /* 
   * Add following to poll() function in NAPI driver (Tigon3 is example):
-@@ -1533,7 +1533,6 @@ static void net_tx_action(unsigned long 
+@@ -1545,7 +1545,6 @@ static void net_tx_action(unsigned long 
  		dev->stats.rx_packets++;
  
  		netif_rx(skb);
@@ -10017,9 +10017,9 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	}
  
   out:
---- 12.3.orig/drivers/xen/netfront/netfront.c	2012-12-18 12:06:27.000000000 +0100
-+++ 12.3/drivers/xen/netfront/netfront.c	2012-12-18 12:06:45.000000000 +0100
-@@ -638,7 +638,7 @@ static int network_open(struct net_devic
+--- 12.3.orig/drivers/xen/netfront/netfront.c	2013-06-24 16:42:21.000000000 +0200
++++ 12.3/drivers/xen/netfront/netfront.c	2013-06-24 16:42:35.000000000 +0200
+@@ -639,7 +639,7 @@ static int network_open(struct net_devic
  		if (RING_HAS_UNCONSUMED_RESPONSES(&np->rx)){
  			netfront_accelerator_call_stop_napi_irq(np, dev);
  
@@ -10028,7 +10028,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  		}
  	}
  	spin_unlock_bh(&np->rx_lock);
-@@ -709,7 +709,7 @@ static void rx_refill_timeout(unsigned l
+@@ -710,7 +710,7 @@ static void rx_refill_timeout(unsigned l
  
  	netfront_accelerator_call_stop_napi_irq(np, dev);
  
@@ -10037,7 +10037,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  }
  
  static void network_alloc_rx_buffers(struct net_device *dev)
-@@ -1063,8 +1063,7 @@ static irqreturn_t netif_int(int irq, vo
+@@ -1074,8 +1074,7 @@ static irqreturn_t netif_int(int irq, vo
  		if (RING_HAS_UNCONSUMED_RESPONSES(&np->rx)) {
  			netfront_accelerator_call_stop_napi_irq(np, dev);
  
@@ -10047,7 +10047,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  		}
  	}
  
-@@ -1476,7 +1475,6 @@ err:	
+@@ -1487,7 +1486,6 @@ err:	
  
  		/* Pass it up. */
  		netif_receive_skb(skb);
@@ -10055,7 +10055,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	}
  
  	/* If we get a callback with very few responses, reduce fill target. */
-@@ -1518,7 +1516,7 @@ err:	
+@@ -1529,7 +1527,7 @@ err:	
  		}
  
  		if (!more_to_do && !accel_more_to_do)
@@ -10064,7 +10064,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  
  		local_irq_restore(flags);
  	}
-@@ -2069,6 +2067,18 @@ static void network_set_multicast_list(s
+@@ -2081,6 +2079,18 @@ static void network_set_multicast_list(s
  {
  }
  
@@ -10083,7 +10083,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  static struct net_device * __devinit create_netdev(struct xenbus_device *dev)
  {
  	int i, err = 0;
-@@ -2124,15 +2134,8 @@ static struct net_device * __devinit cre
+@@ -2136,15 +2146,8 @@ static struct net_device * __devinit cre
  		goto exit_free_tx;
  	}
  
@@ -10100,7 +10100,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	netdev->features        = NETIF_F_IP_CSUM;
  
  	SET_ETHTOOL_OPS(netdev, &network_ethtool_ops);
-@@ -2163,7 +2166,7 @@ inetdev_notify(struct notifier_block *th
+@@ -2179,7 +2182,7 @@ inetdev_notify(struct notifier_block *th
  	struct net_device *dev = ifa->ifa_dev->dev;
  
  	/* UP event and is it one of our devices? */

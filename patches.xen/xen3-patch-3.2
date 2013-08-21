@@ -16,7 +16,7 @@ Acked-by: jbeulich@suse.com
 +	.quad compat_sys_process_vm_readv
 +	.quad compat_sys_process_vm_writev
  ia32_syscall_end:
---- 12.3.orig/arch/x86/include/asm/mach_traps.h	2013-04-16 14:02:56.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/mach_traps.h	2013-06-24 16:30:10.000000000 +0200
 +++ 12.3/arch/x86/include/asm/mach_traps.h	2011-11-28 11:36:37.000000000 +0100
 @@ -5,6 +5,8 @@
  #ifndef _ASM_X86_MACH_DEFAULT_MACH_TRAPS_H
@@ -1857,7 +1857,7 @@ Acked-by: jbeulich@suse.com
  
  #include <asm/apic.h>
  #include <asm/io_apic.h>
---- 12.3.orig/arch/x86/kernel/nmi.c	2013-04-16 14:02:56.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/nmi.c	2013-06-24 16:30:10.000000000 +0200
 +++ 12.3/arch/x86/kernel/nmi.c	2012-06-13 15:57:05.000000000 +0200
 @@ -191,15 +191,12 @@ pci_serr_error(unsigned char reason, str
  	pr_emerg("Dazed and confused, but trying to continue\n");
@@ -2368,7 +2368,7 @@ Acked-by: jbeulich@suse.com
  	depends on PCI_MMCONFIG && EXPERIMENTAL
  	help
  	  Support for error detection and correction the Intel
---- 12.3.orig/drivers/edac/sb_edac.c	2013-04-16 14:02:57.000000000 +0200
+--- 12.3.orig/drivers/edac/sb_edac.c	2013-06-24 16:30:10.000000000 +0200
 +++ 12.3/drivers/edac/sb_edac.c	2012-10-04 13:09:34.000000000 +0200
 @@ -1552,7 +1552,11 @@ static int sbridge_mce_check_error(struc
  		mce->socketid, mce->apicid);
@@ -2503,8 +2503,8 @@ Acked-by: jbeulich@suse.com
  obj-$(CONFIG_XEN_BLKDEV_BACKEND)	+= blkback/
  obj-$(CONFIG_XEN_BLKDEV_TAP)		+= blktap/
  obj-$(filter m,$(CONFIG_XEN_BLKDEV_TAP2)) += blktap2/ blktap2-new/
---- 12.3.orig/drivers/xen/blkback/blkback.c	2013-04-16 14:08:26.000000000 +0200
-+++ 12.3/drivers/xen/blkback/blkback.c	2013-04-16 14:08:35.000000000 +0200
+--- 12.3.orig/drivers/xen/blkback/blkback.c	2013-06-24 16:45:49.000000000 +0200
++++ 12.3/drivers/xen/blkback/blkback.c	2013-06-24 16:46:12.000000000 +0200
 @@ -39,6 +39,7 @@
  #include <linux/kthread.h>
  #include <linux/freezer.h>
@@ -2533,7 +2533,7 @@ Acked-by: jbeulich@suse.com
  }
  
  int blkif_schedule(void *arg)
-@@ -316,6 +318,47 @@ irqreturn_t blkif_be_int(int irq, void *
+@@ -326,6 +328,47 @@ irqreturn_t blkif_be_int(int irq, void *
   * DOWNWARD CALLS -- These interface with the block-device layer proper.
   */
  
@@ -2581,7 +2581,7 @@ Acked-by: jbeulich@suse.com
  static int _do_block_io_op(blkif_t *blkif)
  {
  	blkif_back_rings_t *blk_rings = &blkif->blk_rings;
-@@ -370,6 +413,11 @@ static int _do_block_io_op(blkif_t *blki
+@@ -389,6 +432,11 @@ static int _do_block_io_op(blkif_t *blki
  
  			dispatch_rw_block_io(blkif, &req, pending_req);
  			break;
@@ -2594,7 +2594,7 @@ Acked-by: jbeulich@suse.com
  			/* A good sign something is wrong: sleep for a while to
  			 * avoid excessive CPU consumption by a bad guest. */
 --- 12.3.orig/drivers/xen/blkback/common.h	2013-02-20 09:20:37.000000000 +0100
-+++ 12.3/drivers/xen/blkback/common.h	2013-04-16 14:08:36.000000000 +0200
++++ 12.3/drivers/xen/blkback/common.h	2013-06-24 16:46:13.000000000 +0200
 @@ -27,7 +27,6 @@
  #ifndef __BLKIF__BACKEND__COMMON_H__
  #define __BLKIF__BACKEND__COMMON_H__
@@ -2631,7 +2631,7 @@ Acked-by: jbeulich@suse.com
  	int                 st_rd_sect;
  	int                 st_wr_sect;
  
-@@ -127,7 +133,7 @@ unsigned long vbd_secsize(struct vbd *vb
+@@ -128,7 +134,7 @@ unsigned long vbd_secsize(struct vbd *vb
  
  struct phys_req {
  	unsigned short       dev;
@@ -2862,7 +2862,7 @@ Acked-by: jbeulich@suse.com
  	/* Hard sector size and max sectors impersonate the equiv. hardware. */
  	blk_queue_logical_block_size(rq, sector_size);
  	blk_queue_max_hw_sectors(rq, 512);
---- 12.3.orig/drivers/xen/blktap/blktap.c	2012-12-06 16:14:57.000000000 +0100
+--- 12.3.orig/drivers/xen/blktap/blktap.c	2013-06-24 16:45:51.000000000 +0200
 +++ 12.3/drivers/xen/blktap/blktap.c	2011-11-18 15:35:59.000000000 +0100
 @@ -42,6 +42,7 @@
  #include <linux/kthread.h>
@@ -2882,7 +2882,7 @@ Acked-by: jbeulich@suse.com
  #include <linux/interrupt.h>
  #include <linux/slab.h>
  #include <linux/blkdev.h>
---- 12.3.orig/drivers/xen/blktap/xenbus.c	2012-02-16 13:29:26.000000000 +0100
+--- 12.3.orig/drivers/xen/blktap/xenbus.c	2013-06-24 16:43:11.000000000 +0200
 +++ 12.3/drivers/xen/blktap/xenbus.c	2011-11-18 15:35:43.000000000 +0100
 @@ -35,7 +35,6 @@
   */
@@ -3230,8 +3230,8 @@ Acked-by: jbeulich@suse.com
  	.ndo_change_mtu	        = NULL, /* allow arbitrary mtu */
  };
  
---- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:17:08.000000000 +0100
-+++ 12.3/drivers/xen/netback/netback.c	2013-02-18 12:17:14.000000000 +0100
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-06-24 16:45:31.000000000 +0200
++++ 12.3/drivers/xen/netback/netback.c	2013-06-24 16:46:05.000000000 +0200
 @@ -78,15 +78,18 @@ static struct timer_list netbk_tx_pendin
  
  #define MAX_PENDING_REQS 256
@@ -3301,7 +3301,7 @@ Acked-by: jbeulich@suse.com
  }
  
  /* This is a twin to netbk_gop_skb.  Assume that netbk_gop_skb was
-@@ -1087,11 +1098,11 @@ static gnttab_map_grant_ref_t *netbk_get
+@@ -1100,11 +1111,11 @@ static gnttab_map_grant_ref_t *netbk_get
  {
  	struct skb_shared_info *shinfo = skb_shinfo(skb);
  	skb_frag_t *frags = shinfo->frags;
@@ -3315,7 +3315,7 @@ Acked-by: jbeulich@suse.com
  
  	for (i = start; i < shinfo->nr_frags; i++, txp++) {
  		pending_idx = pending_ring[MASK_PEND_IDX(pending_cons++)];
-@@ -1103,7 +1114,7 @@ static gnttab_map_grant_ref_t *netbk_get
+@@ -1116,7 +1127,7 @@ static gnttab_map_grant_ref_t *netbk_get
  		memcpy(&pending_tx_info[pending_idx].req, txp, sizeof(*txp));
  		netif_get(netif);
  		pending_tx_info[pending_idx].netif = netif;
@@ -3324,7 +3324,7 @@ Acked-by: jbeulich@suse.com
  	}
  
  	return mop;
-@@ -1113,7 +1124,7 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1126,7 +1137,7 @@ static int netbk_tx_check_mop(struct sk_
  			       gnttab_map_grant_ref_t **mopp)
  {
  	gnttab_map_grant_ref_t *mop = *mopp;
@@ -3333,7 +3333,7 @@ Acked-by: jbeulich@suse.com
  	netif_t *netif = pending_tx_info[pending_idx].netif;
  	netif_tx_request_t *txp;
  	struct skb_shared_info *shinfo = skb_shinfo(skb);
-@@ -1134,12 +1145,12 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1147,12 +1158,12 @@ static int netbk_tx_check_mop(struct sk_
  	}
  
  	/* Skip first skb fragment if it is on same page as header fragment. */
@@ -3348,7 +3348,7 @@ Acked-by: jbeulich@suse.com
  
  		/* Check error status: if okay then remember grant handle. */
  		newerr = (++mop)->status;
-@@ -1167,7 +1178,7 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1180,7 +1191,7 @@ static int netbk_tx_check_mop(struct sk_
  		pending_idx = *((u16 *)skb->data);
  		netif_idx_release(pending_idx);
  		for (j = start; j < i; j++) {
@@ -3357,7 +3357,7 @@ Acked-by: jbeulich@suse.com
  			netif_idx_release(pending_idx);
  		}
  
-@@ -1186,20 +1197,16 @@ static void netbk_fill_frags(struct sk_b
+@@ -1199,20 +1210,16 @@ static void netbk_fill_frags(struct sk_b
  	int i;
  
  	for (i = 0; i < nr_frags; i++) {
@@ -3381,7 +3381,7 @@ Acked-by: jbeulich@suse.com
  
  		skb->len += txp->size;
  		skb->data_len += txp->size;
-@@ -1428,14 +1435,11 @@ static void net_tx_action(unsigned long 
+@@ -1440,14 +1447,11 @@ static void net_tx_action(unsigned long 
  		__skb_put(skb, data_len);
  
  		skb_shinfo(skb)->nr_frags = ret;
@@ -3420,9 +3420,9 @@ Acked-by: jbeulich@suse.com
  #include <linux/mutex.h>
  #include <asm/hypervisor.h>
  #include <xen/xenbus.h>
---- 12.3.orig/drivers/xen/netfront/netfront.c	2012-12-18 12:11:11.000000000 +0100
-+++ 12.3/drivers/xen/netfront/netfront.c	2012-12-18 12:11:24.000000000 +0100
-@@ -753,7 +753,7 @@ no_skb:
+--- 12.3.orig/drivers/xen/netfront/netfront.c	2013-06-24 16:45:29.000000000 +0200
++++ 12.3/drivers/xen/netfront/netfront.c	2013-06-24 16:46:03.000000000 +0200
+@@ -754,7 +754,7 @@ no_skb:
  		}
  
  		skb_reserve(skb, 16 + NET_IP_ALIGN); /* mimic dev_alloc_skb() */
@@ -3431,7 +3431,7 @@ Acked-by: jbeulich@suse.com
  		skb_shinfo(skb)->nr_frags = 1;
  		__skb_queue_tail(&np->rx_batch, skb);
  	}
-@@ -786,8 +786,9 @@ no_skb:
+@@ -787,8 +787,9 @@ no_skb:
  		BUG_ON((signed short)ref < 0);
  		np->grant_rx_ref[id] = ref;
  
@@ -3443,7 +3443,7 @@ Acked-by: jbeulich@suse.com
  
  		req = RING_GET_REQUEST(&np->rx, req_prod + i);
  		if (!np->copying_receiver) {
-@@ -914,13 +915,13 @@ static void xennet_make_frags(struct sk_
+@@ -915,13 +916,13 @@ static void xennet_make_frags(struct sk_
  		ref = gnttab_claim_grant_reference(&np->gref_tx_head);
  		BUG_ON((signed short)ref < 0);
  
@@ -3459,7 +3459,7 @@ Acked-by: jbeulich@suse.com
  		tx->flags = 0;
  	}
  
-@@ -1184,8 +1185,8 @@ static int xennet_get_responses(struct n
+@@ -1195,8 +1196,8 @@ static int xennet_get_responses(struct n
  
  			if (!xen_feature(XENFEAT_auto_translated_physmap)) {
  				/* Remap the page. */
@@ -3470,7 +3470,7 @@ Acked-by: jbeulich@suse.com
  				unsigned long pfn = page_to_pfn(page);
  				void *vaddr = page_address(page);
  
-@@ -1251,23 +1252,21 @@ static RING_IDX xennet_fill_frags(struct
+@@ -1262,23 +1263,21 @@ static RING_IDX xennet_fill_frags(struct
  	struct skb_shared_info *shinfo = skb_shinfo(skb);
  	int nr_frags = shinfo->nr_frags;
  	RING_IDX cons = np->rx.rsp_cons;
@@ -3497,7 +3497,7 @@ Acked-by: jbeulich@suse.com
  		nr_frags++;
  	}
  
-@@ -1373,7 +1372,8 @@ err:	
+@@ -1384,7 +1383,8 @@ err:	
  			}
  		}
  
@@ -3507,7 +3507,7 @@ Acked-by: jbeulich@suse.com
  		NETFRONT_SKB_CB(skb)->offset = rx->offset;
  
  		len = rx->status;
-@@ -1384,10 +1384,11 @@ err:	
+@@ -1395,10 +1395,11 @@ err:	
  		if (rx->status > len) {
  			skb_shinfo(skb)->frags[0].page_offset =
  				rx->offset + len;
@@ -3521,7 +3521,7 @@ Acked-by: jbeulich@suse.com
  			skb_shinfo(skb)->nr_frags = 0;
  		}
  
-@@ -1459,7 +1460,7 @@ err:	
+@@ -1470,7 +1471,7 @@ err:	
  
  		memcpy(skb->data, vaddr + offset, skb_headlen(skb));
  
@@ -3530,7 +3530,7 @@ Acked-by: jbeulich@suse.com
  			__free_page(page);
  
  		/* Ethernet work: Delayed to here as it peeks the header. */
-@@ -1557,6 +1558,8 @@ static void netif_release_rx_bufs_flip(s
+@@ -1568,6 +1569,8 @@ static void netif_release_rx_bufs_flip(s
  	spin_lock_bh(&np->rx_lock);
  
  	for (id = 0; id < NET_RX_RING_SIZE; id++) {
@@ -3539,7 +3539,7 @@ Acked-by: jbeulich@suse.com
  		if ((ref = np->grant_rx_ref[id]) == GRANT_INVALID_REF) {
  			unused++;
  			continue;
-@@ -1568,8 +1571,9 @@ static void netif_release_rx_bufs_flip(s
+@@ -1579,8 +1582,9 @@ static void netif_release_rx_bufs_flip(s
  		np->grant_rx_ref[id] = GRANT_INVALID_REF;
  		add_id_to_freelist(np->rx_skbs, id);
  
@@ -3550,7 +3550,7 @@ Acked-by: jbeulich@suse.com
  			balloon_release_driver_page(page);
  			skb_shinfo(skb)->nr_frags = 0;
  			dev_kfree_skb(skb);
-@@ -1579,7 +1583,6 @@ static void netif_release_rx_bufs_flip(s
+@@ -1590,7 +1594,6 @@ static void netif_release_rx_bufs_flip(s
  
  		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
  			/* Remap the page. */
@@ -3558,7 +3558,7 @@ Acked-by: jbeulich@suse.com
  			unsigned long pfn = page_to_pfn(page);
  			void *vaddr = page_address(page);
  
-@@ -1831,23 +1834,23 @@ static int network_connect(struct net_de
+@@ -1843,23 +1846,23 @@ static int network_connect(struct net_de
  
  	/* Step 2: Rebuild the RX buffer freelist and the RX ring itself. */
  	for (requeue_idx = 0, i = 0; i < NET_RX_RING_SIZE; i++) {
@@ -3587,7 +3587,7 @@ Acked-by: jbeulich@suse.com
  		}
  		req->gref = ref;
  		req->id   = requeue_idx;
-@@ -2074,7 +2077,7 @@ static const struct net_device_ops xenne
+@@ -2086,7 +2089,7 @@ static const struct net_device_ops xenne
  	.ndo_open               = network_open,
  	.ndo_stop               = network_close,
  	.ndo_start_xmit         = network_start_xmit,
@@ -3596,7 +3596,7 @@ Acked-by: jbeulich@suse.com
  	.ndo_set_mac_address    = xennet_set_mac_address,
  	.ndo_validate_addr      = eth_validate_addr,
  	.ndo_fix_features       = xennet_fix_features,
---- 12.3.orig/drivers/xen/pcifront/pci.c	2013-04-16 14:02:57.000000000 +0200
+--- 12.3.orig/drivers/xen/pcifront/pci.c	2013-06-24 16:30:10.000000000 +0200
 +++ 12.3/drivers/xen/pcifront/pci.c	2011-11-18 15:48:41.000000000 +0100
 @@ -3,8 +3,6 @@
   *
@@ -4069,7 +4069,7 @@ Acked-by: jbeulich@suse.com
  
  #endif /* CONFIG_PARAVIRT_XEN */
  
---- 12.3.orig/include/xen/blkif.h	2013-04-16 14:02:57.000000000 +0200
+--- 12.3.orig/include/xen/blkif.h	2013-06-24 16:30:10.000000000 +0200
 +++ 12.3/include/xen/blkif.h	2012-04-04 10:27:25.000000000 +0200
 @@ -46,12 +46,21 @@ struct blkif_x86_32_request {
  	blkif_sector_t sector_number;/* start sector idx on disk (r/w only)  */

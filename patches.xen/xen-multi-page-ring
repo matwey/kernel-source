@@ -2,9 +2,9 @@ From: jbeulich@suse.com
 Subject: extend base interfaces to support multi-page rings for frontend/backend communication
 Patch-mainline: n/a
 
---- 12.3.orig/drivers/xen/blkback/interface.c	2011-11-10 08:37:23.000000000 +0100
-+++ 12.3/drivers/xen/blkback/interface.c	2011-11-10 08:52:02.000000000 +0100
-@@ -66,7 +66,7 @@ int blkif_map(blkif_t *blkif, grant_ref_
+--- 12.3.orig/drivers/xen/blkback/interface.c	2013-06-24 16:44:08.000000000 +0200
++++ 12.3/drivers/xen/blkback/interface.c	2013-06-24 16:52:19.000000000 +0200
+@@ -67,7 +67,7 @@ int blkif_map(blkif_t *blkif, grant_ref_
  	if (blkif->irq)
  		return 0;
  
@@ -14,8 +14,8 @@ Patch-mainline: n/a
  		return PTR_ERR(area);
  	blkif->blk_ring_area = area;
 --- 12.3.orig/drivers/xen/blktap/interface.c	2012-04-04 10:14:34.000000000 +0200
-+++ 12.3/drivers/xen/blktap/interface.c	2011-10-10 11:57:58.000000000 +0200
-@@ -65,7 +65,7 @@ int tap_blkif_map(blkif_t *blkif, struct
++++ 12.3/drivers/xen/blktap/interface.c	2013-06-24 16:52:21.000000000 +0200
+@@ -66,7 +66,7 @@ int tap_blkif_map(blkif_t *blkif, struct
  	if (blkif->irq)
  		return 0;
  
@@ -74,9 +74,9 @@ Patch-mainline: n/a
  	if (IS_ERR(area)) {
  		err = PTR_ERR(area);
  		goto err_rx;
---- 12.3.orig/drivers/xen/scsiback/interface.c	2011-04-11 15:00:59.000000000 +0200
-+++ 12.3/drivers/xen/scsiback/interface.c	2011-10-10 11:58:37.000000000 +0200
-@@ -72,7 +72,7 @@ int scsiback_init_sring(struct vscsibk_i
+--- 12.3.orig/drivers/xen/scsiback/interface.c	2013-06-24 16:37:47.000000000 +0200
++++ 12.3/drivers/xen/scsiback/interface.c	2013-06-24 16:52:26.000000000 +0200
+@@ -73,7 +73,7 @@ int scsiback_init_sring(struct vscsibk_i
  		return -1;
  	}
  
@@ -96,9 +96,9 @@ Patch-mainline: n/a
  	if (IS_ERR(area))
  		return PTR_ERR(area);
  	tpmif->tx_area = area;
---- 12.3.orig/drivers/xen/usbback/interface.c	2011-04-11 13:43:15.000000000 +0200
-+++ 12.3/drivers/xen/usbback/interface.c	2011-10-10 11:59:03.000000000 +0200
-@@ -113,11 +113,11 @@ int usbif_map(usbif_t *usbif, grant_ref_
+--- 12.3.orig/drivers/xen/usbback/interface.c	2013-06-07 10:13:37.000000000 +0200
++++ 12.3/drivers/xen/usbback/interface.c	2013-06-24 16:52:29.000000000 +0200
+@@ -114,11 +114,11 @@ int usbif_map(usbif_t *usbif, grant_ref_
  	if (usbif->irq)
  		return 0;
  

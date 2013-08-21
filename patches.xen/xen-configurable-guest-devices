@@ -7,7 +7,7 @@ value).
 Similarly, allow the number of simultaneous transmits in netback to be
 configurable.
 
---- 12.3.orig/arch/x86/include/mach-xen/asm/irq_vectors.h	2011-11-17 16:00:04.000000000 +0100
+--- 12.3.orig/arch/x86/include/mach-xen/asm/irq_vectors.h	2013-07-05 10:09:14.000000000 +0200
 +++ 12.3/arch/x86/include/mach-xen/asm/irq_vectors.h	2011-11-18 16:44:59.000000000 +0100
 @@ -88,9 +88,9 @@ extern int nr_pirqs;
  
@@ -67,9 +67,9 @@ configurable.
  
  	if (is_initial_xendomain()) {
  		nr_irqs_gsi = NR_IRQS_LEGACY;
---- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:20:58.000000000 +0100
-+++ 12.3/drivers/xen/netback/netback.c	2013-02-18 12:21:07.000000000 +0100
-@@ -78,7 +78,7 @@ static DECLARE_TASKLET(net_rx_tasklet, n
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-07-05 10:13:04.000000000 +0200
++++ 12.3/drivers/xen/netback/netback.c	2013-07-05 10:13:15.000000000 +0200
+@@ -90,7 +90,7 @@ static DECLARE_TASKLET(net_rx_tasklet, n
  static struct timer_list net_timer;
  static struct timer_list netbk_tx_pending_timer;
  
@@ -78,11 +78,3 @@ configurable.
  
  /* Discriminate from any valid pending_idx value. */
  #define INVALID_PENDING_IDX 0xffff
-@@ -1331,6 +1331,7 @@ static void net_tx_action(unsigned long 
- 	net_tx_action_dealloc();
- 
- 	mop = tx_map_ops;
-+	BUILD_BUG_ON(MAX_SKB_FRAGS >= MAX_PENDING_REQS);
- 	while (((NR_PENDING_REQS + MAX_SKB_FRAGS) < MAX_PENDING_REQS) &&
- 		!list_empty(&net_schedule_list)) {
- 		/* Get a netif from the list with work to do. */

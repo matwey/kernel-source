@@ -3,6 +3,7 @@ Date: Fri, 23 Aug 2013 10:34:42 +0200
 Subject: [PATCH 108/122] Btrfs: fix for patch "cleanup: don't check the same
  thing twice"
 Patch-mainline: 3.12
+References: bnc#840656
 Git-commit: 48475471728f060bfd2e686f592ef208d3ba8b7d
 
 Mitch Harder noticed that the patch 3c64a1a mentioned in the subject

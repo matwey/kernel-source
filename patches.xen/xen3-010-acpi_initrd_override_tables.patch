@@ -16,8 +16,8 @@ Cleanup only, no functional change.
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 Automatically created from "patches.arch/010-acpi_initrd_override_tables.patch" by xen-port-patches.py
 
---- head.orig/arch/x86/kernel/setup-xen.c	2013-08-12 14:11:03.000000000 +0200
-+++ head/arch/x86/kernel/setup-xen.c	2013-08-12 16:03:28.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/setup-xen.c	2013-10-21 12:07:06.000000000 +0200
++++ 13.1/arch/x86/kernel/setup-xen.c	2013-10-21 12:08:47.000000000 +0200
 @@ -474,6 +474,8 @@ static void __init reserve_initrd(void)
  	relocate_initrd();
  
@@ -27,7 +27,7 @@ Automatically created from "patches.arch/010-acpi_initrd_override_tables.patch" 
  }
  #else
  static void __init early_reserve_initrd(void)
-@@ -1263,10 +1265,6 @@ void __init setup_arch(char **cmdline_p)
+@@ -1260,10 +1262,6 @@ void __init setup_arch(char **cmdline_p)
  
  	reserve_initrd();
  

@@ -1,0 +1,74 @@
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: Linux 3.11.6
+Patch-mainline: 3.11.6
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Automatically created from "patches.kernel.org/patch-3.11.5-6" by xen-port-patches.py
+
+--- 13.1.orig/arch/x86/kernel/e820-xen.c	2013-03-25 09:13:57.000000000 +0100
++++ 13.1/arch/x86/kernel/e820-xen.c	2013-10-21 12:07:06.000000000 +0200
+@@ -713,15 +713,18 @@ __init void e820_setup_gap(void)
+  * boot_params.e820_map, others are passed via SETUP_E820_EXT node of
+  * linked list of struct setup_data, which is parsed here.
+  */
+-void __init parse_e820_ext(struct setup_data *sdata)
++void __init parse_e820_ext(u64 phys_addr, u32 data_len)
+ {
+ 	int entries;
+ 	struct e820entry *extmap;
++	struct setup_data *sdata;
+ 
++	sdata = early_memremap(phys_addr, data_len);
+ 	entries = sdata->len / sizeof(struct e820entry);
+ 	extmap = (struct e820entry *)(sdata->data);
+ 	__append_e820_map(extmap, entries);
+ 	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
++	early_iounmap(sdata, data_len);
+ 	printk(KERN_INFO "e820: extended physical RAM map:\n");
+ 	_e820_print_map(&e820, "extended");
+ }
+--- 13.1.orig/arch/x86/kernel/setup-xen.c	2013-08-12 14:11:03.000000000 +0200
++++ 13.1/arch/x86/kernel/setup-xen.c	2013-10-21 12:07:06.000000000 +0200
+@@ -488,25 +488,23 @@ static void __init parse_setup_data(void
+ {
+ #ifndef CONFIG_XEN
+ 	struct setup_data *data;
+-	u64 pa_data;
++	u64 pa_data, pa_next;
+ 
+ 	pa_data = boot_params.hdr.setup_data;
+ 	while (pa_data) {
+-		u32 data_len, map_len;
++		u32 data_len, map_len, data_type;
+ 
+ 		map_len = max(PAGE_SIZE - (pa_data & ~PAGE_MASK),
+ 			      (u64)sizeof(struct setup_data));
+ 		data = early_memremap(pa_data, map_len);
+ 		data_len = data->len + sizeof(struct setup_data);
+-		if (data_len > map_len) {
+-			early_iounmap(data, map_len);
+-			data = early_memremap(pa_data, data_len);
+-			map_len = data_len;
+-		}
++		data_type = data->type;
++		pa_next = data->next;
++		early_iounmap(data, map_len);
+ 
+-		switch (data->type) {
++		switch (data_type) {
+ 		case SETUP_E820_EXT:
+-			parse_e820_ext(data);
++			parse_e820_ext(pa_data, data_len);
+ 			break;
+ 		case SETUP_DTB:
+ 			add_dtb(pa_data);
+@@ -514,8 +512,7 @@ static void __init parse_setup_data(void
+ 		default:
+ 			break;
+ 		}
+-		pa_data = data->next;
+-		early_iounmap(data, map_len);
++		pa_data = pa_next;
+ 	}
+ #endif
+ }

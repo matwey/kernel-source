@@ -4,9 +4,9 @@ Patch-mainline: obsolete
 
 $subject says it all.
 
---- head.orig/arch/x86/kernel/setup-xen.c	2013-08-12 16:03:28.000000000 +0200
-+++ head/arch/x86/kernel/setup-xen.c	2013-08-12 16:16:58.000000000 +0200
-@@ -924,15 +924,17 @@ void __init setup_arch(char **cmdline_p)
+--- 13.1.orig/arch/x86/kernel/setup-xen.c	2013-10-21 12:08:47.000000000 +0200
++++ 13.1/arch/x86/kernel/setup-xen.c	2013-10-21 12:09:19.000000000 +0200
+@@ -921,15 +921,17 @@ void __init setup_arch(char **cmdline_p)
  	unsigned long p2m_pages;
  	struct physdev_set_iopl set_iopl;
  

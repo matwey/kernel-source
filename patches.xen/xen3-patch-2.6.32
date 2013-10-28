@@ -5781,6 +5781,23 @@ Automatically created from "patches.kernel.org/patch-2.6.32" by xen-port-patches
  #ifdef CONFIG_DEBUG_VIRTUAL
  unsigned long __phys_addr(unsigned long x)
  {
+--- head.orig/arch/x86/oprofile/xenoprof.c	2011-01-31 17:49:31.000000000 +0100
++++ head/arch/x86/oprofile/xenoprof.c	2013-10-11 10:09:53.000000000 +0200
+@@ -147,10 +147,12 @@ int xenoprof_create_files(struct super_b
+ 
+ 	for (i = 0; i < num_events; ++i) {
+ 		struct dentry * dir;
+-		char buf[2];
++		char buf[4];
+  
+-		snprintf(buf, 2, "%d", i);
++		snprintf(buf, sizeof(buf), "%d", i);
+ 		dir = oprofilefs_mkdir(sb, root, buf);
++		if (!dir)
++			continue;
+ 		oprofilefs_create_ulong(sb, dir, "enabled",
+ 					&counter_config[i].enabled);
+ 		oprofilefs_create_ulong(sb, dir, "event",
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
 +++ head/drivers/acpi/acpi_pad-xen.c	2012-06-01 11:18:36.000000000 +0200
 @@ -0,0 +1,235 @@

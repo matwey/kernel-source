@@ -1,0 +1,24 @@
+From: Axel Lin <axel.lin@ingics.com>
+Date: Tue, 19 Nov 2013 07:31:20 +0000
+Subject: gpio: ucb1400: Add MODULE_ALIAS
+Patch-mainline: Queued in subsystem maintainer repository
+Git-repo: http://git.kernel.org/cgit/linux/kernel/git/linusw/linux-gpio.git/commit/?h=fixes
+Git-commit: 802e322fcd6bbae878ab2d324b26cab6eaa931b7
+
+This driver can be built as a module now.
+Add MODULE_ALIAS to support module auto-loading.
+
+Signed-off-by: Axel Lin <axel.lin@ingics.com>
+Acked-by: Jean Delvare <jdelvare@suse.de>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ drivers/gpio/gpio-ucb1400.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/drivers/gpio/gpio-ucb1400.c
++++ b/drivers/gpio/gpio-ucb1400.c
+@@ -105,3 +105,4 @@ module_platform_driver(ucb1400_gpio_driv
+ 
+ MODULE_DESCRIPTION("Philips UCB1400 GPIO driver");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:ucb1400_gpio");

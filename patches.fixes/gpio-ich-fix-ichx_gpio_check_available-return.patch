@@ -1,7 +1,7 @@
 From: Mika Westerberg <mika.westerberg@linux.intel.com>
 Date: Wed, 27 Feb 2013 17:25:15 +0200
 Subject: gpio-ich: Fix ichx_gpio_check_available() return what callers expect
-Patch-mainline: Merged by maintainer 2 Mar 2013 http://git.secretlab.ca/?p=linux.git;a=commit;h=e97f9b5277afeabb54892ebc6f68500098467ba1
+Patch-mainline: v3.9
 Git-commit: e97f9b5277afeabb54892ebc6f68500098467ba1
 
 ichx_gpio_check_available() returns either 0 or -ENXIO depending on whether

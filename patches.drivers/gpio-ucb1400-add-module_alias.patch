@@ -1,9 +1,8 @@
 From: Axel Lin <axel.lin@ingics.com>
 Date: Tue, 19 Nov 2013 07:31:20 +0000
 Subject: gpio: ucb1400: Add MODULE_ALIAS
-Patch-mainline: Queued in subsystem maintainer repository
-Git-repo: http://git.kernel.org/cgit/linux/kernel/git/linusw/linux-gpio.git/commit/?h=fixes
-Git-commit: 802e322fcd6bbae878ab2d324b26cab6eaa931b7
+Patch-mainline: v3.13
+Git-commit: 41ad730e5d2cbad29e64764db2929707a4a883e2
 
 This driver can be built as a module now.
 Add MODULE_ALIAS to support module auto-loading.

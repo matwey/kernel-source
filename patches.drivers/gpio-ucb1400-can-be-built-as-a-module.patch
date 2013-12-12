@@ -1,8 +1,7 @@
 Date: Fri, 13 Sep 2013 21:41:48 +0200
 From: Jean Delvare <jdelvare@suse.de>
 Subject: gpio: ucb1400: Can be built as a module
-Patch-mainline: Queued in subsystem maintainer repository
-Git-repo: https://git.kernel.org/cgit/linux/kernel/git/linusw/linux-gpio.git
+Patch-mainline: v3.13
 Git-commit: 7d1815e1e51af36b5b52983cce8bc23cd79a92a9
 
 With the recent code cleanup from Marek Vasut, driver gpio-ucb1400 can

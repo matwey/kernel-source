@@ -1,0 +1,30 @@
+From: Thomas Renninger <trenn@suse.de>
+Subject: x6: Fix reserve_initrd so that acpi_initrd_override is reached
+References: bnc#831836
+Patch-Mainline: never, code changed and things should be fixed differently
+
+also if initrd is not relocated.
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+
+Automatically created from "patches.arch/x86_setup_fix_acpi_override.patch" by xen-port-patches.py
+
+--- 12.3.orig/arch/x86/kernel/setup-xen.c	2013-01-25 14:25:59.000000000 +0100
++++ 12.3/arch/x86/kernel/setup-xen.c	2013-11-27 11:37:06.000000000 +0100
+@@ -460,13 +460,11 @@ static void __init reserve_initrd(void)
+ #ifdef CONFIG_X86_64_XEN
+ 		initrd_below_start_ok = 1;
+ #endif
+-		return;
++	} else {
++		relocate_initrd();
++		memblock_free(ramdisk_image, ramdisk_end - ramdisk_image);
+ 	}
+ 
+-	relocate_initrd();
+-
+-	memblock_free(ramdisk_image, ramdisk_end - ramdisk_image);
+-
+ 	acpi_initrd_override((void *)initrd_start, initrd_end - initrd_start);
+ }
+ #else

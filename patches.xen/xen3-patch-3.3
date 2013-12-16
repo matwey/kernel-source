@@ -485,7 +485,7 @@ Acked-by: jbeulich@suse.com
 -	.quad compat_sys_process_vm_readv
 -	.quad compat_sys_process_vm_writev
 -ia32_syscall_end:
---- 12.3.orig/arch/x86/include/asm/debugreg.h	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/debugreg.h	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/arch/x86/include/asm/debugreg.h	2012-04-10 17:25:00.000000000 +0200
 @@ -168,7 +168,7 @@ extern void aout_dump_debugregs(struct u
  
@@ -1549,7 +1549,7 @@ Acked-by: jbeulich@suse.com
  	inc_irq_stat(x86_platform_ipis);
  
  	if (x86_platform_ipi_callback)
---- 12.3.orig/arch/x86/kernel/irq_64.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/irq_64.c	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/arch/x86/kernel/irq_64.c	2012-05-11 10:57:43.000000000 +0200
 @@ -39,7 +39,9 @@ static inline void stack_overflow_check(
  {
@@ -2138,7 +2138,7 @@ Acked-by: jbeulich@suse.com
 +};
 +#endif /* TIF_CSTAR */
 --- 12.3.orig/arch/x86/kernel/traps-xen.c	2011-11-17 16:50:15.000000000 +0100
-+++ 12.3/arch/x86/kernel/traps-xen.c	2012-07-05 12:00:31.000000000 +0200
++++ 12.3/arch/x86/kernel/traps-xen.c	2013-11-27 11:32:36.000000000 +0100
 @@ -310,19 +310,20 @@ dotraplinkage void __kprobes do_int3(str
  			== NOTIFY_STOP)
  		return;
@@ -2241,8 +2241,8 @@ Acked-by: jbeulich@suse.com
  
  	/* NB. 'clts' is done for us by Xen during virtual trap. */
  	percpu_and(xen_x86_cr0, ~X86_CR0_TS);
-@@ -622,8 +608,17 @@ asmlinkage void math_state_restore(void)
- 		local_irq_disable();
+@@ -623,8 +609,17 @@ asmlinkage void math_state_restore(void)
+ 		clts();
  	}
  
 -	/* clts();			Allow maths ops (or we recurse) */
@@ -2720,7 +2720,7 @@ Acked-by: jbeulich@suse.com
  	 * The return value is ignored as the calls cannot fail.
  	 * Large pages for identity mappings are not used at boot time
  	 * and hence no memory allocations during large page split.
---- 12.3.orig/drivers/acpi/osl.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/acpi/osl.c	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/drivers/acpi/osl.c	2012-04-10 17:24:36.000000000 +0200
 @@ -326,8 +326,12 @@ acpi_map_lookup_virt(void __iomem *virt,
  }
@@ -3933,7 +3933,7 @@ Acked-by: jbeulich@suse.com
  }
  
  #ifndef CONFIG_X86_LOCAL_APIC
---- 12.3.orig/drivers/xen/core/spinlock.c	2012-07-26 14:13:33.000000000 +0200
+--- 12.3.orig/drivers/xen/core/spinlock.c	2013-11-27 11:32:25.000000000 +0100
 +++ 12.3/drivers/xen/core/spinlock.c	2012-07-26 09:42:00.000000000 +0200
 @@ -38,7 +38,7 @@ struct rm_seq {
  };
@@ -4089,12 +4089,8 @@ Acked-by: jbeulich@suse.com
  
 -	return frags;
 +	return slots;
- }
- 
--static gnttab_map_grant_ref_t *netbk_get_requests(netif_t *netif,
--						  struct sk_buff *skb,
--						  netif_tx_request_t *txp,
--						  gnttab_map_grant_ref_t *mop)
++}
++
 +struct netbk_tx_gop {
 +	gnttab_map_grant_ref_t *map;
 +	gnttab_copy_t *copy;
@@ -4131,8 +4127,12 @@ Acked-by: jbeulich@suse.com
 +		gop->copy->len = txreq->size;
 +
 +	gop->ptr += gop->copy->len;
-+}
-+
+ }
+ 
+-static gnttab_map_grant_ref_t *netbk_get_requests(netif_t *netif,
+-						  struct sk_buff *skb,
+-						  netif_tx_request_t *txp,
+-						  gnttab_map_grant_ref_t *mop)
 +void netbk_get_requests(netif_t *netif, struct sk_buff *skb,
 +			netif_tx_request_t *txp, struct netbk_tx_gop *gop)
  {
@@ -4176,19 +4176,18 @@ Acked-by: jbeulich@suse.com
  
 -static int netbk_tx_check_mop(struct sk_buff *skb,
 -			       gnttab_map_grant_ref_t **mopp)
--{
--	gnttab_map_grant_ref_t *mop = *mopp;
--	u16 pending_idx = *(u16 *)skb->data;
 +static int netbk_tx_check_gop(struct sk_buff *skb,
 +			      struct netbk_tx_gop *gop, bool hdr_copied)
-+{
+ {
+-	gnttab_map_grant_ref_t *mop = *mopp;
+-	u16 pending_idx = *(u16 *)skb->data;
 +	gnttab_copy_t *cop = gop->copy;
 +	gnttab_map_grant_ref_t *mop = gop->map;
 +	u16 pending_idx = netbk_tx_cb(skb)->pending_idx[0];
  	netif_t *netif = pending_tx_info[pending_idx].netif;
  	netif_tx_request_t *txp;
  	struct skb_shared_info *shinfo = skb_shinfo(skb);
-@@ -1145,8 +1234,18 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1145,8 +1233,18 @@ static int netbk_tx_check_mop(struct sk_
  	int i, err, start;
  
  	/* Check status of header. */
@@ -4209,7 +4208,7 @@ Acked-by: jbeulich@suse.com
  		txp = &pending_tx_info[pending_idx].req;
  		make_tx_response(netif, txp, XEN_NETIF_RSP_ERROR);
  		pending_ring[MASK_PEND_IDX(pending_prod++)] = pending_idx;
-@@ -1154,19 +1253,34 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1154,19 +1252,34 @@ static int netbk_tx_check_mop(struct sk_
  	} else {
  		set_phys_to_machine(idx_to_pfn(pending_idx),
  			FOREIGN_FRAME(mop->dev_bus_addr >> PAGE_SHIFT));
@@ -4247,7 +4246,7 @@ Acked-by: jbeulich@suse.com
  		if (likely(newerr == GNTST_okay)) {
  			set_phys_to_machine(idx_to_pfn(pending_idx),
  				FOREIGN_FRAME(mop->dev_bus_addr>>PAGE_SHIFT));
-@@ -1188,8 +1302,10 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1188,8 +1301,10 @@ static int netbk_tx_check_mop(struct sk_
  			continue;
  
  		/* First error: invalidate header and preceding fragments. */
@@ -4260,7 +4259,7 @@ Acked-by: jbeulich@suse.com
  		for (j = start; j < i; j++) {
  			pending_idx = frag_get_pending_idx(&shinfo->frags[j]);
  			netif_idx_release(pending_idx);
-@@ -1199,7 +1315,11 @@ static int netbk_tx_check_mop(struct sk_
+@@ -1199,7 +1314,11 @@ static int netbk_tx_check_mop(struct sk_
  		err = newerr;
  	}
  
@@ -4273,7 +4272,7 @@ Acked-by: jbeulich@suse.com
  	return err;
  }
  
-@@ -1291,20 +1411,23 @@ static void net_tx_action(unsigned long 
+@@ -1291,20 +1410,23 @@ static void net_tx_action(unsigned long 
  {
  	struct sk_buff *skb;
  	netif_t *netif;
@@ -4303,7 +4302,7 @@ Acked-by: jbeulich@suse.com
  		/* Get a netif from the list with work to do. */
  		netif = poll_net_schedule_list();
  		/*
-@@ -1385,7 +1508,8 @@ static void net_tx_action(unsigned long 
+@@ -1385,7 +1507,8 @@ static void net_tx_action(unsigned long 
  				continue;
  		}
  
@@ -4313,7 +4312,7 @@ Acked-by: jbeulich@suse.com
  		if (unlikely(ret < 0))
  			continue;
  
-@@ -1411,6 +1535,12 @@ static void net_tx_action(unsigned long 
+@@ -1411,6 +1534,12 @@ static void net_tx_action(unsigned long 
  		data_len = (txreq.size > PKT_PROT_LEN &&
  			    ret < MAX_SKB_FRAGS) ?
  			PKT_PROT_LEN : txreq.size;
@@ -4326,7 +4325,7 @@ Acked-by: jbeulich@suse.com
  
  		skb = alloc_skb(data_len + 16 + NET_IP_ALIGN,
  				GFP_ATOMIC | __GFP_NOWARN);
-@@ -1434,39 +1564,38 @@ static void net_tx_action(unsigned long 
+@@ -1434,39 +1563,38 @@ static void net_tx_action(unsigned long 
  			}
  		}
  
@@ -4378,7 +4377,7 @@ Acked-by: jbeulich@suse.com
  		goto out;
  
      /* NOTE: some maps may fail with GNTST_eagain, which could be successfully
-@@ -1474,22 +1603,28 @@ static void net_tx_action(unsigned long 
+@@ -1474,22 +1602,28 @@ static void net_tx_action(unsigned long 
       * req and let the frontend resend the relevant packet again. This is fine
       * because it is unlikely that a network buffer will be paged out or shared,
       * and therefore it is unlikely to fail with GNTST_eagain. */
@@ -4414,7 +4413,7 @@ Acked-by: jbeulich@suse.com
  			DPRINTK("netback grant failed.\n");
  			skb_shinfo(skb)->nr_frags = 0;
  			kfree_skb(skb);
-@@ -1497,17 +1632,13 @@ static void net_tx_action(unsigned long 
+@@ -1497,17 +1631,13 @@ static void net_tx_action(unsigned long 
  			continue;
  		}
  
@@ -4435,7 +4434,7 @@ Acked-by: jbeulich@suse.com
  		}
  
  		if (txp->flags & XEN_NETTXF_csum_blank)
-@@ -1537,14 +1668,6 @@ static void net_tx_action(unsigned long 
+@@ -1537,14 +1667,6 @@ static void net_tx_action(unsigned long 
  			continue;
  		}
  
@@ -4450,7 +4449,7 @@ Acked-by: jbeulich@suse.com
  		dev->stats.rx_bytes += skb->len;
  		dev->stats.rx_packets++;
  
-@@ -1695,6 +1818,13 @@ static int __init netback_init(void)
+@@ -1695,6 +1817,13 @@ static int __init netback_init(void)
  	if (!is_running_on_xen())
  		return -ENODEV;
  
@@ -4923,7 +4922,7 @@ Acked-by: jbeulich@suse.com
  /* For xenbus internal use. */
  enum {
  	XENBUS_XSD_UNCOMMITTED = 0,
---- 12.3.orig/drivers/xen/xenbus/xenbus_dev_backend.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/xen/xenbus/xenbus_dev_backend.c	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/drivers/xen/xenbus/xenbus_dev_backend.c	2012-06-13 16:00:49.000000000 +0200
 @@ -7,7 +7,9 @@
  #include <linux/capability.h>
@@ -4977,7 +4976,7 @@ Acked-by: jbeulich@suse.com
 +void xenbus_ring_ops_init(void);
 +
  #endif
---- 12.3.orig/include/linux/pci_ids.h	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/include/linux/pci_ids.h	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/include/linux/pci_ids.h	2012-06-21 08:31:17.000000000 +0200
 @@ -75,6 +75,7 @@
  #define PCI_CLASS_SYSTEM_RTC		0x0803
@@ -5168,7 +5167,7 @@ Acked-by: jbeulich@suse.com
  typedef struct blkif_request blkif_request_t;
  
  #if !defined(CONFIG_PARAVIRT_XEN) || defined(HAVE_XEN_PLATFORM_COMPAT_H)
---- 12.3.orig/include/xen/interface/io/netif.h	2013-06-24 12:33:53.000000000 +0200
+--- 12.3.orig/include/xen/interface/io/netif.h	2013-06-24 16:45:08.000000000 +0200
 +++ 12.3/include/xen/interface/io/netif.h	2013-06-24 12:44:23.000000000 +0200
 @@ -31,6 +31,24 @@
  #include "../grant_table.h"

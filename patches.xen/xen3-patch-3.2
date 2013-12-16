@@ -16,7 +16,7 @@ Acked-by: jbeulich@suse.com
 +	.quad compat_sys_process_vm_readv
 +	.quad compat_sys_process_vm_writev
  ia32_syscall_end:
---- 12.3.orig/arch/x86/include/asm/mach_traps.h	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/mach_traps.h	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/arch/x86/include/asm/mach_traps.h	2011-11-28 11:36:37.000000000 +0100
 @@ -5,6 +5,8 @@
  #ifndef _ASM_X86_MACH_DEFAULT_MACH_TRAPS_H
@@ -1857,7 +1857,7 @@ Acked-by: jbeulich@suse.com
  
  #include <asm/apic.h>
  #include <asm/io_apic.h>
---- 12.3.orig/arch/x86/kernel/nmi.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/nmi.c	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/arch/x86/kernel/nmi.c	2012-06-13 15:57:05.000000000 +0200
 @@ -191,15 +191,12 @@ pci_serr_error(unsigned char reason, str
  	pr_emerg("Dazed and confused, but trying to continue\n");
@@ -2368,7 +2368,7 @@ Acked-by: jbeulich@suse.com
  	depends on PCI_MMCONFIG && EXPERIMENTAL
  	help
  	  Support for error detection and correction the Intel
---- 12.3.orig/drivers/edac/sb_edac.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/edac/sb_edac.c	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/drivers/edac/sb_edac.c	2012-10-04 13:09:34.000000000 +0200
 @@ -1552,7 +1552,11 @@ static int sbridge_mce_check_error(struc
  		mce->socketid, mce->apicid);
@@ -2983,7 +2983,7 @@ Acked-by: jbeulich@suse.com
  #include <linux/kernel.h>
  #include <linux/mm.h>
 --- 12.3.orig/drivers/xen/core/spinlock.c	2012-07-26 14:13:17.000000000 +0200
-+++ 12.3/drivers/xen/core/spinlock.c	2012-07-26 14:13:33.000000000 +0200
++++ 12.3/drivers/xen/core/spinlock.c	2013-11-27 11:32:25.000000000 +0100
 @@ -9,9 +9,10 @@
  
  #ifdef TICKET_SHIFT
@@ -3094,7 +3094,7 @@ Acked-by: jbeulich@suse.com
  			/*
  			 * If we interrupted another spinlock while it was
  			 * blocking, make sure it doesn't block (again)
-@@ -311,15 +313,16 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -311,10 +313,11 @@ bool xen_spin_wait(arch_spinlock_t *lock
  	sequence(SEQ_REMOVE_BIAS);
  	arch_local_irq_restore(upcall_mask);
  	smp_rmb();
@@ -3108,21 +3108,24 @@ Acked-by: jbeulich@suse.com
  
  	return false;
  }
+@@ -328,7 +331,7 @@ static inline unsigned int cpumask_cycle
+ 	return nxt;
+ }
  
 -void xen_spin_kick(const arch_spinlock_t *lock, unsigned int token)
 +void xen_spin_kick(const arch_spinlock_t *lock, unsigned int ticket)
  {
- 	unsigned int cpu = raw_smp_processor_id(), anchor = cpu;
+ 	unsigned int local = raw_smp_processor_id(), start, stop = local, cpu;
  
-@@ -329,7 +332,6 @@ void xen_spin_kick(const arch_spinlock_t
- 	if (unlikely(!cpu_online(cpu)))
- 		cpu = -1, anchor = nr_cpu_ids;
+@@ -347,7 +350,6 @@ void xen_spin_kick(const arch_spinlock_t
+ 			return;
+ 	}
  
 -	token &= (1U << TICKET_SHIFT) - 1;
- 	while ((cpu = cpumask_next(cpu, cpu_online_mask)) != anchor) {
+ 	for (cpu = start; ; ) {
  		unsigned int flags;
- 		atomic_t *rm_ctr;
-@@ -366,11 +368,11 @@ void xen_spin_kick(const arch_spinlock_t
+ 		atomic_t *rm_ctr = NULL;
+@@ -378,11 +380,11 @@ void xen_spin_kick(const arch_spinlock_t
  
  		for (; spinning; spinning = spinning->prev)
  			if (spinning->lock == lock &&
@@ -3137,7 +3140,7 @@ Acked-by: jbeulich@suse.com
  #endif
  				break;
  			}
-@@ -380,9 +382,9 @@ void xen_spin_kick(const arch_spinlock_t
+@@ -393,9 +395,9 @@ void xen_spin_kick(const arch_spinlock_t
  
  		if (unlikely(spinning)) {
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
@@ -3146,7 +3149,7 @@ Acked-by: jbeulich@suse.com
  				return;
 -			if (token + 2) {
 +			if (ticket + 2) {
- 				cpu = anchor < nr_cpu_ids ? anchor : -1;
+ 				cpu = start;
  				continue;
  			}
 --- 12.3.orig/drivers/xen/core/xen_proc.c	2011-04-04 08:44:27.000000000 +0200
@@ -3596,7 +3599,7 @@ Acked-by: jbeulich@suse.com
  	.ndo_set_mac_address    = xennet_set_mac_address,
  	.ndo_validate_addr      = eth_validate_addr,
  	.ndo_fix_features       = xennet_fix_features,
---- 12.3.orig/drivers/xen/pcifront/pci.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/xen/pcifront/pci.c	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/drivers/xen/pcifront/pci.c	2011-11-18 15:48:41.000000000 +0100
 @@ -3,8 +3,6 @@
   *
@@ -4069,7 +4072,7 @@ Acked-by: jbeulich@suse.com
  
  #endif /* CONFIG_PARAVIRT_XEN */
  
---- 12.3.orig/include/xen/blkif.h	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/include/xen/blkif.h	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/include/xen/blkif.h	2012-04-04 10:27:25.000000000 +0200
 @@ -46,12 +46,21 @@ struct blkif_x86_32_request {
  	blkif_sector_t sector_number;/* start sector idx on disk (r/w only)  */

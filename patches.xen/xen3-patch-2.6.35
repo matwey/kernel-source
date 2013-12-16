@@ -992,7 +992,7 @@ Automatically created from "patches.kernel.org/patch-2.6.35" by xen-port-patches
  
  /* Convert jiffies to system time. */
 --- 12.3.orig/arch/x86/kernel/traps-xen.c	2011-02-01 15:03:03.000000000 +0100
-+++ 12.3/arch/x86/kernel/traps-xen.c	2012-07-05 11:57:47.000000000 +0200
++++ 12.3/arch/x86/kernel/traps-xen.c	2013-11-27 11:30:53.000000000 +0100
 @@ -15,6 +15,7 @@
  #include <linux/kprobes.h>
  #include <linux/uaccess.h>
@@ -1275,7 +1275,7 @@ Automatically created from "patches.kernel.org/patch-2.6.35" by xen-port-patches
  }
  
  #ifndef CONFIG_XEN
-@@ -879,12 +817,18 @@ dotraplinkage void do_iret_error(struct 
+@@ -880,12 +818,18 @@ dotraplinkage void do_iret_error(struct 
   * NB. All these are "trap gates" (i.e. events_mask isn't set) except
   * for those that specify <dpl>|4 in the second field.
   */
@@ -1295,7 +1295,7 @@ Automatically created from "patches.kernel.org/patch-2.6.35" by xen-port-patches
  	{  0, 0|X, __KERNEL_CS, (unsigned long)divide_error		},
  	{  1, 0|4, __KERNEL_CS, (unsigned long)debug			},
  	{  3, 3|4, __KERNEL_CS, (unsigned long)int3			},
-@@ -913,6 +857,16 @@ static const trap_info_t __cpuinitconst 
+@@ -914,6 +858,16 @@ static const trap_info_t __cpuinitconst 
  	{  0, 0,	   0, 0						}
  };
  
@@ -1846,7 +1846,7 @@ Automatically created from "patches.kernel.org/patch-2.6.35" by xen-port-patches
  }
  
  static void *memtype_seq_start(struct seq_file *seq, loff_t *pos)
---- 12.3.orig/arch/x86/mm/pat_internal.h	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/arch/x86/mm/pat_internal.h	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/arch/x86/mm/pat_internal.h	2011-04-13 14:02:46.000000000 +0200
 @@ -21,6 +21,10 @@ static inline char *cattr_name(unsigned 
  	case _PAGE_CACHE_UC_MINUS:	return "uncached-minus";
@@ -1938,7 +1938,7 @@ Automatically created from "patches.kernel.org/patch-2.6.35" by xen-port-patches
  
  	if (processor_pm_external())
  		processor_notify_external(pr,
---- 12.3.orig/drivers/gpu/drm/ttm/ttm_page_alloc.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/gpu/drm/ttm/ttm_page_alloc.c	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/drivers/gpu/drm/ttm/ttm_page_alloc.c	2012-04-10 17:05:48.000000000 +0200
 @@ -491,6 +491,19 @@ static int ttm_alloc_new_pages(struct li
  	for (i = 0, cpages = 0; i < count; ++i) {
@@ -2353,7 +2353,7 @@ Automatically created from "patches.kernel.org/patch-2.6.35" by xen-port-patches
  
  	return 0;
  }
---- 12.3.orig/drivers/xen/core/spinlock.c	2012-07-26 14:12:52.000000000 +0200
+--- 12.3.orig/drivers/xen/core/spinlock.c	2013-11-27 11:30:40.000000000 +0100
 +++ 12.3/drivers/xen/core/spinlock.c	2012-07-26 09:35:39.000000000 +0200
 @@ -160,7 +160,7 @@ void xen_spin_irq_enter(void)
  	struct spinning *spinning = percpu_read(_spinning);

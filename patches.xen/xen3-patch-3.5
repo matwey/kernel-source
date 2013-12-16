@@ -62,7 +62,7 @@ Acked-by: jbeulich@suse.com
  	orl     $TS_COMPAT,TI_status+THREAD_INFO(%rsp,RIP-ARGOFFSET)
  	testl   $_TIF_WORK_SYSCALL_ENTRY,TI_flags+THREAD_INFO(%rsp,RIP-ARGOFFSET)
  	jnz   cstar_tracesys
---- 12.3.orig/arch/x86/include/asm/io_apic.h	2013-01-25 13:57:38.000000000 +0100
+--- 12.3.orig/arch/x86/include/asm/io_apic.h	2013-11-27 11:08:55.000000000 +0100
 +++ 12.3/arch/x86/include/asm/io_apic.h	2012-06-14 12:07:45.000000000 +0200
 @@ -175,6 +175,7 @@ extern void mp_save_irq(struct mpc_intsr
  
@@ -2325,8 +2325,8 @@ Acked-by: jbeulich@suse.com
  }
  
  __setup("nonmi_ipi", nonmi_ipi_setup);
---- 12.3.orig/arch/x86/kernel/traps-xen.c	2012-07-05 12:03:40.000000000 +0200
-+++ 12.3/arch/x86/kernel/traps-xen.c	2012-07-05 12:26:01.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/traps-xen.c	2013-11-27 11:32:42.000000000 +0100
++++ 12.3/arch/x86/kernel/traps-xen.c	2013-11-27 11:33:15.000000000 +0100
 @@ -37,10 +37,6 @@
  #include <linux/eisa.h>
  #endif
@@ -2372,8 +2372,8 @@ Acked-by: jbeulich@suse.com
 -	percpu_and(xen_x86_cr0, ~X86_CR0_TS);
 +	__this_cpu_and(xen_x86_cr0, ~X86_CR0_TS);
  	if (!tsk_used_math(tsk)) {
+ 		stts();
  		local_irq_enable();
- 		/*
 --- 12.3.orig/arch/x86/kernel/vsyscall_64-xen.c	2012-04-20 15:23:58.000000000 +0200
 +++ 12.3/arch/x86/kernel/vsyscall_64-xen.c	2012-07-25 09:34:59.000000000 +0200
 @@ -141,6 +141,19 @@ static int addr_to_vsyscall_nr(unsigned 
@@ -3195,6 +3195,24 @@ Acked-by: jbeulich@suse.com
  	if (!CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING)
  		arch_local_irq_disable();
  	sequence(SEQ_REMOVE_BIAS);
+@@ -339,7 +339,7 @@ void xen_spin_kick(const arch_spinlock_t
+ 	if (unlikely(!cpu_online(local)))
+ 		stop = start = cpumask_cycle(local, cpu_online_mask);
+ #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
+-	else if (percpu_read(_spinning))
++	else if (__this_cpu_read(_spinning))
+ 		start = local;
+ #endif
+ 	else {
+@@ -355,7 +355,7 @@ void xen_spin_kick(const arch_spinlock_t
+ 
+ 		flags = arch_local_irq_save();
+ 		if (cpu == local)
+-			spinning = percpu_read(_spinning);
++			spinning = __this_cpu_read(_spinning);
+ 		else for (;;) {
+ 			unsigned int rm_idx = per_cpu(rm_seq.idx, cpu);
+ 
 --- 12.3.orig/drivers/xen/netback/loopback.c	2012-06-15 14:49:40.000000000 +0200
 +++ 12.3/drivers/xen/netback/loopback.c	2012-06-15 14:44:40.000000000 +0200
 @@ -46,6 +46,7 @@

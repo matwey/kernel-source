@@ -93,7 +93,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  
  typedef int vector_irq_t[NR_VECTORS];
  DECLARE_PER_CPU(vector_irq_t, vector_irq);
---- 12.3.orig/arch/x86/include/asm/hypervisor.h	2013-08-08 14:11:48.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/hypervisor.h	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/arch/x86/include/asm/hypervisor.h	2012-08-20 13:10:18.000000000 +0200
 @@ -61,3 +61,7 @@ static inline bool hypervisor_x2apic_ava
  }
@@ -7400,8 +7400,8 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  
  /* No locking required. Interrupts are disabled on all CPUs. */
  void time_resume(void)
---- 12.3.orig/arch/x86/kernel/traps-xen.c	2012-07-05 11:38:28.000000000 +0200
-+++ 12.3/arch/x86/kernel/traps-xen.c	2012-07-05 11:44:38.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/traps-xen.c	2013-11-07 10:59:18.000000000 +0100
++++ 12.3/arch/x86/kernel/traps-xen.c	2013-11-27 11:29:54.000000000 +0100
 @@ -20,7 +20,6 @@
  #include <linux/module.h>
  #include <linux/ptrace.h>
@@ -7595,7 +7595,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	}
  	force_sig_info(SIGFPE, &info, task);
  }
-@@ -903,7 +903,7 @@ asmlinkage void math_state_restore(void)
+@@ -904,7 +904,7 @@ asmlinkage void math_state_restore(void)
  }
  
  #ifndef CONFIG_MATH_EMULATION
@@ -7604,7 +7604,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  {
  	printk(KERN_EMERG
  		"math-emulation not enabled and no coprocessor found.\n");
-@@ -913,16 +913,19 @@ asmlinkage void math_emulate(long arg)
+@@ -914,16 +914,19 @@ asmlinkage void math_emulate(long arg)
  }
  #endif /* CONFIG_MATH_EMULATION */
  
@@ -8858,7 +8858,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  int acpi_processor_cst_has_changed(struct acpi_processor *pr)
  {
  	int cpu;
---- 12.3.orig/drivers/gpu/drm/i915/i915_drv.c	2013-08-08 14:11:48.000000000 +0200
+--- 12.3.orig/drivers/gpu/drm/i915/i915_drv.c	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/drivers/gpu/drm/i915/i915_drv.c	2013-08-08 14:16:49.000000000 +0200
 @@ -953,7 +953,7 @@ static const struct file_operations i915
  	.open = drm_open,
@@ -8869,7 +8869,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	.poll = drm_poll,
  	.fasync = drm_fasync,
  	.read = drm_read,
---- 12.3.orig/drivers/gpu/drm/i915/i915_drv.h	2013-08-08 14:11:48.000000000 +0200
+--- 12.3.orig/drivers/gpu/drm/i915/i915_drv.h	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/drivers/gpu/drm/i915/i915_drv.h	2013-08-08 14:16:49.000000000 +0200
 @@ -1437,6 +1437,11 @@ int i915_add_request(struct intel_ring_b
  		     u32 *seqno);
@@ -8883,7 +8883,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  int i915_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf);
  int __must_check
  i915_gem_object_set_to_gtt_domain(struct drm_i915_gem_object *obj,
---- 12.3.orig/drivers/gpu/drm/i915/i915_gem.c	2013-08-08 14:11:48.000000000 +0200
+--- 12.3.orig/drivers/gpu/drm/i915/i915_gem.c	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/drivers/gpu/drm/i915/i915_gem.c	2012-10-23 15:12:15.000000000 +0200
 @@ -1308,6 +1308,17 @@ i915_gem_mmap_ioctl(struct drm_device *d
  	return 0;
@@ -9929,6 +9929,50 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	preempt_enable_no_resched();
  	VOID(HYPERVISOR_vcpu_op(VCPUOP_down, smp_processor_id(), NULL));
  	cpu_bringup();
+--- 12.3.orig/drivers/xen/core/spinlock.c	2013-11-27 11:29:17.000000000 +0100
++++ 12.3/drivers/xen/core/spinlock.c	2013-11-27 11:29:56.000000000 +0100
+@@ -319,12 +319,12 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+ 	return false;
+ }
+ 
+-static inline unsigned int cpus_cycle(int n, cpumask_t src)
++static inline unsigned int cpumask_cycle(int n, const struct cpumask *srcp)
+ {
+-	unsigned int nxt = next_cpu(n, src);
++	unsigned int nxt = cpumask_next(n, srcp);
+ 
+-	if (nxt >= NR_CPUS)
+-		nxt = first_cpu(src);
++	if (nxt >= nr_cpu_ids)
++		nxt = cpumask_first(srcp);
+ 	return nxt;
+ }
+ 
+@@ -336,13 +336,13 @@ void xen_spin_kick(const raw_spinlock_t 
+ 		return;
+ 
+ 	if (unlikely(!cpu_online(local)))
+-		stop = start = cpus_cycle(local, cpu_online_map);
++		stop = start = cpumask_cycle(local, cpu_online_mask);
+ #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
+ 	else if (x86_read_percpu(_spinning))
+ 		start = local;
+ #endif
+ 	else {
+-		start = cpus_cycle(local, cpu_online_map);
++		start = cpumask_cycle(local, cpu_online_mask);
+ 		if (start == stop)
+ 			return;
+ 	}
+@@ -403,7 +403,7 @@ void xen_spin_kick(const raw_spinlock_t 
+ 			notify_remote_via_evtchn(per_cpu(poll_evtchn, cpu));
+ 			return;
+ 		}
+-		cpu = cpus_cycle(cpu, cpu_online_map);
++		cpu = cpumask_cycle(cpu, cpu_online_mask);
+ 		if (cpu == stop)
+ 			break;
+ 	}
 --- 12.3.orig/drivers/xen/netback/interface.c	2013-02-18 12:15:37.000000000 +0100
 +++ 12.3/drivers/xen/netback/interface.c	2013-02-18 12:16:03.000000000 +0100
 @@ -229,6 +229,15 @@ static struct ethtool_ops network_ethtoo

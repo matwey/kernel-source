@@ -4847,7 +4847,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
 +	unsigned long range_end = mm->brk + 0x02000000;
 +	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
 +}
---- 12.3.orig/arch/x86/kernel/rtc.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/rtc.c	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/arch/x86/kernel/rtc.c	2011-12-21 10:59:00.000000000 +0100
 @@ -30,6 +30,7 @@ EXPORT_SYMBOL(cmos_lock);
  DEFINE_SPINLOCK(rtc_lock);
@@ -16697,7 +16697,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  vdso32.so-$(CONFIG_XEN)		+= $(xen-vdso32-y)
  
  vdso32-images			= $(vdso32.so-y:%=vdso32-%.so)
---- 12.3.orig/arch/x86/vdso/vdso32/syscall.S	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/vdso/vdso32/syscall.S	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/arch/x86/vdso/vdso32/syscall.S	2011-01-31 18:01:51.000000000 +0100
 @@ -19,8 +19,10 @@ __kernel_vsyscall:
  .Lpush_ebp:
@@ -16710,7 +16710,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  	movl	%ebp, %ecx
  	popl	%ebp
  .Lpop_ebp:
---- 12.3.orig/arch/x86/vdso/vdso32.S	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/vdso/vdso32.S	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/arch/x86/vdso/vdso32.S	2011-01-31 18:01:51.000000000 +0100
 @@ -19,4 +19,16 @@ vdso32_sysenter_start:
  	.incbin "arch/x86/vdso/vdso32-sysenter.so"
@@ -17534,7 +17534,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
 -{
 -	return 0;
 -}
---- 12.3.orig/drivers/pci/pci.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/pci/pci.c	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/drivers/pci/pci.c	2012-10-23 14:57:20.000000000 +0200
 @@ -436,7 +436,12 @@ pci_find_parent_resource(const struct pc
   * Restore the BAR values for a given device, so as to make it
@@ -17581,7 +17581,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  };
  
  static struct sys_device balloon_sysdev;
---- 12.3.orig/drivers/xen/blkback/blkback.c	2013-02-05 10:51:48.000000000 +0100
+--- 12.3.orig/drivers/xen/blkback/blkback.c	2013-06-24 16:38:54.000000000 +0200
 +++ 12.3/drivers/xen/blkback/blkback.c	2012-03-26 12:22:21.000000000 +0200
 @@ -151,7 +151,7 @@ static void unplug_queue(blkif_t *blkif)
  		return;
@@ -17641,7 +17641,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  			break;
  		default:
  			BUG();
---- 12.3.orig/drivers/xen/blktap/blktap.c	2012-01-06 10:44:12.000000000 +0100
+--- 12.3.orig/drivers/xen/blktap/blktap.c	2013-06-24 16:38:18.000000000 +0200
 +++ 12.3/drivers/xen/blktap/blktap.c	2012-01-02 14:26:06.000000000 +0100
 @@ -309,8 +309,8 @@ static pte_t blktap_clear_pte(struct vm_
  	if (vma->vm_file != NULL)
@@ -17813,7 +17813,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  			blktap_request_free(tap, request);
  		}
  
---- 12.3.orig/drivers/xen/blktap2/ring.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/blktap2/ring.c	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/drivers/xen/blktap2/ring.c	2011-01-31 18:01:51.000000000 +0100
 @@ -103,8 +103,8 @@ blktap_ring_clear_pte(struct vm_area_str
  	 * mapped region.
@@ -17837,7 +17837,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  
  	if (count)
  		if (HYPERVISOR_grant_table_op(GNTTABOP_unmap_grant_ref,
---- 12.3.orig/drivers/xen/core/Makefile	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/core/Makefile	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/drivers/xen/core/Makefile	2011-11-03 12:12:01.000000000 +0100
 @@ -11,5 +11,6 @@ obj-$(CONFIG_SYS_HYPERVISOR)	+= hypervis
  obj-$(CONFIG_HOTPLUG_CPU)	+= cpu_hotplug.o
@@ -18034,8 +18034,8 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  
  	ctxt.ctrlreg[3] = xen_pfn_to_cr3(virt_to_mfn(init_level4_pgt));
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ 12.3/drivers/xen/core/spinlock.c	2012-07-26 14:09:46.000000000 +0200
-@@ -0,0 +1,389 @@
++++ 12.3/drivers/xen/core/spinlock.c	2013-10-14 13:07:06.000000000 +0200
+@@ -0,0 +1,405 @@
 +/*
 + *	Xen spinlock functions
 + *
@@ -18351,32 +18351,44 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
 +	return false;
 +}
 +
++static inline unsigned int cpus_cycle(int n, cpumask_t src)
++{
++	unsigned int nxt = next_cpu(n, src);
++
++	if (nxt >= NR_CPUS)
++		nxt = first_cpu(src);
++	return nxt;
++}
++
 +void xen_spin_kick(const raw_spinlock_t *lock, unsigned int token)
 +{
-+	unsigned int cpu = raw_smp_processor_id(), anchor = cpu;
++	unsigned int local = raw_smp_processor_id(), start, stop = local, cpu;
 +
 +	if (nopoll)
 +		return;
 +
-+	if (unlikely(!cpu_online(cpu)))
-+		cpu = -1, anchor = nr_cpu_ids;
++	if (unlikely(!cpu_online(local)))
++		stop = start = cpus_cycle(local, cpu_online_map);
++#if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
++	else if (__get_cpu_var(_spinning))
++		start = local;
++#endif
++	else {
++		start = cpus_cycle(local, cpu_online_map);
++		if (start == stop)
++			return;
++	}
 +
 +	token &= (1U << TICKET_SHIFT) - 1;
-+	while ((cpu = cpumask_next(cpu, cpu_online_mask)) != anchor) {
++	for (cpu = start; ; ) {
 +		unsigned int flags;
-+		atomic_t *rm_ctr;
++		atomic_t *rm_ctr = NULL;
 +		struct spinning *spinning;
 +
-+		if (cpu >= nr_cpu_ids) {
-+			if (anchor == nr_cpu_ids)
-+				return;
-+			cpu = cpumask_first(cpu_online_mask);
-+			if (cpu == anchor)
-+				return;
-+		}
-+
 +		flags = __raw_local_irq_save();
-+		for (;;) {
++		if (cpu == local)
++			spinning = __get_cpu_var(_spinning);
++		else for (;;) {
 +			unsigned int rm_idx = per_cpu(rm_seq.idx, cpu);
 +
 +			rm_ctr = per_cpu(rm_seq.ctr, cpu) + (rm_idx & 1);
@@ -18407,7 +18419,8 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
 +				break;
 +			}
 +
-+		atomic_dec(rm_ctr);
++		if (rm_ctr)
++			atomic_dec(rm_ctr);
 +		raw_local_irq_restore(flags);
 +
 +		if (unlikely(spinning)) {
@@ -18415,13 +18428,16 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
 +			if (!(token + 1))
 +				return;
 +			if (token + 2) {
-+				cpu = anchor < nr_cpu_ids ? anchor : -1;
++				cpu = start;
 +				continue;
 +			}
 +#endif
 +			notify_remote_via_evtchn(per_cpu(poll_evtchn, cpu));
 +			return;
 +		}
++		cpu = cpus_cycle(cpu, cpu_online_map);
++		if (cpu == stop)
++			break;
 +	}
 +}
 +EXPORT_SYMBOL(xen_spin_kick);
@@ -18602,7 +18618,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  	.resume		= xenoprof_resume,
  	.suspend	= xenoprof_suspend
  };
---- 12.3.orig/arch/x86/include/asm/e820.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/e820.h	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/arch/x86/include/asm/e820.h	2011-01-31 18:01:51.000000000 +0100
 @@ -66,7 +66,11 @@ struct e820map {
  	struct e820entry map[E820_X_MAX];
@@ -18616,7 +18632,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  #define ISA_END_ADDRESS		0x100000
  
  #define BIOS_BEGIN		0x000a0000
---- 12.3.orig/arch/x86/include/asm/hardirq.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/hardirq.h	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/arch/x86/include/asm/hardirq.h	2012-04-10 16:43:33.000000000 +0200
 @@ -18,11 +18,15 @@ typedef struct {
  #ifdef CONFIG_SMP
@@ -20732,7 +20748,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
 -#define mfn_to_virt(m)		(__va(mfn_to_pfn(m) << PAGE_SHIFT))
 -
  #endif /* _I386_MADDR_H */
---- 12.3.orig/arch/x86/include/mach-xen/asm/maddr_64.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/maddr_64.h	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/arch/x86/include/mach-xen/asm/maddr_64.h	2011-08-09 10:48:35.000000000 +0200
 @@ -1,124 +1,6 @@
  #ifndef _X86_64_MADDR_H
@@ -26072,7 +26088,7 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  void leave_mm(int cpu);
  #else
  static inline void leave_mm(int cpu)
---- 12.3.orig/arch/x86/include/asm/ptrace.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/ptrace.h	2013-11-27 11:08:56.000000000 +0100
 +++ 12.3/arch/x86/include/asm/ptrace.h	2012-12-06 16:09:05.000000000 +0100
 @@ -278,7 +278,9 @@ static inline unsigned long regs_get_ker
  }
@@ -26268,9 +26284,9 @@ Automatically created from "patches.kernel.org/patch-2.6.25" by xen-port-patches
  		spin_unlock_irqrestore(&io_tlb_lock, flags);
  		return NULL;
  	}
---- 12.3.orig/mm/memory.c	2013-01-25 14:03:53.000000000 +0100
-+++ 12.3/mm/memory.c	2013-01-25 14:08:58.000000000 +0100
-@@ -2478,6 +2478,10 @@ int apply_to_page_range(struct mm_struct
+--- 12.3.orig/mm/memory.c	2013-11-27 11:27:13.000000000 +0100
++++ 12.3/mm/memory.c	2013-11-27 11:27:58.000000000 +0100
+@@ -2487,6 +2487,10 @@ int apply_to_page_range(struct mm_struct
  	unsigned long end = addr + size;
  	int err;
  

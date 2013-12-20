@@ -9450,8 +9450,8 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
  	     time_before_eq(j, jiffies))) {
  		cpu_clear(cpu, nohz_cpu_mask);
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ head/arch/x86/kernel/traps-xen.c	2012-07-05 11:38:28.000000000 +0200
-@@ -0,0 +1,1024 @@
++++ head/arch/x86/kernel/traps-xen.c	2013-11-07 10:59:18.000000000 +0100
+@@ -0,0 +1,1025 @@
 +/*
 + *  Copyright (C) 1991, 1992  Linus Torvalds
 + *  Copyright (C) 2000, 2001, 2002 Andi Kleen, SuSE Labs
@@ -10324,6 +10324,7 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
 +	/* NB. 'clts' is done for us by Xen during virtual trap. */
 +	__get_cpu_var(xen_x86_cr0) &= ~X86_CR0_TS;
 +	if (!tsk_used_math(tsk)) {
++		stts();
 +		local_irq_enable();
 +		/*
 +		 * does a slab alloc which can sleep
@@ -10332,11 +10333,11 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
 +			/*
 +			 * ran out of memory!
 +			 */
-+			stts();
 +			do_group_exit(SIGKILL);
 +			return;
 +		}
 +		local_irq_disable();
++		clts();
 +	}
 +
 +	/* clts();			Allow maths ops (or we recurse) */
@@ -10478,7 +10479,7 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
 +}
 --- head.orig/arch/x86/kernel/traps_32-xen.c	2012-06-27 08:44:54.000000000 +0200
 +++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,1224 +0,0 @@
+@@ -1,1225 +0,0 @@
 -/*
 - *  Copyright (C) 1991, 1992  Linus Torvalds
 - *  Copyright (C) 2000, 2001, 2002 Andi Kleen, SuSE Labs
@@ -11585,6 +11586,7 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
 -	/* NB. 'clts' is done for us by Xen during virtual trap. */
 -	__get_cpu_var(xen_x86_cr0) &= ~X86_CR0_TS;
 -	if (!tsk_used_math(tsk)) {
+-		stts();
 -		local_irq_enable();
 -		/*
 -		 * does a slab alloc which can sleep
@@ -11593,11 +11595,11 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
 -			/*
 -			 * ran out of memory!
 -			 */
--			stts();
 -			do_group_exit(SIGKILL);
 -			return;
 -		}
 -		local_irq_disable();
+-		clts();
 -	}
 -
 -	/* clts();			Allow maths ops (or we recurse) */
@@ -11705,7 +11707,7 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
 -__setup("code_bytes=", code_bytes_setup);
 --- head.orig/arch/x86/kernel/traps_64-xen.c	2012-07-05 11:25:06.000000000 +0200
 +++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,1239 +0,0 @@
+@@ -1,1240 +0,0 @@
 -/*
 - *  Copyright (C) 1991, 1992  Linus Torvalds
 - *  Copyright (C) 2000, 2001, 2002 Andi Kleen, SuSE Labs
@@ -12829,6 +12831,7 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
 -	/* NB. 'clts' is done for us by Xen during virtual trap. */
 -	__get_cpu_var(xen_x86_cr0) &= ~X86_CR0_TS;
 -	if (!used_math()) {
+-		stts();
 -		local_irq_enable();
 -		/*
 -		 * does a slab alloc which can sleep
@@ -12837,11 +12840,11 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
 -			/*
 -			 * ran out of memory!
 -			 */
--			stts();
 -			do_group_exit(SIGKILL);
 -			return;
 -		}
 -		local_irq_disable();
+-		clts();
 -	}
 -
 -	/* clts();		Allow maths ops (or we recurse) */

@@ -2,8 +2,8 @@ From: jbeulich@suse.com
 Subject: kexec: properly handle pCPU hotplug
 Patch-mainline: n/a
 
---- head.orig/arch/x86/kernel/machine_kexec_xen.c	2011-12-02 17:22:49.000000000 +0100
-+++ head/arch/x86/kernel/machine_kexec_xen.c	2011-12-05 12:23:02.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/machine_kexec_xen.c	2011-12-02 17:22:49.000000000 +0100
++++ 13.1/arch/x86/kernel/machine_kexec_xen.c	2011-12-05 12:23:02.000000000 +0100
 @@ -1,3 +1,14 @@
 +int machine_kexec_setup_resource(struct resource *hypervisor,
 +				 struct resource *phys_cpu)
@@ -34,8 +34,8 @@ Patch-mainline: n/a
  
  	return xen_create_contiguous_region((unsigned long)&vmcoreinfo_note,
  					    get_order(sizeof(vmcoreinfo_note)),
---- head.orig/drivers/xen/core/Makefile	2012-02-17 14:37:35.000000000 +0100
-+++ head/drivers/xen/core/Makefile	2012-02-17 14:37:50.000000000 +0100
+--- 13.1.orig/drivers/xen/core/Makefile	2012-02-17 14:37:35.000000000 +0100
++++ 13.1/drivers/xen/core/Makefile	2012-02-17 14:37:50.000000000 +0100
 @@ -4,8 +4,7 @@
  
  obj-y := evtchn.o gnttab.o reboot.o machine_reboot.o
@@ -46,8 +46,8 @@ Patch-mainline: n/a
  obj-$(CONFIG_PROC_FS)		+= xen_proc.o
  obj-$(CONFIG_HOTPLUG_CPU)	+= cpu_hotplug.o
  obj-$(CONFIG_XEN_SMPBOOT)	+= smpboot.o
---- head.orig/drivers/xen/core/machine_kexec.c	2011-12-21 11:09:57.000000000 +0100
-+++ head/drivers/xen/core/machine_kexec.c	2011-12-07 14:28:59.000000000 +0100
+--- 13.1.orig/drivers/xen/core/machine_kexec.c	2011-12-21 11:09:57.000000000 +0100
++++ 13.1/drivers/xen/core/machine_kexec.c	2011-12-07 14:28:59.000000000 +0100
 @@ -4,31 +4,181 @@
   */
  
@@ -288,8 +288,8 @@ Patch-mainline: n/a
  		r = xen_phys_cpus + k;
  		if (r->parent == NULL) /* out of xen_hypervisor_res range */
  			request_resource(res, r);
---- head.orig/drivers/xen/core/pcpu.c	2012-02-10 13:22:33.000000000 +0100
-+++ head/drivers/xen/core/pcpu.c	2012-02-10 13:25:08.000000000 +0100
+--- 13.1.orig/drivers/xen/core/pcpu.c	2013-11-29 15:34:35.000000000 +0100
++++ 13.1/drivers/xen/core/pcpu.c	2013-12-13 17:08:44.000000000 +0100
 @@ -2,7 +2,6 @@
   * pcpu.c - management physical cpu in dom0 environment
   */
@@ -306,9 +306,9 @@ Patch-mainline: n/a
  #include <acpi/processor.h>
  
  struct pcpu {
-@@ -35,6 +35,44 @@ static DEFINE_MUTEX(xen_pcpu_lock);
- 
+@@ -36,6 +36,44 @@ static DEFINE_MUTEX(xen_pcpu_lock);
  static LIST_HEAD(xen_pcpus);
+ static LIST_HEAD(orphan_pcpus);
  
 +static BLOCKING_NOTIFIER_HEAD(pcpu_chain);
 +
@@ -328,7 +328,7 @@ Patch-mainline: n/a
 +	if (!err) {
 +		struct pcpu *pcpu;
 +
-+		list_for_each_entry(pcpu, &xen_pcpus, pcpu_list)
++		list_for_each_entry(pcpu, &xen_pcpus, list)
 +			if (xen_pcpu_online(pcpu->flags))
 +				nb->notifier_call(nb, CPU_ONLINE,
 +						  notifier_param(pcpu));
@@ -351,7 +351,7 @@ Patch-mainline: n/a
  static int xen_pcpu_down(uint32_t xen_id)
  {
  	xen_platform_op_t op;
-@@ -150,12 +188,16 @@ static int xen_pcpu_online_check(struct 
+@@ -148,12 +186,16 @@ static int xen_pcpu_online_check(struct 
  	if (xen_pcpu_online(info->flags) && !xen_pcpu_online(pcpu->flags)) {
  		/* the pcpu is onlined */
  		pcpu->flags |= XEN_PCPU_FLAGS_ONLINE;
@@ -368,7 +368,7 @@ Patch-mainline: n/a
  		kobject_uevent(&pcpu->dev.kobj, KOBJ_OFFLINE);
  		result = 1;
  	}
-@@ -337,6 +379,8 @@ static irqreturn_t xen_pcpu_interrupt(in
+@@ -366,6 +408,8 @@ static irqreturn_t xen_pcpu_interrupt(in
  	return IRQ_HANDLED;
  }
  
@@ -377,7 +377,7 @@ Patch-mainline: n/a
  int xen_pcpu_hotplug(int type)
  {
  	schedule_work(&xen_pcpu_work);
-@@ -372,6 +416,8 @@ int xen_pcpu_index(uint32_t id, bool is_
+@@ -401,6 +445,8 @@ int xen_pcpu_index(uint32_t id, bool is_
  }
  EXPORT_SYMBOL_GPL(xen_pcpu_index);
  
@@ -387,7 +387,7 @@ Patch-mainline: n/a
  {
  	int err;
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ head/include/xen/pcpu.h	2011-12-05 13:25:56.000000000 +0100
++++ 13.1/include/xen/pcpu.h	2011-12-05 13:25:56.000000000 +0100
 @@ -0,0 +1,10 @@
 +#ifndef _XEN_SYSCTL_H
 +#define _XEN_SYSCTL_H

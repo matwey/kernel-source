@@ -360,7 +360,7 @@ have been needed - see SLE11 SPn).
  
  	/*
  	 * If acpi_disabled, bail out
---- 13.1.orig/arch/x86/kernel/amd_nb.c	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/amd_nb.c	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/arch/x86/kernel/amd_nb.c	2013-05-23 17:18:02.000000000 +0200
 @@ -18,6 +18,10 @@ static u32 *flush_words;
  const struct pci_device_id amd_nb_misc_ids[] = {
@@ -387,7 +387,7 @@ have been needed - see SLE11 SPn).
  
  #ifndef CONFIG_XEN
  static int modern_apic(void)
---- 13.1.orig/arch/x86/kernel/cpu/amd.c	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/cpu/amd.c	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/arch/x86/kernel/cpu/amd.c	2013-05-23 17:18:07.000000000 +0200
 @@ -670,6 +670,7 @@ static void init_amd(struct cpuinfo_x86 
  		fam10h_check_enable_mmcfg();
@@ -405,7 +405,7 @@ have been needed - see SLE11 SPn).
  
  	/*
  	 * Family 0x12 and above processors have APIC timer
---- 13.1.orig/arch/x86/kernel/cpu/bugs_64.c	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/cpu/bugs_64.c	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/arch/x86/kernel/cpu/bugs_64.c	2011-02-01 14:38:38.000000000 +0100
 @@ -20,6 +20,7 @@ void __init check_bugs(void)
  #endif
@@ -2876,7 +2876,7 @@ have been needed - see SLE11 SPn).
  	cmpl $nr_syscalls,%eax
  	jb syscall_call
  	jmp syscall_exit
---- 13.1.orig/arch/x86/kernel/entry_64.S	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/entry_64.S	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/arch/x86/kernel/entry_64.S	2013-08-09 12:53:13.000000000 +0200
 @@ -1415,7 +1415,7 @@ ENTRY(arch_unwind_init_running)
  END(arch_unwind_init_running)
@@ -6226,7 +6226,7 @@ have been needed - see SLE11 SPn).
  };
  
  void __init no_iommu_init(void)
---- 13.1.orig/arch/x86/kernel/probe_roms.c	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/probe_roms.c	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/arch/x86/kernel/probe_roms.c	2012-04-10 16:47:21.000000000 +0200
 @@ -233,7 +233,7 @@ void __init probe_roms(void)
  	upper = system_rom_resource.start;
@@ -8234,8 +8234,8 @@ have been needed - see SLE11 SPn).
  		cpu_clear(cpu, nohz_cpu_mask);
  		j = jiffies + 1;
  	}
---- 13.1.orig/arch/x86/kernel/traps_32-xen.c	2012-07-05 11:22:37.000000000 +0200
-+++ 13.1/arch/x86/kernel/traps_32-xen.c	2012-06-27 08:44:54.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/traps_32-xen.c	2013-11-26 11:26:14.000000000 +0100
++++ 13.1/arch/x86/kernel/traps_32-xen.c	2013-11-26 11:26:30.000000000 +0100
 @@ -1,5 +1,6 @@
  /*
   *  Copyright (C) 1991, 1992  Linus Torvalds
@@ -8812,8 +8812,8 @@ have been needed - see SLE11 SPn).
  	unsigned long base = (kesp - uesp) & -THREAD_SIZE;
  	unsigned long new_kesp = kesp - base;
  	unsigned long lim_pages = (new_kesp | (THREAD_SIZE - 1)) >> PAGE_SHIFT;
---- 13.1.orig/arch/x86/kernel/traps_64-xen.c	2012-07-05 11:19:23.000000000 +0200
-+++ 13.1/arch/x86/kernel/traps_64-xen.c	2012-07-05 11:25:06.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/traps_64-xen.c	2013-11-26 11:26:14.000000000 +0100
++++ 13.1/arch/x86/kernel/traps_64-xen.c	2013-11-26 11:26:25.000000000 +0100
 @@ -10,73 +10,56 @@
   * 'Traps.c' handles hardware traps and faults after we have saved some
   * state in 'entry.S'.
@@ -9711,7 +9711,7 @@ have been needed - see SLE11 SPn).
   * old math state array, and gets the new ones from the current task
   *
   * Careful.. There are problems with IBM-designed IRQ13 behaviour.
-@@ -1147,7 +1137,14 @@ asmlinkage void math_state_restore(void)
+@@ -1148,7 +1138,14 @@ asmlinkage void math_state_restore(void)
  	}
  
  	/* clts();		Allow maths ops (or we recurse) */
@@ -9727,7 +9727,7 @@ have been needed - see SLE11 SPn).
  	task_thread_info(me)->status |= TS_USEDFPU;
  	me->fpu_counter++;
  }
-@@ -1191,13 +1188,12 @@ void __init trap_init(void)
+@@ -1192,13 +1189,12 @@ void __init trap_init(void)
          ret = HYPERVISOR_set_trap_table(trap_table);
          if (ret) 
  		printk("HYPERVISOR_set_trap_table failed: error %d\n", ret);
@@ -9743,7 +9743,7 @@ have been needed - see SLE11 SPn).
  	 */
  	cpu_init();
  }
-@@ -1213,27 +1209,25 @@ void __cpuinit smp_trap_init(trap_info_t
+@@ -1214,27 +1210,25 @@ void __cpuinit smp_trap_init(trap_info_t
  	}
  }
  
@@ -14235,7 +14235,7 @@ have been needed - see SLE11 SPn).
  void make_lowmem_page_readonly(void *va, unsigned int feature)
  {
  	pte_t *pte;
---- 13.1.orig/arch/x86/pci/amd_bus.c	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/arch/x86/pci/amd_bus.c	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/arch/x86/pci/amd_bus.c	2013-08-09 12:52:55.000000000 +0200
 @@ -312,6 +312,7 @@ static int __init early_fill_mp_bus_info
  
@@ -14284,7 +14284,7 @@ have been needed - see SLE11 SPn).
  	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
  		return 0;
  
---- 13.1.orig/arch/x86/pci/mmconfig-shared.c	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/arch/x86/pci/mmconfig-shared.c	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/arch/x86/pci/mmconfig-shared.c	2013-01-14 13:50:37.000000000 +0100
 @@ -23,6 +23,10 @@
  #include <asm/pci_x86.h>
@@ -15771,7 +15771,7 @@ have been needed - see SLE11 SPn).
  
  	return 0;
  }
---- 13.1.orig/drivers/xen/sfc_netback/accel.h	2010-01-18 15:23:12.000000000 +0100
+--- 13.1.orig/drivers/xen/sfc_netback/accel.h	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/drivers/xen/sfc_netback/accel.h	2011-02-01 14:38:38.000000000 +0100
 @@ -25,6 +25,7 @@
  #ifndef NETBACK_ACCEL_H
@@ -15942,7 +15942,7 @@ have been needed - see SLE11 SPn).
  	if (fd < 0)
  		return fd;
  
---- 13.1.orig/include/uapi/Kbuild	2013-10-14 14:42:33.000000000 +0200
+--- 13.1.orig/include/uapi/Kbuild	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/include/uapi/Kbuild	2012-10-23 15:01:10.000000000 +0200
 @@ -10,5 +10,6 @@ header-y += mtd/
  header-y += rdma/
@@ -17897,7 +17897,7 @@ have been needed - see SLE11 SPn).
  #endif
 +
 +#endif /* ASM_X86_XEN__XOR_H */
---- 13.1.orig/arch/x86/include/mach-xen/asm/irq_vectors.h	2008-09-25 13:55:32.000000000 +0200
+--- 13.1.orig/arch/x86/include/mach-xen/asm/irq_vectors.h	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/arch/x86/include/mach-xen/asm/irq_vectors.h	2011-02-15 17:27:18.000000000 +0100
 @@ -1,97 +1,24 @@
 -/*
@@ -18033,7 +18033,7 @@ have been needed - see SLE11 SPn).
  #endif
  
  #define DYNIRQ_BASE		(PIRQ_BASE + NR_PIRQS)
---- 13.1.orig/arch/x86/include/asm/traps.h	2013-10-14 14:42:33.000000000 +0200
+--- 13.1.orig/arch/x86/include/asm/traps.h	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/arch/x86/include/asm/traps.h	2011-09-07 15:45:44.000000000 +0200
 @@ -40,6 +40,9 @@ asmlinkage void alignment_check(void);
  asmlinkage void machine_check(void);
@@ -18123,7 +18123,7 @@ have been needed - see SLE11 SPn).
  typedef struct xen_add_to_physmap xen_add_to_physmap_t;
  DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_t);
  
---- 13.1.orig/include/uapi/xen/public/Kbuild	2013-10-14 14:42:33.000000000 +0200
+--- 13.1.orig/include/uapi/xen/public/Kbuild	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/include/uapi/xen/public/Kbuild	2011-02-01 14:38:38.000000000 +0100
 @@ -1 +1,5 @@
 +header-y += evtchn.h
@@ -18131,7 +18131,7 @@ have been needed - see SLE11 SPn).
  header-y += iomulti.h
 +header-y += privcmd.h
 +header-y += xenbus.h
---- 13.1.orig/include/uapi/xen/public/privcmd.h	2010-01-18 15:23:12.000000000 +0100
+--- 13.1.orig/include/uapi/xen/public/privcmd.h	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/include/uapi/xen/public/privcmd.h	2011-02-01 14:38:38.000000000 +0100
 @@ -35,10 +35,6 @@
  
@@ -18144,7 +18144,7 @@ have been needed - see SLE11 SPn).
  typedef struct privcmd_hypercall
  {
  	__u64 op;
---- 13.1.orig/include/uapi/xen/public/xenbus.h	2009-05-29 10:25:53.000000000 +0200
+--- 13.1.orig/include/uapi/xen/public/xenbus.h	2013-11-26 11:16:06.000000000 +0100
 +++ 13.1/include/uapi/xen/public/xenbus.h	2011-02-01 14:38:38.000000000 +0100
 @@ -35,10 +35,6 @@
  

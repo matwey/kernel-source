@@ -1,0 +1,47 @@
+From 1bdb71af7f1388fd4b305134035008a81f2032b8 Mon Sep 17 00:00:00 2001
+From: Levente Kurusa <levex@linux.com>
+Date: Tue, 22 Oct 2013 16:53:35 +0200
+Subject: [PATCH] ACPI: Add Toshiba NB100 to Vista _OSI blacklist
+Git-commit: 1bdb71af7f1388fd4b305134035008a81f2032b8
+Patch-mainline: 3.13-rc1
+
+This patch adds Toshiba NB100 to the Vista _OSI blacklist.
+
+The _OSI(Windows 2006) method is bugged on the netbook resulting in
+messed up PCI IRQ Routing information. This was observed on a netbook
+whose SATA controller mode was set to Compatibility mode.
+
+The controller would then issue IRQs to IRQ#16 instead of
+IRQ#20, where it should have been.
+
+No side-effects were found during testing, everything is
+working as it did before.
+
+References: http://marc.info/?t=137862230200001&r=1&w=2
+References: http://www.spinics.net/lists/linux-ide/msg46173.html
+Signed-off-by: Levente Kurusa <levex@linux.com>
+Reviewed-by: Robert Hancock <hancockrwd@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ drivers/acpi/blacklist.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+--- a/drivers/acpi/blacklist.c
++++ b/drivers/acpi/blacklist.c
+@@ -273,6 +273,14 @@ static struct dmi_system_id acpi_osi_dmi
+ 		     DMI_MATCH(DMI_PRODUCT_NAME, "Satellite P305D"),
+ 		},
+ 	},
++	{
++	.callback = dmi_disable_osi_vista,
++	.ident = "Toshiba NB100",
++	.matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "NB100"),
++		},
++	},
+ 
+ 	/*
+ 	 * The following machines have broken backlight support when reporting

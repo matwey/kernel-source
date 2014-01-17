@@ -1,0 +1,35 @@
+From 0761602ec6b5bd8a71f70e3d68ab1c5b383fcdc8 Mon Sep 17 00:00:00 2001
+From: Mugunthan V N <mugunthanvnm@ti.com>
+Date: Fri, 10 Jan 2014 20:00:09 +0400
+Subject: [PATCH 2/9] drivers: net: cpsw: fix dt probe for one port ethernet
+Patch-mainline: v3.13-rc4
+Git-commit: 3a27bfac17fe375539c4e0a53478679645eb5ae2
+
+When only one port of the two port is pinned out, then dt probe is failing
+because second port phy is not found. fixing this by checking the number of
+slaves and breaking the loop.
+
+Signed-off-by: Mugunthan V N <mugunthanvnm@ti.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Matwey V. Kornilov <matwey.kornilov@gmail.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---
+ drivers/net/ethernet/ti/cpsw.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/net/ethernet/ti/cpsw.c b/drivers/net/ethernet/ti/cpsw.c
+index 6781aea7eb35..05738bb66f89 100644
+--- a/drivers/net/ethernet/ti/cpsw.c
++++ b/drivers/net/ethernet/ti/cpsw.c
+@@ -1577,6 +1577,8 @@ static int cpsw_probe_dt(struct cpsw_platform_data *data,
+ 		}
+ 
+ 		i++;
++		if (i == data->slaves)
++			break;
+ 	}
+ 
+ 	return 0;
+-- 
+1.8.5.2
+

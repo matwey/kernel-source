@@ -1,0 +1,69 @@
+From 743641ccddc7d543e5f77b231dfded59a0e71dba Mon Sep 17 00:00:00 2001
+From: AceLan Kao <acelan.kao@canonical.com>
+Date: Wed, 27 Nov 2013 10:05:56 +0800
+Subject: [PATCH 4/6] HID: usbhid: merge the sis quirk
+Patch-Mainline: v3.14
+References: bnc#859804
+Git-Commit: 765e5fbd3e04ba753b2585e9f852fdcd34b95d10
+USB_VENDOR_ID_SIS and USB_VENDOR_ID_SIS2_TOUCH are identical,
+so refine the code and merge the quirks.
+
+Signed-off-by: AceLan Kao <acelan.kao@canonical.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+---
+ drivers/hid/hid-ids.h           | 5 ++---
+ drivers/hid/usbhid/hid-quirks.c | 6 +++---
+ 2 files changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index 598e912..88d3639 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -745,9 +745,10 @@
+ #define USB_VENDOR_ID_SIGMATEL		0x066F
+ #define USB_DEVICE_ID_SIGMATEL_STMP3780	0x3780
+ 
+-#define USB_VENDOR_ID_SIS2_TOUCH	0x0457
++#define USB_VENDOR_ID_SIS_TOUCH		0x0457
+ #define USB_DEVICE_ID_SIS9200_TOUCH	0x9200
+ #define USB_DEVICE_ID_SIS817_TOUCH	0x0817
++#define USB_DEVICE_ID_SIS_TS		0x1013
+ 
+ #define USB_VENDOR_ID_SKYCABLE			0x1223
+ #define	USB_DEVICE_ID_SKYCABLE_WIRELESS_PRESENTER	0x3F07
+@@ -923,7 +924,5 @@
+ #define USB_VENDOR_ID_PRIMAX	0x0461
+ #define USB_DEVICE_ID_PRIMAX_KEYBOARD	0x4e05
+ 
+-#define USB_VENDOR_ID_SIS	0x0457
+-#define USB_DEVICE_ID_SIS_TS	0x1013
+ 
+ #endif
+diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+index 0db9a67..37307dc 100644
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -84,8 +84,9 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_REALTEK, USB_DEVICE_ID_REALTEK_READER, HID_QUIRK_NO_INIT_REPORTS },
+ 	{ USB_VENDOR_ID_SENNHEISER, USB_DEVICE_ID_SENNHEISER_BTD500USB, HID_QUIRK_NOGET },
+ 	{ USB_VENDOR_ID_SIGMATEL, USB_DEVICE_ID_SIGMATEL_STMP3780, HID_QUIRK_NOGET },
+-	{ USB_VENDOR_ID_SIS2_TOUCH, USB_DEVICE_ID_SIS9200_TOUCH, HID_QUIRK_NOGET },
+-	{ USB_VENDOR_ID_SIS2_TOUCH, USB_DEVICE_ID_SIS817_TOUCH, HID_QUIRK_NOGET },
++	{ USB_VENDOR_ID_SIS_TOUCH, USB_DEVICE_ID_SIS9200_TOUCH, HID_QUIRK_NOGET },
++	{ USB_VENDOR_ID_SIS_TOUCH, USB_DEVICE_ID_SIS817_TOUCH, HID_QUIRK_NOGET },
++	{ USB_VENDOR_ID_SIS_TOUCH, USB_DEVICE_ID_SIS_TS, HID_QUIRK_NO_INIT_REPORTS },
+ 	{ USB_VENDOR_ID_SUN, USB_DEVICE_ID_RARITAN_KVM_DONGLE, HID_QUIRK_NOGET },
+ 	{ USB_VENDOR_ID_SYMBOL, USB_DEVICE_ID_SYMBOL_SCANNER_1, HID_QUIRK_NOGET },
+ 	{ USB_VENDOR_ID_SYMBOL, USB_DEVICE_ID_SYMBOL_SCANNER_2, HID_QUIRK_NOGET },
+@@ -114,7 +115,6 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_NTRIG, USB_DEVICE_ID_NTRIG_DUOSENSE, HID_QUIRK_NO_INIT_REPORTS },
+ 	{ USB_VENDOR_ID_SYNAPTICS, USB_DEVICE_ID_SYNAPTICS_LTS1, HID_QUIRK_NO_INIT_REPORTS },
+ 	{ USB_VENDOR_ID_SYNAPTICS, USB_DEVICE_ID_SYNAPTICS_LTS2, HID_QUIRK_NO_INIT_REPORTS },
+-	{ USB_VENDOR_ID_SIS, USB_DEVICE_ID_SIS_TS, HID_QUIRK_NO_INIT_REPORTS },
+ 
+ 	{ 0, 0 }
+ };
+-- 
+1.8.4
+

@@ -1,0 +1,54 @@
+From 95c6e598b50fd30d5ef0e68eb890b943a157c569 Mon Sep 17 00:00:00 2001
+From: Wanlong Gao <gaowanlong@cn.fujitsu.com>
+Date: Mon, 2 Dec 2013 23:19:24 +0800
+Subject: [PATCH] HID: usbhid: fix sis quirk
+Git-Commit: 6d16e9c301290268b92ce3d48114f982e9c4b00a
+References: bnc#859804
+Patch-Mainline: v3.14
+Since commit 765e5fbd merged the sis quirk,
+then USB_VENDOR_ID_SIS2_TOUCH remains undefined.
+
+Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+Signed-off-by: Wanlong Gao <gaowanlong@cn.fujitsu.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+igned-off-by: Oliver Neukum <oneukum@suse.de>
+---
+ drivers/hid/hid-core.c       | 4 ++--
+ drivers/hid/hid-multitouch.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 33e978a..c9d6dc3 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1773,8 +1773,8 @@ static const struct hid_device_id hid_have_special_driver[] = {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_PS1000) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_SAMSUNG, USB_DEVICE_ID_SAMSUNG_IR_REMOTE) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_SAMSUNG, USB_DEVICE_ID_SAMSUNG_WIRELESS_KBD_MOUSE) },
+-	{ HID_USB_DEVICE(USB_VENDOR_ID_SIS2_TOUCH, USB_DEVICE_ID_SIS9200_TOUCH) },
+-	{ HID_USB_DEVICE(USB_VENDOR_ID_SIS2_TOUCH, USB_DEVICE_ID_SIS817_TOUCH) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_SIS_TOUCH, USB_DEVICE_ID_SIS9200_TOUCH) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_SIS_TOUCH, USB_DEVICE_ID_SIS817_TOUCH) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_SKYCABLE, USB_DEVICE_ID_SKYCABLE_WIRELESS_PRESENTER) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_SONY, USB_DEVICE_ID_SONY_BUZZ_CONTROLLER) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_SONY, USB_DEVICE_ID_SONY_WIRELESS_BUZZ_CONTROLLER) },
+diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
+index 6b81be6..a3472db 100644
+--- a/drivers/hid/hid-multitouch.c
++++ b/drivers/hid/hid-multitouch.c
+@@ -1306,10 +1306,10 @@ static const struct hid_device_id mt_devices[] = {
+ 
+ 	/* SiS panels */
+ 	{ .driver_data = MT_CLS_DEFAULT,
+-		HID_USB_DEVICE(USB_VENDOR_ID_SIS2_TOUCH,
++		HID_USB_DEVICE(USB_VENDOR_ID_SIS_TOUCH,
+ 		USB_DEVICE_ID_SIS9200_TOUCH) },
+ 	{ .driver_data = MT_CLS_DEFAULT,
+-		HID_USB_DEVICE(USB_VENDOR_ID_SIS2_TOUCH,
++		HID_USB_DEVICE(USB_VENDOR_ID_SIS_TOUCH,
+ 		USB_DEVICE_ID_SIS817_TOUCH) },
+ 
+ 	/* Stantum panels */
+-- 
+1.8.4
+

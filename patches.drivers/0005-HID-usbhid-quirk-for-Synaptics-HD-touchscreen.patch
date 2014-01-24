@@ -1,0 +1,45 @@
+From 8b49c96b87b94c492d4f5a38a5d32a115f53a4ab Mon Sep 17 00:00:00 2001
+From: AceLan Kao <acelan.kao@canonical.com>
+Date: Wed, 27 Nov 2013 10:05:57 +0800
+Patch-Mainline: v3.14
+References: bnc#859804
+Git-Commit: d8e2e7581d2521910398c4c80d7a3b78e84da7d5
+Subject: [PATCH 5/6] HID: usbhid: quirk for Synaptics HD touchscreen
+
+Add Synaptics HD touchscreen(06cb:0ac3) to no init report quirk.
+
+Signed-off-by: AceLan Kao <acelan.kao@canonical.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+---
+ drivers/hid/hid-ids.h           | 1 +
+ drivers/hid/usbhid/hid-quirks.c | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index 88d3639..24a4d70 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -800,6 +800,7 @@
+ #define USB_DEVICE_ID_SYNAPTICS_DPAD	0x0013
+ #define USB_DEVICE_ID_SYNAPTICS_LTS1	0x0af8
+ #define USB_DEVICE_ID_SYNAPTICS_LTS2	0x1d10
++#define USB_DEVICE_ID_SYNAPTICS_HD	0x0ac3
+ 
+ #define USB_VENDOR_ID_THINGM		0x27b8
+ #define USB_DEVICE_ID_BLINK1		0x01ed
+diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+index 37307dc..11facfb 100644
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -115,6 +115,7 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_NTRIG, USB_DEVICE_ID_NTRIG_DUOSENSE, HID_QUIRK_NO_INIT_REPORTS },
+ 	{ USB_VENDOR_ID_SYNAPTICS, USB_DEVICE_ID_SYNAPTICS_LTS1, HID_QUIRK_NO_INIT_REPORTS },
+ 	{ USB_VENDOR_ID_SYNAPTICS, USB_DEVICE_ID_SYNAPTICS_LTS2, HID_QUIRK_NO_INIT_REPORTS },
++	{ USB_VENDOR_ID_SYNAPTICS, USB_DEVICE_ID_SYNAPTICS_HD, HID_QUIRK_NO_INIT_REPORTS },
+ 
+ 	{ 0, 0 }
+ };
+-- 
+1.8.4
+

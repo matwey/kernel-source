@@ -1,0 +1,52 @@
+From 73112d8c4d602ccee12cbf165173c5d904d3d460 Mon Sep 17 00:00:00 2001
+From: AceLan Kao <acelan.kao@canonical.com>
+Date: Wed, 2 Oct 2013 17:35:26 +0800
+Patch-Mainline: v3.12
+References: bnc#859804
+Git-Commit: 8171a67d587a09e14a4949a81e070345fedcf410
+Subject: [PATCH 1/6] HID: usbhid: quirk for Synaptics Large Touchccreen
+
+BugLink: http://bugs.launchpad.net/bugs/1180881
+
+Synaptics large touchscreen doesn't support some of the report request
+while initializing. The unspoorted request will make the device unreachable,
+and will lead to the following usb_submit_urb() function call timeout.
+So, add the IDs into HID_QUIRK_NO_INIT_REPORTS quirk.
+
+Signed-off-by: AceLan Kao <acelan.kao@canonical.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+---
+ drivers/hid/hid-ids.h           | 2 ++
+ drivers/hid/usbhid/hid-quirks.c | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index e2808f5..b782b3b 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -793,6 +793,8 @@
+ #define USB_DEVICE_ID_SYNAPTICS_COMP_TP	0x0009
+ #define USB_DEVICE_ID_SYNAPTICS_WTP	0x0010
+ #define USB_DEVICE_ID_SYNAPTICS_DPAD	0x0013
++#define USB_DEVICE_ID_SYNAPTICS_LTS1	0x0af8
++#define USB_DEVICE_ID_SYNAPTICS_LTS2	0x1d10
+ 
+ #define USB_VENDOR_ID_THINGM		0x27b8
+ #define USB_DEVICE_ID_BLINK1		0x01ed
+diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+index 0734552..d20cbb8 100644
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -110,6 +110,8 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_KYE, USB_DEVICE_ID_KYE_MOUSEPEN_I608X, HID_QUIRK_MULTI_INPUT },
+ 	{ USB_VENDOR_ID_KYE, USB_DEVICE_ID_KYE_EASYPEN_M610X, HID_QUIRK_MULTI_INPUT },
+ 	{ USB_VENDOR_ID_NTRIG, USB_DEVICE_ID_NTRIG_DUOSENSE, HID_QUIRK_NO_INIT_REPORTS },
++	{ USB_VENDOR_ID_SYNAPTICS, USB_DEVICE_ID_SYNAPTICS_LTS1, HID_QUIRK_NO_INIT_REPORTS },
++	{ USB_VENDOR_ID_SYNAPTICS, USB_DEVICE_ID_SYNAPTICS_LTS2, HID_QUIRK_NO_INIT_REPORTS },
+ 
+ 	{ 0, 0 }
+ };
+-- 
+1.8.4
+

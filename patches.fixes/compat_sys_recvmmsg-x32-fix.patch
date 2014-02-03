@@ -15,13 +15,13 @@ Acked-by: Borislav Petkov <bp@suse.de>
  net/compat.c | 19 +++++++++++--------
  1 file changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/net/compat.c b/net/compat.c
-index dd32e34c1e2c..bb1ac8a0aab9 100644
---- a/net/compat.c
-+++ b/net/compat.c
-@@ -780,22 +780,25 @@ asmlinkage long compat_sys_recvmmsg(int fd, struct compat_mmsghdr __user *mmsg,
- 	if (flags & MSG_CMSG_COMPAT)
- 		return -EINVAL;
+Index: linux-3.7-openSUSE-12.3/net/compat.c
+===================================================================
+--- linux-3.7-openSUSE-12.3.orig/net/compat.c
++++ linux-3.7-openSUSE-12.3/net/compat.c
+@@ -769,22 +769,25 @@ asmlinkage long compat_sys_recvmmsg(int
+ 	int datagrams;
+ 	struct timespec ktspec;
  
 -	if (COMPAT_USE_64BIT_TIME)
 -		return __sys_recvmmsg(fd, (struct mmsghdr __user *)mmsg, vlen,
@@ -53,4 +53,3 @@ index dd32e34c1e2c..bb1ac8a0aab9 100644
  
  	return datagrams;
  }
-

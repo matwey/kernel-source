@@ -4,8 +4,8 @@ Patch-mainline: n/a
 
 ... rather than calling just a few functions explicitly.
 
---- head.orig/arch/x86/kernel/time-xen.c	2012-04-11 13:26:23.000000000 +0200
-+++ head/arch/x86/kernel/time-xen.c	2012-04-11 16:59:35.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/time-xen.c	2012-04-11 13:26:23.000000000 +0200
++++ 12.3/arch/x86/kernel/time-xen.c	2014-02-10 15:15:07.000000000 +0100
 @@ -68,6 +68,10 @@ DEFINE_PER_CPU(struct vcpu_runstate_info
  /* Must be signed, as it's compared with s64 quantities which can be -ve. */
  #define NS_PER_TICK (1000000000LL/HZ)
@@ -98,7 +98,7 @@ Patch-mainline: n/a
 -
  static void __init _late_time_init(void)
  {
- 	update_wallclock(false);
+ 	update_wallclock();
 @@ -810,35 +831,6 @@ void xen_halt(void)
  		VOID(HYPERVISOR_vcpu_op(VCPUOP_down, smp_processor_id(), NULL));
  }
@@ -129,14 +129,14 @@ Patch-mainline: n/a
 -
 -	processed_system_time = per_cpu(shadow_time, 0).system_timestamp;
 -
--	update_wallclock(false);
+-	update_wallclock();
 -}
 -
  #ifdef CONFIG_SMP
  static char timer_name[NR_CPUS][15];
  
---- head.orig/drivers/xen/core/evtchn.c	2012-10-04 13:12:14.000000000 +0200
-+++ head/drivers/xen/core/evtchn.c	2012-10-04 13:30:59.000000000 +0200
+--- 12.3.orig/drivers/xen/core/evtchn.c	2012-10-04 13:12:14.000000000 +0200
++++ 12.3/drivers/xen/core/evtchn.c	2012-10-04 13:30:59.000000000 +0200
 @@ -1107,6 +1107,8 @@ int xen_test_irq_pending(int irq)
  }
  
@@ -188,8 +188,8 @@ Patch-mainline: n/a
  #endif
  
  int __init arch_early_irq_init(void)
---- head.orig/drivers/xen/core/gnttab.c	2012-03-12 16:18:44.000000000 +0100
-+++ head/drivers/xen/core/gnttab.c	2012-11-14 13:33:44.000000000 +0100
+--- 12.3.orig/drivers/xen/core/gnttab.c	2012-03-12 16:18:44.000000000 +0100
++++ 12.3/drivers/xen/core/gnttab.c	2012-11-14 13:33:44.000000000 +0100
 @@ -797,20 +797,35 @@ EXPORT_SYMBOL(gnttab_post_map_adjust);
  int gnttab_resume(void)
  {
@@ -242,8 +242,8 @@ Patch-mainline: n/a
  	return 0;
  
   ini_nomem:
---- head.orig/drivers/xen/core/machine_reboot.c	2011-11-18 15:43:23.000000000 +0100
-+++ head/drivers/xen/core/machine_reboot.c	2012-04-11 16:09:22.000000000 +0200
+--- 12.3.orig/drivers/xen/core/machine_reboot.c	2011-11-18 15:43:23.000000000 +0100
++++ 12.3/drivers/xen/core/machine_reboot.c	2012-04-11 16:09:22.000000000 +0200
 @@ -6,6 +6,7 @@
  #include <linux/sysrq.h>
  #include <linux/stringify.h>
@@ -442,8 +442,8 @@ Patch-mainline: n/a
 +	return err;
  }
  #endif
---- head.orig/drivers/xen/core/spinlock.c	2012-07-26 14:14:12.000000000 +0200
-+++ head/drivers/xen/core/spinlock.c	2012-07-26 09:43:58.000000000 +0200
+--- 12.3.orig/drivers/xen/core/spinlock.c	2012-07-26 14:14:12.000000000 +0200
++++ 12.3/drivers/xen/core/spinlock.c	2012-07-26 09:43:58.000000000 +0200
 @@ -73,7 +73,9 @@ void __cpuinit xen_spinlock_cleanup(unsi
  }
  
@@ -474,8 +474,8 @@ Patch-mainline: n/a
  #endif
  
  static inline void sequence(unsigned int bias)
---- head.orig/include/xen/evtchn.h	2012-10-31 16:34:49.000000000 +0100
-+++ head/include/xen/evtchn.h	2012-02-10 11:30:51.000000000 +0100
+--- 12.3.orig/include/xen/evtchn.h	2012-10-31 16:34:49.000000000 +0100
++++ 12.3/include/xen/evtchn.h	2012-02-10 11:30:51.000000000 +0100
 @@ -110,7 +110,9 @@ int bind_ipi_to_irqhandler(
   */
  void unbind_from_irqhandler(unsigned int irq, void *dev_id);
@@ -486,8 +486,8 @@ Patch-mainline: n/a
  
  /* Entry point for notifications into Linux subsystems. */
  asmlinkage void evtchn_do_upcall(struct pt_regs *regs);
---- head.orig/include/xen/gnttab.h	2012-03-12 13:39:32.000000000 +0100
-+++ head/include/xen/gnttab.h	2012-03-12 14:00:59.000000000 +0100
+--- 12.3.orig/include/xen/gnttab.h	2012-03-12 13:39:32.000000000 +0100
++++ 12.3/include/xen/gnttab.h	2012-03-12 14:00:59.000000000 +0100
 @@ -113,8 +113,9 @@ static inline void __gnttab_dma_unmap_pa
  
  void gnttab_reset_grant_page(struct page *page);

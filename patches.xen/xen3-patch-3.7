@@ -7,7 +7,7 @@ Patch-mainline: 3.7
 Automatically created from "patch-3.7" by xen-port-patches.py
 Acked-by: jbeulich@suse.com
 
---- 12.3.orig/arch/arm/Kconfig	2013-11-27 11:08:55.000000000 +0100
+--- 12.3.orig/arch/arm/Kconfig	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/arch/arm/Kconfig	2012-12-06 16:18:50.000000000 +0100
 @@ -1845,9 +1845,9 @@ config CC_STACKPROTECTOR
  
@@ -21,7 +21,7 @@ Acked-by: jbeulich@suse.com
  	bool "Xen guest support on ARM (EXPERIMENTAL)"
  	depends on EXPERIMENTAL && ARM && OF
  	depends on CPU_V7 && !CPU_V6
---- 12.3.orig/arch/arm/Makefile	2013-11-27 11:08:55.000000000 +0100
+--- 12.3.orig/arch/arm/Makefile	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/arch/arm/Makefile	2012-10-30 15:36:13.000000000 +0100
 @@ -251,7 +251,7 @@ endif
  core-$(CONFIG_FPE_NWFPE)	+= arch/arm/nwfpe/
@@ -32,7 +32,7 @@ Acked-by: jbeulich@suse.com
  
  # If we have a machine-specific directory, then include it in the build.
  core-y				+= arch/arm/kernel/ arch/arm/mm/ arch/arm/common/
---- 12.3.orig/arch/arm/include/asm/xen/interface.h	2013-11-27 11:08:55.000000000 +0100
+--- 12.3.orig/arch/arm/include/asm/xen/interface.h	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/arch/arm/include/asm/xen/interface.h	2012-10-31 11:29:25.000000000 +0100
 @@ -11,14 +11,14 @@
  
@@ -2649,7 +2649,7 @@ Acked-by: jbeulich@suse.com
  };
  
  static int adjust_tjmax(struct platform_data *c, u32 id, struct device *dev)
---- 12.3.orig/drivers/remoteproc/Kconfig	2013-11-27 11:08:55.000000000 +0100
+--- 12.3.orig/drivers/remoteproc/Kconfig	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/drivers/remoteproc/Kconfig	2012-11-02 12:55:30.000000000 +0100
 @@ -1,4 +1,5 @@
  menu "Remoteproc drivers (EXPERIMENTAL)"
@@ -2701,8 +2701,8 @@ Acked-by: jbeulich@suse.com
  obj-$(CONFIG_XEN_PCIDEV_BACKEND)	+= xen-pciback/
  obj-$(CONFIG_XEN_PRIVCMD)		+= $(xen-privcmd_y)
 --- 12.3.orig/drivers/xen/blkfront/blkfront.c	2012-08-20 16:16:44.000000000 +0200
-+++ 12.3/drivers/xen/blkfront/blkfront.c	2012-10-30 15:57:12.000000000 +0100
-@@ -497,7 +497,7 @@ static void blkfront_closing(struct blkf
++++ 12.3/drivers/xen/blkfront/blkfront.c	2014-02-10 15:12:19.000000000 +0100
+@@ -484,7 +484,7 @@ static void blkfront_closing(struct blkf
  	spin_unlock_irqrestore(&info->io_lock, flags);
  
  	/* Flush gnttab callback work. Must be done with no locks held. */
@@ -2711,7 +2711,7 @@ Acked-by: jbeulich@suse.com
  
  	xlvbd_sysfs_delif(info);
  
-@@ -1091,7 +1091,7 @@ static void blkif_free(struct blkfront_i
+@@ -1078,7 +1078,7 @@ static void blkif_free(struct blkfront_i
  	spin_unlock_irq(&info->io_lock);
  
  	/* Flush gnttab callback work. Must be done with no locks held. */
@@ -2929,7 +2929,7 @@ Acked-by: jbeulich@suse.com
  
  	return rc;
  }
---- 12.3.orig/drivers/xen/fallback.c	2013-11-27 11:08:55.000000000 +0100
+--- 12.3.orig/drivers/xen/fallback.c	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/drivers/xen/fallback.c	2012-11-14 13:29:46.000000000 +0100
 @@ -3,7 +3,16 @@
  #include <linux/bug.h>
@@ -3799,7 +3799,7 @@ Acked-by: jbeulich@suse.com
  	err = xenbus_scanf(XBT_NIL, "control",
  			   "platform-feature-xs_reset_watches", "%d",
  			   &supported);
---- 12.3.orig/include/uapi/xen/evtchn.h	2013-11-27 11:08:55.000000000 +0100
+--- 12.3.orig/include/uapi/xen/evtchn.h	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/include/uapi/xen/evtchn.h	2012-10-31 16:44:01.000000000 +0100
 @@ -1,88 +1 @@
 -/******************************************************************************

@@ -428,7 +428,7 @@ Automatically created from "patches.kernel.org/patch-2.6.36" by xen-port-patches
  
  	/*
  	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if BIOS did not.
---- 12.3.orig/arch/x86/kernel/cpu/scattered.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/cpu/scattered.c	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/arch/x86/kernel/cpu/scattered.c	2012-02-16 13:40:13.000000000 +0100
 @@ -41,6 +41,7 @@ void __cpuinit init_scattered_cpuid_feat
  		{ X86_FEATURE_XSAVEOPT,		CR_EAX,	0, 0x0000000d, 1 },
@@ -794,7 +794,7 @@ Automatically created from "patches.kernel.org/patch-2.6.36" by xen-port-patches
  	tboot_probe();
  
  #ifdef CONFIG_X86_64
---- 12.3.orig/arch/x86/kernel/traps-xen.c	2012-07-05 11:57:47.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/traps-xen.c	2013-11-27 11:30:53.000000000 +0100
 +++ 12.3/arch/x86/kernel/traps-xen.c	2011-02-01 15:04:27.000000000 +0100
 @@ -385,7 +385,13 @@ static notrace __kprobes void default_do
  		if (notify_die(DIE_NMI_IPI, "nmi_ipi", regs, reason, 2, SIGINT)
@@ -1052,7 +1052,7 @@ Automatically created from "patches.kernel.org/patch-2.6.36" by xen-port-patches
  
  config XEN_MAX_DOMAIN_MEMORY
         int
---- 12.3.orig/arch/x86/xen/enlighten.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/arch/x86/xen/enlighten.c	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/arch/x86/xen/enlighten.c	2012-10-31 11:18:38.000000000 +0100
 @@ -142,8 +142,8 @@ static DEFINE_PER_CPU(struct tls_descs, 
  static void clamp_max_cpus(void)
@@ -1653,9 +1653,9 @@ Automatically created from "patches.kernel.org/patch-2.6.36" by xen-port-patches
  				bio = NULL;
  			}
  
---- 12.3.orig/drivers/xen/usbfront/usbfront-hcd.c	2011-01-31 17:56:27.000000000 +0100
-+++ 12.3/drivers/xen/usbfront/usbfront-hcd.c	2011-02-01 15:04:27.000000000 +0100
-@@ -86,7 +86,7 @@ static int xenhcd_setup(struct usb_hcd *
+--- 12.3.orig/drivers/xen/usbfront/usbfront-hcd.c	2013-12-16 14:47:16.000000000 +0100
++++ 12.3/drivers/xen/usbfront/usbfront-hcd.c	2014-02-10 15:09:34.000000000 +0100
+@@ -89,7 +89,7 @@ static int xenhcd_setup(struct usb_hcd *
  static int xenhcd_run(struct usb_hcd *hcd)
  {
  	hcd->uses_new_polling = 1;

@@ -107,6 +107,19 @@ calculation, not an unrelated one.
 
 Signed-off-by: Jan Beulich <jbeulich@suse.com>
 
+From http://xenbits.xen.org/hg/linux-2.6.18-xen.hg/rev/f2e452d98624
+From: xen-devel@lists.xenproject.org
+Patch-mainline: n/a
+Subject: usbback: fix after c/s 1232:8806dfb939d4
+References: bnc#842553
+
+That c/s ("backends: Check for insane amounts of requests on the ring")
+copied from blkback/blktap/scsiback a switch statement that is valid
+there, but not here - the return value from usbbk_start_submit_urb()
+could be any positive value, not just one.
+
+Signed-off-by: Jan Beulich <jbeulich@suse.com>
+
 --- 12.3.orig/drivers/xen/blkback/blkback.c	2013-06-24 16:30:12.000000000 +0200
 +++ 12.3/drivers/xen/blkback/blkback.c	2013-06-11 12:11:44.000000000 +0200
 @@ -229,8 +229,18 @@ int blkif_schedule(void *arg)
@@ -347,7 +360,7 @@ Signed-off-by: Jan Beulich <jbeulich@suse.com>
  
  	spin_lock_irqsave(&usbif->stub_lock, flags);
 --- 12.3.orig/drivers/xen/usbback/usbback.c	2013-06-24 16:30:12.000000000 +0200
-+++ 12.3/drivers/xen/usbback/usbback.c	2013-06-11 12:14:16.000000000 +0200
++++ 12.3/drivers/xen/usbback/usbback.c	2014-01-29 13:04:41.000000000 +0100
 @@ -979,6 +979,15 @@ static int usbbk_start_submit_urb(usbif_
  	rp = urb_ring->sring->req_prod;
  	rmb();
@@ -364,6 +377,15 @@ Signed-off-by: Jan Beulich <jbeulich@suse.com>
  	while (rc != rp) {
  		if (RING_REQUEST_CONS_OVERFLOW(urb_ring, rc)) {
  			if(printk_ratelimit())
+@@ -1004,7 +1013,7 @@ static int usbbk_start_submit_urb(usbif_
+ 
+ 	RING_FINAL_CHECK_FOR_REQUESTS(&usbif->urb_ring, more_to_do);
+ 
+-	return more_to_do;
++	return !!more_to_do;
+ }
+ 
+ void usbbk_hotplug_notify(usbif_t *usbif, int portnum, int speed)
 @@ -1052,8 +1061,18 @@ int usbbk_schedule(void *arg)
  		usbif->waiting_reqs = 0;
  		smp_mb();

@@ -1957,8 +1957,8 @@ Acked-by: jbeulich@novell.com
  #ifdef CONFIG_NUMA
  	early_per_cpu_ptr(x86_cpu_to_node_map) = NULL;
  #endif
---- 12.3.orig/arch/x86/kernel/time-xen.c	2012-02-10 13:29:07.000000000 +0100
-+++ 12.3/arch/x86/kernel/time-xen.c	2012-02-10 13:29:28.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/time-xen.c	2014-01-14 11:04:31.000000000 +0100
++++ 12.3/arch/x86/kernel/time-xen.c	2014-02-10 15:11:30.000000000 +0100
 @@ -19,6 +19,9 @@
  #include <linux/cpufreq.h>
  #include <linux/clocksource.h>
@@ -1969,28 +1969,6 @@ Acked-by: jbeulich@novell.com
  #include <asm/vsyscall.h>
  #include <asm/delay.h>
  #include <asm/time.h>
-@@ -269,19 +272,14 @@ static void sync_xen_wallclock(unsigned 
- static DEFINE_TIMER(sync_xen_wallclock_timer, sync_xen_wallclock, 0, 0);
- static void sync_xen_wallclock(unsigned long dummy)
- {
--	struct timespec now;
--	unsigned long seq;
-+	struct timespec now, ignore;
- 	struct xen_platform_op op;
- 
- 	BUG_ON(!is_initial_xendomain());
- 	if (!ntp_synced() || independent_wallclock)
- 		return;
- 
--	do {
--		seq = read_seqbegin(&xtime_lock);
--		now = __current_kernel_time();
--	} while (read_seqretry(&xtime_lock, seq));
--
-+	get_xtime_and_monotonic_and_sleep_offset(&now, &ignore, &ignore);
- 	set_normalized_timespec(&now, now.tv_sec, now.tv_nsec);
- 
- 	op.cmd = XENPF_settime;
 --- 12.3.orig/arch/x86/kernel/x86_init-xen.c	2011-07-11 13:00:38.000000000 +0200
 +++ 12.3/arch/x86/kernel/x86_init-xen.c	2011-07-11 13:01:21.000000000 +0200
 @@ -59,6 +59,10 @@ struct x86_init_ops x86_init __initdata 
@@ -2623,14 +2601,14 @@ Acked-by: jbeulich@novell.com
  
  obj-$(CONFIG_USB_CATC)          += usb/
  obj-$(CONFIG_USB_KAWETH)        += usb/
---- 12.3.orig/drivers/net/xen-netback/Makefile	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/net/xen-netback/Makefile	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/drivers/net/xen-netback/Makefile	2011-04-13 14:42:19.000000000 +0200
 @@ -1,3 +1,3 @@
 -obj-$(CONFIG_XEN_NETDEV_BACKEND) := xen-netback.o
 +obj-$(CONFIG_PARAVIRT_XEN_NETDEV_BACKEND) := xen-netback.o
  
  xen-netback-y := netback.o xenbus.o interface.o
---- 12.3.orig/drivers/scsi/scsi_error.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/scsi/scsi_error.c	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/drivers/scsi/scsi_error.c	2012-12-06 10:08:39.000000000 +0100
 @@ -1604,6 +1604,31 @@ int scsi_decide_disposition(struct scsi_
  		}
@@ -2664,7 +2642,7 @@ Acked-by: jbeulich@novell.com
  	default:
  		return FAILED;
  	}
---- 12.3.orig/drivers/watchdog/Kconfig	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/watchdog/Kconfig	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/drivers/watchdog/Kconfig	2012-08-20 13:17:01.000000000 +0200
 @@ -1208,7 +1208,7 @@ config WATCHDOG_RIO
  
@@ -2675,7 +2653,7 @@ Acked-by: jbeulich@novell.com
  	help
  	  Say Y here to support the hypervisor watchdog capability provided
  	  by Xen 4.0 and newer.  The watchdog timeout period is normally one
---- 12.3.orig/drivers/watchdog/xen_wdt.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/watchdog/xen_wdt.c	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/drivers/watchdog/xen_wdt.c	2012-04-10 17:11:39.000000000 +0200
 @@ -1,7 +1,8 @@
  /*
@@ -3399,7 +3377,7 @@ Acked-by: jbeulich@novell.com
  			skb->ip_summed = CHECKSUM_UNNECESSARY;
  		else
  			skb->ip_summed = CHECKSUM_NONE;
---- 12.3.orig/drivers/xen/usbfront/usbfront-hub.c	2013-06-24 16:30:10.000000000 +0200
+--- 12.3.orig/drivers/xen/usbfront/usbfront-hub.c	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/drivers/xen/usbfront/usbfront-hub.c	2011-04-14 17:50:18.000000000 +0200
 @@ -271,8 +271,8 @@ static void xenhcd_hub_descriptor(struct
  	desc->bDescLength = 7 + 2 * temp;

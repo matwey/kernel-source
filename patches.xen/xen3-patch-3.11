@@ -7,7 +7,7 @@ Patch-mainline: 3.11
 Automatically created from "patch-3.11" by xen-port-patches.py
 Acked-by: jbeulich@suse.com
 
---- 13.1.orig/arch/arm64/Kconfig	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/arm64/Kconfig	2014-02-10 16:07:57.000000000 +0100
 +++ 13.1/arch/arm64/Kconfig	2013-08-12 14:01:44.000000000 +0200
 @@ -204,9 +204,9 @@ source "mm/Kconfig"
  
@@ -21,7 +21,7 @@ Acked-by: jbeulich@suse.com
  	bool "Xen guest support on ARM64 (EXPERIMENTAL)"
  	depends on ARM64 && OF
  	help
---- 13.1.orig/arch/arm64/Makefile	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/arm64/Makefile	2014-02-10 16:07:57.000000000 +0100
 +++ 13.1/arch/arm64/Makefile	2013-08-12 14:02:01.000000000 +0200
 @@ -38,7 +38,7 @@ export	TEXT_OFFSET GZFLAGS
  
@@ -1811,8 +1811,8 @@ Acked-by: jbeulich@suse.com
  
  xen-balloon_$(CONFIG_XEN)	:= balloon/
  xen-privcmd_$(CONFIG_XEN)	:= privcmd/
---- 13.1.orig/drivers/xen/balloon/balloon.c	2013-05-28 09:37:18.000000000 +0200
-+++ 13.1/drivers/xen/balloon/balloon.c	2013-08-14 09:49:03.000000000 +0200
+--- 13.1.orig/drivers/xen/balloon/balloon.c	2014-02-10 16:16:41.000000000 +0100
++++ 13.1/drivers/xen/balloon/balloon.c	2014-02-10 16:16:48.000000000 +0100
 @@ -75,14 +75,6 @@ struct balloon_stats balloon_stats;
  /* We increase/decrease in batches which fit in a page */
  static unsigned long frame_list[PAGE_SIZE / sizeof(unsigned long)];
@@ -1902,7 +1902,15 @@ Acked-by: jbeulich@suse.com
  
  	balloon_unlock(flags);
  
-@@ -711,9 +715,8 @@ struct page **alloc_empty_pages_and_page
+@@ -539,6 +531,7 @@ static int __init balloon_init(void)
+ 	} xen_pod_target_t;
+ # endif
+ 	xen_pod_target_t pod_target = { .domid = DOMID_SELF };
++	unsigned long num_physpages = balloon_num_physpages();
+ 	int rc;
+ #elif defined(CONFIG_X86)
+ 	unsigned long pfn;
+@@ -705,9 +709,8 @@ struct page **alloc_empty_pages_and_page
  			goto err;
  		}
  
@@ -1914,7 +1922,7 @@ Acked-by: jbeulich@suse.com
  		page_zone(page)->present_pages--;
  
  		balloon_unlock(flags);
-@@ -762,7 +765,7 @@ void balloon_release_driver_page(struct 
+@@ -756,7 +759,7 @@ void balloon_release_driver_page(struct 
  
  	balloon_lock(flags);
  	balloon_append(page, 1);

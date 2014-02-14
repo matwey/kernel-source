@@ -2,12 +2,8 @@ From: jbeulich@novell.com
 Subject: dump the correct page tables for user mode faults
 Patch-mainline: obsolete
 
----
- arch/x86/mm/fault-xen.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
---- a/arch/x86/mm/fault-xen.c
-+++ b/arch/x86/mm/fault-xen.c
+--- 13.1.orig/arch/x86/mm/fault-xen.c	2014-02-10 16:20:17.000000000 +0100
++++ 13.1/arch/x86/mm/fault-xen.c	2014-02-10 16:26:52.000000000 +0100
 @@ -348,6 +348,7 @@ static void dump_pagetable(unsigned long
  out:
  	printk(KERN_CONT "\n");

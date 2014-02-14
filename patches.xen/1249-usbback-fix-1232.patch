@@ -1,0 +1,24 @@
+From http://xenbits.xen.org/hg/linux-2.6.18-xen.hg/rev/f2e452d98624
+From: xen-devel@lists.xenproject.org
+Patch-mainline: n/a
+Subject: usbback: fix after c/s 1232:8806dfb939d4
+References: bnc#842553
+
+That c/s ("backends: Check for insane amounts of requests on the ring")
+copied from blkback/blktap/scsiback a switch statement that is valid
+there, but not here - the return value from usbbk_start_submit_urb()
+could be any positive value, not just one.
+
+Signed-off-by: Jan Beulich <jbeulich@suse.com>
+
+--- 13.1.orig/drivers/xen/usbback/usbback.c	2014-02-10 16:14:09.000000000 +0100
++++ 13.1/drivers/xen/usbback/usbback.c	2014-02-10 16:14:15.000000000 +0100
+@@ -1013,7 +1013,7 @@ static int usbbk_start_submit_urb(usbif_
+ 
+ 	RING_FINAL_CHECK_FOR_REQUESTS(&usbif->urb_ring, more_to_do);
+ 
+-	return more_to_do;
++	return !!more_to_do;
+ }
+ 
+ void usbbk_hotplug_notify(usbif_t *usbif, int portnum, int speed)

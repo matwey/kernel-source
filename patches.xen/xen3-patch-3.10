@@ -113,10 +113,10 @@ Acked-by: jbeulich@suse.com
  
  quiet_cmd_mkcapflags = MKCAP   $@
        cmd_mkcapflags = $(CONFIG_SHELL) $(srctree)/$(src)/mkcapflags.sh $< $@
---- 13.1.orig/arch/x86/kernel/cpu/amd.c	2013-05-23 17:57:45.000000000 +0200
-+++ 13.1/arch/x86/kernel/cpu/amd.c	2013-09-04 13:01:13.000000000 +0200
-@@ -510,9 +510,11 @@ static void early_init_amd(struct cpuinf
- #endif
+--- 13.1.orig/arch/x86/kernel/cpu/amd.c	2014-02-21 12:21:50.670330901 +0100
++++ 13.1/arch/x86/kernel/cpu/amd.c	2014-02-21 12:21:50.642330904 +0100
+@@ -520,9 +520,11 @@
+ 
  }
  
 +#ifndef CONFIG_XEN

@@ -37,9 +37,22 @@ Signed-off-by: John Stultz <john.stultz@linaro.org>
 
 Index: current/drivers/rtc/rtc-cmos.c
 ===================================================================
---- current.orig/drivers/rtc/rtc-cmos.c	2014-03-06 17:17:22.976906879 +0100
-+++ current/drivers/rtc/rtc-cmos.c	2014-03-06 17:21:31.664926338 +0100
-@@ -377,6 +377,51 @@
+--- current.orig/drivers/rtc/rtc-cmos.c
++++ current/drivers/rtc/rtc-cmos.c
+@@ -34,11 +34,11 @@
+ #include <linux/interrupt.h>
+ #include <linux/spinlock.h>
+ #include <linux/platform_device.h>
+-#include <linux/mod_devicetable.h>
+ #include <linux/log2.h>
+ #include <linux/pm.h>
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
++#include <linux/dmi.h>
+ 
+ /* this is for "generic access to PC-style RTC" using CMOS_READ/CMOS_WRITE */
+ #include <asm-generic/rtc.h>
+@@ -377,6 +377,51 @@ static int cmos_set_alarm(struct device
  	return 0;
  }
  
@@ -91,7 +104,7 @@ Index: current/drivers/rtc/rtc-cmos.c
  static int cmos_alarm_irq_enable(struct device *dev, unsigned int enabled)
  {
  	struct cmos_rtc	*cmos = dev_get_drvdata(dev);
-@@ -385,6 +430,9 @@
+@@ -385,6 +430,9 @@ static int cmos_alarm_irq_enable(struct
  	if (!is_valid_irq(cmos->irq))
  		return -EINVAL;
  
@@ -101,7 +114,7 @@ Index: current/drivers/rtc/rtc-cmos.c
  	spin_lock_irqsave(&rtc_lock, flags);
  
  	if (enabled)
-@@ -1172,6 +1220,8 @@
+@@ -1172,6 +1220,8 @@ static int __init cmos_init(void)
  			platform_driver_registered = true;
  	}
  

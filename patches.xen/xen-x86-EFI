@@ -782,17 +782,19 @@ References: fate#311376, fate#311529, bnc#578927, bnc#628554
  	help
  	  If you say yes here you will get support for the EFI
  	  Real Time Clock.
---- 13.1.orig/drivers/rtc/rtc-cmos.c	2013-09-02 22:46:10.000000000 +0200
-+++ 13.1/drivers/rtc/rtc-cmos.c	2013-08-12 17:57:25.000000000 +0200
-@@ -37,6 +37,7 @@
- #include <linux/mod_devicetable.h>
+Index: current/drivers/rtc/rtc-cmos.c
+===================================================================
+--- current.orig/drivers/rtc/rtc-cmos.c	2014-03-06 17:29:26.343963480 +0100
++++ current/drivers/rtc/rtc-cmos.c	2014-03-06 17:29:26.333963479 +0100
+@@ -36,6 +36,7 @@
+ #include <linux/platform_device.h>
  #include <linux/log2.h>
  #include <linux/pm.h>
 +#include <linux/efi.h>
  #include <linux/of.h>
  #include <linux/of_platform.h>
- 
-@@ -1159,6 +1160,11 @@ static int __init cmos_init(void)
+ #include <linux/dmi.h>
+@@ -1207,6 +1208,11 @@
  {
  	int retval = 0;
  

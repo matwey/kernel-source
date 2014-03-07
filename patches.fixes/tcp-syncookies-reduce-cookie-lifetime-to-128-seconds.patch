@@ -23,13 +23,17 @@ Reported-by: Jakob Lell <jakob@jakoblell.com>
 Signed-off-by: Florian Westphal <fw@strlen.de>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 0e47551..de870ee 100644
+---
+ include/net/tcp.h     |   18 ++++++++++++++++++
+ net/ipv4/syncookies.c |   31 ++++++++++---------------------
+ net/ipv6/syncookies.c |   24 +++++++-----------------
+ 3 files changed, 35 insertions(+), 38 deletions(-)
+
 --- a/include/net/tcp.h
 +++ b/include/net/tcp.h
-@@ -481,6 +481,24 @@ int __cookie_v4_check(const struct iphdr *iph, const struct tcphdr *th,
- struct sock *cookie_v4_check(struct sock *sk, struct sk_buff *skb,
- 			     struct ip_options *opt);
+@@ -483,6 +483,24 @@ extern __u32 syncookie_secret[2][16-4+SH
+ extern struct sock *cookie_v4_check(struct sock *sk, struct sk_buff *skb, 
+ 				    struct ip_options *opt);
  #ifdef CONFIG_SYN_COOKIES
 +#include <linux/ktime.h>
 +
@@ -49,14 +53,12 @@ index 0e47551..de870ee 100644
 +	return now.tv_sec >> 6; /* 64 seconds granularity */
 +}
 +
- u32 __cookie_v4_init_sequence(const struct iphdr *iph, const struct tcphdr *th,
- 			      u16 *mssp);
- __u32 cookie_v4_init_sequence(struct sock *sk, struct sk_buff *skb, __u16 *mss);
-diff --git a/net/ipv4/syncookies.c b/net/ipv4/syncookies.c
-index 14a15c4..b6ea297 100644
+ extern __u32 cookie_v4_init_sequence(struct sock *sk, struct sk_buff *skb, 
+ 				     __u16 *mss);
+ #else
 --- a/net/ipv4/syncookies.c
 +++ b/net/ipv4/syncookies.c
-@@ -89,8 +89,7 @@ __u32 cookie_init_timestamp(struct request_sock *req)
+@@ -89,8 +89,7 @@ __u32 cookie_init_timestamp(struct reque
  
  
  static __u32 secure_tcp_syn_cookie(__be32 saddr, __be32 daddr, __be16 sport,
@@ -66,7 +68,7 @@ index 14a15c4..b6ea297 100644
  {
  	/*
  	 * Compute the secure sequence number.
-@@ -102,7 +101,7 @@ static __u32 secure_tcp_syn_cookie(__be32 saddr, __be32 daddr, __be16 sport,
+@@ -102,7 +101,7 @@ static __u32 secure_tcp_syn_cookie(__be3
  	 * As an extra hack, we add a small "data" value that encodes the
  	 * MSS into the second hash value.
  	 */
@@ -75,7 +77,7 @@ index 14a15c4..b6ea297 100644
  	return (cookie_hash(saddr, daddr, sport, dport, 0, 0) +
  		sseq + (count << COOKIEBITS) +
  		((cookie_hash(saddr, daddr, sport, dport, count, 1) + data)
-@@ -114,22 +113,21 @@ static __u32 secure_tcp_syn_cookie(__be32 saddr, __be32 daddr, __be16 sport,
+@@ -114,22 +113,21 @@ static __u32 secure_tcp_syn_cookie(__be3
   * If the syncookie is bad, the data returned will be out of
   * range.  This must be checked by the caller.
   *
@@ -104,16 +106,12 @@ index 14a15c4..b6ea297 100644
  		return (__u32)-1;
  
  	return (cookie -
-@@ -173,7 +171,7 @@ u32 __cookie_v4_init_sequence(const struct iphdr *iph, const struct tcphdr *th,
+@@ -178,17 +176,10 @@ __u32 cookie_v4_init_sequence(struct soc
  
  	return secure_tcp_syn_cookie(iph->saddr, iph->daddr,
  				     th->source, th->dest, ntohl(th->seq),
 -				     jiffies / (HZ * 60), mssind);
 +				     mssind);
- }
- EXPORT_SYMBOL_GPL(__cookie_v4_init_sequence);
- 
-@@ -189,13 +187,6 @@ __u32 cookie_v4_init_sequence(struct sock *sk, struct sk_buff *skb, __u16 *mssp)
  }
  
  /*
@@ -127,8 +125,8 @@ index 14a15c4..b6ea297 100644
   * Check if a ack sequence number is a valid syncookie.
   * Return the decoded mss if it is, or 0 if not.
   */
-@@ -204,9 +195,7 @@ int __cookie_v4_check(const struct iphdr *iph, const struct tcphdr *th,
- {
+@@ -198,9 +189,7 @@ static inline int cookie_check(struct sk
+ 	const struct tcphdr *th = tcp_hdr(skb);
  	__u32 seq = ntohl(th->seq) - 1;
  	__u32 mssind = check_tcp_syn_cookie(cookie, iph->saddr, iph->daddr,
 -					    th->source, th->dest, seq,
@@ -138,11 +136,9 @@ index 14a15c4..b6ea297 100644
  
  	return mssind < ARRAY_SIZE(msstab) ? msstab[mssind] : 0;
  }
-diff --git a/net/ipv6/syncookies.c b/net/ipv6/syncookies.c
-index bf63ac8..13ca0a0 100644
 --- a/net/ipv6/syncookies.c
 +++ b/net/ipv6/syncookies.c
-@@ -36,14 +36,6 @@ static __u16 const msstab[] = {
+@@ -39,14 +39,6 @@ static __u16 const msstab[] = {
  	9000 - 60,
  };
  
@@ -157,7 +153,7 @@ index bf63ac8..13ca0a0 100644
  static inline struct sock *get_cookie_sock(struct sock *sk, struct sk_buff *skb,
  					   struct request_sock *req,
  					   struct dst_entry *dst)
-@@ -86,8 +78,9 @@ static u32 cookie_hash(const struct in6_addr *saddr, const struct in6_addr *dadd
+@@ -89,8 +81,9 @@ static u32 cookie_hash(const struct in6_
  static __u32 secure_tcp_syn_cookie(const struct in6_addr *saddr,
  				   const struct in6_addr *daddr,
  				   __be16 sport, __be16 dport, __u32 sseq,
@@ -168,7 +164,7 @@ index bf63ac8..13ca0a0 100644
  	return (cookie_hash(saddr, daddr, sport, dport, 0, 0) +
  		sseq + (count << COOKIEBITS) +
  		((cookie_hash(saddr, daddr, sport, dport, count, 1) + data)
-@@ -96,15 +89,14 @@ static __u32 secure_tcp_syn_cookie(const struct in6_addr *saddr,
+@@ -99,15 +92,14 @@ static __u32 secure_tcp_syn_cookie(const
  
  static __u32 check_tcp_syn_cookie(__u32 cookie, const struct in6_addr *saddr,
  				  const struct in6_addr *daddr, __be16 sport,
@@ -187,18 +183,18 @@ index bf63ac8..13ca0a0 100644
  		return (__u32)-1;
  
  	return (cookie -
-@@ -125,8 +117,7 @@ u32 __cookie_v6_init_sequence(const struct ipv6hdr *iph,
- 	*mssp = msstab[mssind];
+@@ -133,8 +125,7 @@ __u32 cookie_v6_init_sequence(struct soc
+ 	NET_INC_STATS_BH(sock_net(sk), LINUX_MIB_SYNCOOKIESSENT);
  
  	return secure_tcp_syn_cookie(&iph->saddr, &iph->daddr, th->source,
 -				     th->dest, ntohl(th->seq),
 -				     jiffies / (HZ * 60), mssind);
 +				     th->dest, ntohl(th->seq), mssind);
  }
- EXPORT_SYMBOL_GPL(__cookie_v6_init_sequence);
  
-@@ -146,8 +137,7 @@ int __cookie_v6_check(const struct ipv6hdr *iph, const struct tcphdr *th,
- {
+ static inline int cookie_check(const struct sk_buff *skb, __u32 cookie)
+@@ -143,8 +134,7 @@ static inline int cookie_check(const str
+ 	const struct tcphdr *th = tcp_hdr(skb);
  	__u32 seq = ntohl(th->seq) - 1;
  	__u32 mssind = check_tcp_syn_cookie(cookie, &iph->saddr, &iph->daddr,
 -					    th->source, th->dest, seq,
@@ -207,6 +203,3 @@ index bf63ac8..13ca0a0 100644
  
  	return mssind < ARRAY_SIZE(msstab) ? msstab[mssind] : 0;
  }
--- 
-1.8.4
-

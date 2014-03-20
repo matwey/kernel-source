@@ -1,0 +1,186 @@
+From b64f3a390d3477517cbff7d613e551705540769b Mon Sep 17 00:00:00 2001
+From: Dave Chinner <dchinner@redhat.com>
+Date: Tue, 13 Nov 2012 16:40:27 -0600
+Subject: [PATCH] xfs: use btree block initialisation functions in growfs
+Git-commit: b64f3a390d3477517cbff7d613e551705540769b
+Patch-mainline: 3.8-rc1
+References: bnc#858233
+
+Factor xfs_btree_init_block() to be independent of the btree cursor,
+and use the function to initialise btree blocks in the growfs code.
+This makes adding support for different format btree blocks simple.
+
+Signed-off-by: Dave Chinner <dchinner@redhat.com>
+Reviewed-by Rich Johnston <rjohnston@sgi.com>
+
+Signed-off-by: Ben Myers <bpm@sgi.com>
+Acked-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ fs/xfs/xfs_btree.c |   33 ++++++++++++++++++++++++---------
+ fs/xfs/xfs_btree.h |   11 +++++++++++
+ fs/xfs/xfs_fsops.c |   37 +++++++++++++------------------------
+ 3 files changed, 48 insertions(+), 33 deletions(-)
+
+--- a/fs/xfs/xfs_btree.c
++++ b/fs/xfs/xfs_btree.c
+@@ -853,18 +853,22 @@ xfs_btree_set_sibling(
+ 	}
+ }
+ 
+-STATIC void
++void
+ xfs_btree_init_block(
+-	struct xfs_btree_cur	*cur,
+-	int			level,
+-	int			numrecs,
+-	struct xfs_btree_block	*new)	/* new block */
++	struct xfs_mount *mp,
++	struct xfs_buf	*bp,
++	__u32		magic,
++	__u16		level,
++	__u16		numrecs,
++	unsigned int	flags)
+ {
+-	new->bb_magic = cpu_to_be32(xfs_magics[cur->bc_btnum]);
++	struct xfs_btree_block	*new = XFS_BUF_TO_BLOCK(bp);
++
++	new->bb_magic = cpu_to_be32(magic);
+ 	new->bb_level = cpu_to_be16(level);
+ 	new->bb_numrecs = cpu_to_be16(numrecs);
+ 
+-	if (cur->bc_flags & XFS_BTREE_LONG_PTRS) {
++	if (flags & XFS_BTREE_LONG_PTRS) {
+ 		new->bb_u.l.bb_leftsib = cpu_to_be64(NULLDFSBNO);
+ 		new->bb_u.l.bb_rightsib = cpu_to_be64(NULLDFSBNO);
+ 	} else {
+@@ -873,6 +877,17 @@ xfs_btree_init_block(
+ 	}
+ }
+ 
++STATIC void
++xfs_btree_init_block_cur(
++	struct xfs_btree_cur	*cur,
++	int			level,
++	int			numrecs,
++	struct xfs_buf		*bp)
++{
++	xfs_btree_init_block(cur->bc_mp, bp, xfs_magics[cur->bc_btnum],
++			       level, numrecs, cur->bc_flags);
++}
++
+ /*
+  * Return true if ptr is the last record in the btree and
+  * we need to track updateѕ to this record.  The decision
+@@ -2183,7 +2198,7 @@ xfs_btree_split(
+ 		goto error0;
+ 
+ 	/* Fill in the btree header for the new right block. */
+-	xfs_btree_init_block(cur, xfs_btree_get_level(left), 0, right);
++	xfs_btree_init_block_cur(cur, xfs_btree_get_level(left), 0, rbp);
+ 
+ 	/*
+ 	 * Split the entries between the old and the new block evenly.
+@@ -2492,7 +2507,7 @@ xfs_btree_new_root(
+ 		nptr = 2;
+ 	}
+ 	/* Fill in the new block's btree header and log it. */
+-	xfs_btree_init_block(cur, cur->bc_nlevels, 2, new);
++	xfs_btree_init_block_cur(cur, cur->bc_nlevels, 2, nbp);
+ 	xfs_btree_log_block(cur, nbp, XFS_BB_ALL_BITS);
+ 	ASSERT(!xfs_btree_ptr_is_null(cur, &lptr) &&
+ 			!xfs_btree_ptr_is_null(cur, &rptr));
+--- a/fs/xfs/xfs_btree.h
++++ b/fs/xfs/xfs_btree.h
+@@ -378,6 +378,17 @@ xfs_btree_reada_bufs(
+ 	xfs_agblock_t		agbno,	/* allocation group block number */
+ 	xfs_extlen_t		count);	/* count of filesystem blocks */
+ 
++/*
++ * Initialise a new btree block header
++ */
++void
++xfs_btree_init_block(
++	struct xfs_mount *mp,
++	struct xfs_buf	*bp,
++	__u32		magic,
++	__u16		level,
++	__u16		numrecs,
++	unsigned int	flags);
+ 
+ /*
+  * Common btree core entry points.
+--- a/fs/xfs/xfs_fsops.c
++++ b/fs/xfs/xfs_fsops.c
+@@ -123,7 +123,6 @@ xfs_growfs_data_private(
+ 	xfs_extlen_t		agsize;
+ 	xfs_extlen_t		tmpsize;
+ 	xfs_alloc_rec_t		*arec;
+-	struct xfs_btree_block	*block;
+ 	xfs_buf_t		*bp;
+ 	int			bucket;
+ 	int			dpct;
+@@ -261,17 +260,14 @@ xfs_growfs_data_private(
+ 			error = ENOMEM;
+ 			goto error0;
+ 		}
+-		block = XFS_BUF_TO_BLOCK(bp);
+-		memset(block, 0, mp->m_sb.sb_blocksize);
+-		block->bb_magic = cpu_to_be32(XFS_ABTB_MAGIC);
+-		block->bb_level = 0;
+-		block->bb_numrecs = cpu_to_be16(1);
+-		block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+-		block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
+-		arec = XFS_ALLOC_REC_ADDR(mp, block, 1);
++		xfs_buf_zero(bp, 0, BBTOB(bp->b_length));
++		xfs_btree_init_block(mp, bp, XFS_ABTB_MAGIC, 0, 1, 0);
++
++		arec = XFS_ALLOC_REC_ADDR(mp, XFS_BUF_TO_BLOCK(bp), 1);
+ 		arec->ar_startblock = cpu_to_be32(XFS_PREALLOC_BLOCKS(mp));
+ 		arec->ar_blockcount = cpu_to_be32(
+ 			agsize - be32_to_cpu(arec->ar_startblock));
++
+ 		error = xfs_bwrite(bp);
+ 		xfs_buf_relse(bp);
+ 		if (error)
+@@ -287,18 +283,15 @@ xfs_growfs_data_private(
+ 			error = ENOMEM;
+ 			goto error0;
+ 		}
+-		block = XFS_BUF_TO_BLOCK(bp);
+-		memset(block, 0, mp->m_sb.sb_blocksize);
+-		block->bb_magic = cpu_to_be32(XFS_ABTC_MAGIC);
+-		block->bb_level = 0;
+-		block->bb_numrecs = cpu_to_be16(1);
+-		block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+-		block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
+-		arec = XFS_ALLOC_REC_ADDR(mp, block, 1);
++		xfs_buf_zero(bp, 0, BBTOB(bp->b_length));
++		xfs_btree_init_block(mp, bp, XFS_ABTC_MAGIC, 0, 1, 0);
++
++		arec = XFS_ALLOC_REC_ADDR(mp, XFS_BUF_TO_BLOCK(bp), 1);
+ 		arec->ar_startblock = cpu_to_be32(XFS_PREALLOC_BLOCKS(mp));
+ 		arec->ar_blockcount = cpu_to_be32(
+ 			agsize - be32_to_cpu(arec->ar_startblock));
+ 		nfree += be32_to_cpu(arec->ar_blockcount);
++
+ 		error = xfs_bwrite(bp);
+ 		xfs_buf_relse(bp);
+ 		if (error)
+@@ -314,13 +307,9 @@ xfs_growfs_data_private(
+ 			error = ENOMEM;
+ 			goto error0;
+ 		}
+-		block = XFS_BUF_TO_BLOCK(bp);
+-		memset(block, 0, mp->m_sb.sb_blocksize);
+-		block->bb_magic = cpu_to_be32(XFS_IBT_MAGIC);
+-		block->bb_level = 0;
+-		block->bb_numrecs = 0;
+-		block->bb_u.s.bb_leftsib = cpu_to_be32(NULLAGBLOCK);
+-		block->bb_u.s.bb_rightsib = cpu_to_be32(NULLAGBLOCK);
++		xfs_buf_zero(bp, 0, BBTOB(bp->b_length));
++		xfs_btree_init_block(mp, bp, XFS_IBT_MAGIC, 0, 0, 0);
++
+ 		error = xfs_bwrite(bp);
+ 		xfs_buf_relse(bp);
+ 		if (error)

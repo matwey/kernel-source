@@ -1,0 +1,166 @@
+From fd23683c3b1ab905cba61ea2981c156f4bf52845 Mon Sep 17 00:00:00 2001
+From: Dave Chinner <dchinner@redhat.com>
+Date: Mon, 12 Nov 2012 22:53:59 +1100
+Subject: [PATCH] xfs: growfs: use uncached buffers for new headers
+Git-commit: fd23683c3b1ab905cba61ea2981c156f4bf52845
+Patch-mainline: 3.8-rc1
+References: bnc#858233
+
+When writing the new AG headers to disk, we can't attach write
+verifiers because they have a dependency on the struct xfs-perag
+being attached to the buffer to be fully initialised and growfs
+can't fully initialise them until later in the process.
+
+The simplest way to avoid this problem is to use uncached buffers
+for writing the new headers. These buffers don't have the xfs-perag
+attached to them, so it's simple to detect in the write verifier and
+be able to skip the checks that need the xfs-perag.
+
+This enables us to attach the appropriate buffer ops to the buffer
+and hence calculate CRCs on the way to disk. IT also means that the
+buffer is torn down immediately, and so the first access to the AG
+headers will re-read the header from disk and perform full
+verification of the buffer. This way we also can catch corruptions
+due to problems that went undetected in growfs.
+
+Signed-off-by: Dave Chinner <dchinner@redhat.com>
+Reviewed-by Rich Johnston <rjohnston@sgi.com>
+
+Signed-off-by: Ben Myers <bpm@sgi.com>
+Acked-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ fs/xfs/xfs_fsops.c |   63 ++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 41 insertions(+), 22 deletions(-)
+
+--- a/fs/xfs/xfs_fsops.c
++++ b/fs/xfs/xfs_fsops.c
+@@ -112,6 +112,26 @@ xfs_fs_geometry(
+ 	return 0;
+ }
+ 
++static struct xfs_buf *
++xfs_growfs_get_hdr_buf(
++	struct xfs_mount	*mp,
++	xfs_daddr_t		blkno,
++	size_t			numblks,
++	int			flags)
++{
++	struct xfs_buf		*bp;
++
++	bp = xfs_buf_get_uncached(mp->m_ddev_targp, numblks, flags);
++	if (!bp)
++		return NULL;
++
++	xfs_buf_zero(bp, 0, BBTOB(bp->b_length));
++	bp->b_bn = blkno;
++	bp->b_maps[0].bm_bn = blkno;
++
++	return bp;
++}
++
+ static int
+ xfs_growfs_data_private(
+ 	xfs_mount_t		*mp,		/* mount point for filesystem */
+@@ -187,15 +207,15 @@ xfs_growfs_data_private(
+ 		/*
+ 		 * AG freelist header block
+ 		 */
+-		bp = xfs_buf_get(mp->m_ddev_targp,
+-				 XFS_AG_DADDR(mp, agno, XFS_AGF_DADDR(mp)),
+-				 XFS_FSS_TO_BB(mp, 1), 0);
++		bp = xfs_growfs_get_hdr_buf(mp,
++				XFS_AG_DADDR(mp, agno, XFS_AGF_DADDR(mp)),
++				XFS_FSS_TO_BB(mp, 1), 0);
+ 		if (!bp) {
+ 			error = ENOMEM;
+ 			goto error0;
+ 		}
++
+ 		agf = XFS_BUF_TO_AGF(bp);
+-		memset(agf, 0, mp->m_sb.sb_sectsize);
+ 		agf->agf_magicnum = cpu_to_be32(XFS_AGF_MAGIC);
+ 		agf->agf_versionnum = cpu_to_be32(XFS_AGF_VERSION);
+ 		agf->agf_seqno = cpu_to_be32(agno);
+@@ -224,15 +244,15 @@ xfs_growfs_data_private(
+ 		/*
+ 		 * AG inode header block
+ 		 */
+-		bp = xfs_buf_get(mp->m_ddev_targp,
+-				 XFS_AG_DADDR(mp, agno, XFS_AGI_DADDR(mp)),
+-				 XFS_FSS_TO_BB(mp, 1), 0);
++		bp = xfs_growfs_get_hdr_buf(mp,
++				XFS_AG_DADDR(mp, agno, XFS_AGI_DADDR(mp)),
++				XFS_FSS_TO_BB(mp, 1), 0);
+ 		if (!bp) {
+ 			error = ENOMEM;
+ 			goto error0;
+ 		}
++
+ 		agi = XFS_BUF_TO_AGI(bp);
+-		memset(agi, 0, mp->m_sb.sb_sectsize);
+ 		agi->agi_magicnum = cpu_to_be32(XFS_AGI_MAGIC);
+ 		agi->agi_versionnum = cpu_to_be32(XFS_AGI_VERSION);
+ 		agi->agi_seqno = cpu_to_be32(agno);
+@@ -253,16 +273,16 @@ xfs_growfs_data_private(
+ 		/*
+ 		 * BNO btree root block
+ 		 */
+-		bp = xfs_buf_get(mp->m_ddev_targp,
+-				 XFS_AGB_TO_DADDR(mp, agno, XFS_BNO_BLOCK(mp)),
+-				 BTOBB(mp->m_sb.sb_blocksize), 0);
++		bp = xfs_growfs_get_hdr_buf(mp,
++				XFS_AGB_TO_DADDR(mp, agno, XFS_BNO_BLOCK(mp)),
++				BTOBB(mp->m_sb.sb_blocksize), 0);
++
+ 		if (!bp) {
+ 			error = ENOMEM;
+ 			goto error0;
+ 		}
+-		xfs_buf_zero(bp, 0, BBTOB(bp->b_length));
+-		xfs_btree_init_block(mp, bp, XFS_ABTB_MAGIC, 0, 1, 0);
+ 
++		xfs_btree_init_block(mp, bp, XFS_ABTB_MAGIC, 0, 1, 0);
+ 		arec = XFS_ALLOC_REC_ADDR(mp, XFS_BUF_TO_BLOCK(bp), 1);
+ 		arec->ar_startblock = cpu_to_be32(XFS_PREALLOC_BLOCKS(mp));
+ 		arec->ar_blockcount = cpu_to_be32(
+@@ -276,16 +296,15 @@ xfs_growfs_data_private(
+ 		/*
+ 		 * CNT btree root block
+ 		 */
+-		bp = xfs_buf_get(mp->m_ddev_targp,
+-				 XFS_AGB_TO_DADDR(mp, agno, XFS_CNT_BLOCK(mp)),
+-				 BTOBB(mp->m_sb.sb_blocksize), 0);
++		bp = xfs_growfs_get_hdr_buf(mp,
++				XFS_AGB_TO_DADDR(mp, agno, XFS_CNT_BLOCK(mp)),
++				BTOBB(mp->m_sb.sb_blocksize), 0);
+ 		if (!bp) {
+ 			error = ENOMEM;
+ 			goto error0;
+ 		}
+-		xfs_buf_zero(bp, 0, BBTOB(bp->b_length));
+-		xfs_btree_init_block(mp, bp, XFS_ABTC_MAGIC, 0, 1, 0);
+ 
++		xfs_btree_init_block(mp, bp, XFS_ABTC_MAGIC, 0, 1, 0);
+ 		arec = XFS_ALLOC_REC_ADDR(mp, XFS_BUF_TO_BLOCK(bp), 1);
+ 		arec->ar_startblock = cpu_to_be32(XFS_PREALLOC_BLOCKS(mp));
+ 		arec->ar_blockcount = cpu_to_be32(
+@@ -300,14 +319,14 @@ xfs_growfs_data_private(
+ 		/*
+ 		 * INO btree root block
+ 		 */
+-		bp = xfs_buf_get(mp->m_ddev_targp,
+-				 XFS_AGB_TO_DADDR(mp, agno, XFS_IBT_BLOCK(mp)),
+-				 BTOBB(mp->m_sb.sb_blocksize), 0);
++		bp = xfs_growfs_get_hdr_buf(mp,
++				XFS_AGB_TO_DADDR(mp, agno, XFS_IBT_BLOCK(mp)),
++				BTOBB(mp->m_sb.sb_blocksize), 0);
+ 		if (!bp) {
+ 			error = ENOMEM;
+ 			goto error0;
+ 		}
+-		xfs_buf_zero(bp, 0, BBTOB(bp->b_length));
++
+ 		xfs_btree_init_block(mp, bp, XFS_IBT_MAGIC, 0, 0, 0);
+ 
+ 		error = xfs_bwrite(bp);

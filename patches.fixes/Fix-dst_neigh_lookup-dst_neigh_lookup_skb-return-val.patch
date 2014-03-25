@@ -1,0 +1,57 @@
+From: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Date: Thu, 14 Mar 2013 17:21:50 +0000
+Subject: Fix dst_neigh_lookup/dst_neigh_lookup_skb return value handling bug
+Patch-mainline: v3.9-rc4
+Git-commit: aaa0c23cb90141309f5076ba5e3bfbd39544b985
+References: bnc#869898
+
+When neighbour table is full, dst_neigh_lookup/dst_neigh_lookup_skb will return
+-ENOBUFS which is absolutely non zero, while all the code in kernel which use
+above functions assume failure only on zero return which will cause panic. (for
+example: : https://bugzilla.kernel.org/show_bug.cgi?id=54731).
+
+This patch corrects above error with smallest changes to kernel source code and
+also correct two return value check missing bugs in drivers/infiniband/hw/cxgb4/cm.c
+
+Tested on my x86_64 SMP machine
+
+Reported-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Tested-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Signed-off-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Michal Kubecek <mkubecek@suse.cz>
+
+openSUSE-12.3: the cxgb4 part doesn't apply and is not needed as the
+only use of dst_neigh_lookup() checks the return value.
+
+Conflicts:
+	drivers/infiniband/hw/cxgb4/cm.c
+---
+ include/net/dst.h | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/include/net/dst.h b/include/net/dst.h
+index 9a78810..c831ee0 100644
+--- a/include/net/dst.h
++++ b/include/net/dst.h
+@@ -416,13 +416,15 @@ static inline int dst_neigh_output(struct dst_entry *dst, struct neighbour *n,
+ 
+ static inline struct neighbour *dst_neigh_lookup(const struct dst_entry *dst, const void *daddr)
+ {
+-	return dst->ops->neigh_lookup(dst, NULL, daddr);
++	struct neighbour *n = dst->ops->neigh_lookup(dst, NULL, daddr);
++	return IS_ERR(n) ? NULL : n;
+ }
+ 
+ static inline struct neighbour *dst_neigh_lookup_skb(const struct dst_entry *dst,
+ 						     struct sk_buff *skb)
+ {
+-	return dst->ops->neigh_lookup(dst, skb, NULL);
++	struct neighbour *n =  dst->ops->neigh_lookup(dst, skb, NULL);
++	return IS_ERR(n) ? NULL : n;
+ }
+ 
+ static inline void dst_link_failure(struct sk_buff *skb)
+-- 
+1.8.1.4
+

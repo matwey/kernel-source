@@ -5,7 +5,7 @@ Subject: [PATCH] mm: close PageTail race
 
 Patch-mainline: 3.13
 Git-commit: 668f9abbd4334e6c29fa8acd71635c4f9101caa7
-References: bnc#81660
+References: bnc#871160
 
 Commit bf6bddf1924e ("mm: introduce compaction and migration for
 ballooned pages") introduces page_count(page) into memory compaction

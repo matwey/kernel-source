@@ -5,7 +5,7 @@ Subject: [PATCH] mm: hugetlbfs: fix hugetlbfs optimization
 
 Patch-mainline: 3.13
 Git-commit: 27c73ae759774e63313c1fbfeb17ba076cea64c5
-References: bnc#81660
+References: bnc#871160
 
 Commit 7cb2ef56e6a8 ("mm: fix aio performance regression for database
 caused by THP") can cause dereference of a dangling pointer if

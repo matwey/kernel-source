@@ -22,20 +22,13 @@ Acked-by: NeilBrown <neilb@suse.de>
  net/sunrpc/rpc_pipe.c |   50 +++++++++++++++++++++++++++++++++++++++++++++++++-
  1 file changed, 49 insertions(+), 1 deletion(-)
 
---- linux-3.11-openSUSE-13.1.orig/net/sunrpc/rpc_pipe.c
-+++ linux-3.11-openSUSE-13.1/net/sunrpc/rpc_pipe.c
-@@ -17,6 +17,7 @@
- #include <linux/fsnotify.h>
- #include <linux/kernel.h>
- #include <linux/rcupdate.h>
-+#include <linux/utsname.h>
- 
- #include <asm/ioctls.h>
- #include <linux/poll.h>
-@@ -1135,6 +1136,44 @@ static const struct rpc_pipe_ops gssd_du
+--- a/net/sunrpc/rpc_pipe.c
++++ b/net/sunrpc/rpc_pipe.c
+@@ -1135,6 +1135,45 @@ static const struct rpc_pipe_ops gssd_du
  	.downcall	= dummy_downcall,
  };
  
++#include <linux/utsname.h>
 +/*
 + * Here we present a bogus "info" file to keep rpc.gssd happy. We don't expect
 + * that it will ever use this info to handle an upcall, but rpc.gssd expects

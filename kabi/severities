@@ -10,4 +10,5 @@
 
 drivers/message/fusion/*	PASS
 drivers/staging/*		PASS
-
+arch/x86/kvm/*                  PASS
+net/l2tp/*			PASS

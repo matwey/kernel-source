@@ -360,7 +360,7 @@ have been needed - see SLE11 SPn).
  
  	/*
  	 * If acpi_disabled, bail out
---- 13.1.orig/arch/x86/kernel/amd_nb.c	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/amd_nb.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/kernel/amd_nb.c	2013-05-23 17:18:02.000000000 +0200
 @@ -18,6 +18,10 @@ static u32 *flush_words;
  const struct pci_device_id amd_nb_misc_ids[] = {
@@ -387,9 +387,9 @@ have been needed - see SLE11 SPn).
  
  #ifndef CONFIG_XEN
  static int modern_apic(void)
---- 13.1.orig/arch/x86/kernel/cpu/amd.c	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/cpu/amd.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/kernel/cpu/amd.c	2013-05-23 17:18:07.000000000 +0200
-@@ -670,6 +670,7 @@ static void init_amd(struct cpuinfo_x86 
+@@ -680,6 +680,7 @@ static void init_amd(struct cpuinfo_x86 
  		fam10h_check_enable_mmcfg();
  	}
  
@@ -397,7 +397,7 @@ have been needed - see SLE11 SPn).
  	if (c == &boot_cpu_data && c->x86 >= 0xf) {
  		unsigned long long tseg;
  
-@@ -687,6 +688,7 @@ static void init_amd(struct cpuinfo_x86 
+@@ -697,6 +698,7 @@ static void init_amd(struct cpuinfo_x86 
  		}
  	}
  #endif
@@ -405,7 +405,7 @@ have been needed - see SLE11 SPn).
  
  	/*
  	 * Family 0x12 and above processors have APIC timer
---- 13.1.orig/arch/x86/kernel/cpu/bugs_64.c	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/cpu/bugs_64.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/kernel/cpu/bugs_64.c	2011-02-01 14:38:38.000000000 +0100
 @@ -20,6 +20,7 @@ void __init check_bugs(void)
  #endif
@@ -2876,7 +2876,7 @@ have been needed - see SLE11 SPn).
  	cmpl $nr_syscalls,%eax
  	jb syscall_call
  	jmp syscall_exit
---- 13.1.orig/arch/x86/kernel/entry_64.S	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/entry_64.S	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/kernel/entry_64.S	2013-08-09 12:53:13.000000000 +0200
 @@ -1415,7 +1415,7 @@ ENTRY(arch_unwind_init_running)
  END(arch_unwind_init_running)
@@ -6226,7 +6226,7 @@ have been needed - see SLE11 SPn).
  };
  
  void __init no_iommu_init(void)
---- 13.1.orig/arch/x86/kernel/probe_roms.c	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/probe_roms.c	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/arch/x86/kernel/probe_roms.c	2012-04-10 16:47:21.000000000 +0200
 @@ -233,7 +233,7 @@ void __init probe_roms(void)
  	upper = system_rom_resource.start;
@@ -14235,7 +14235,7 @@ have been needed - see SLE11 SPn).
  void make_lowmem_page_readonly(void *va, unsigned int feature)
  {
  	pte_t *pte;
---- 13.1.orig/arch/x86/pci/amd_bus.c	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/arch/x86/pci/amd_bus.c	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/arch/x86/pci/amd_bus.c	2013-08-09 12:52:55.000000000 +0200
 @@ -312,6 +312,7 @@ static int __init early_fill_mp_bus_info
  
@@ -14284,7 +14284,7 @@ have been needed - see SLE11 SPn).
  	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
  		return 0;
  
---- 13.1.orig/arch/x86/pci/mmconfig-shared.c	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/arch/x86/pci/mmconfig-shared.c	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/arch/x86/pci/mmconfig-shared.c	2013-01-14 13:50:37.000000000 +0100
 @@ -23,6 +23,10 @@
  #include <asm/pci_x86.h>
@@ -15493,8 +15493,8 @@ have been needed - see SLE11 SPn).
  	prefill_possible_map();
  }
  
---- 13.1.orig/drivers/xen/core/spinlock.c	2013-10-14 13:07:06.000000000 +0200
-+++ 13.1/drivers/xen/core/spinlock.c	2013-10-14 14:57:17.000000000 +0200
+--- 13.1.orig/drivers/xen/core/spinlock.c	2014-03-11 10:15:23.000000000 +0100
++++ 13.1/drivers/xen/core/spinlock.c	2014-03-11 10:19:06.000000000 +0100
 @@ -5,6 +5,10 @@
   *	portions of this file.
   */
@@ -15575,7 +15575,16 @@ have been needed - see SLE11 SPn).
  	/*
  	 * Despite its counterpart being first in xen_spin_irq_enter() (to make
  	 * xen_spin_kick() properly handle locks that get owned after their
-@@ -226,13 +232,13 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -214,7 +220,7 @@ void xen_spin_irq_exit(void)
+ 			continue;
+ 		spinning->ticket = ticket_get(lock, spinning->prev);
+ 		if (lock->cur == spinning->ticket)
+-			set_evtchn(__get_cpu_var(poll_evtchn));
++			set_evtchn(x86_read_percpu(poll_evtchn));
+ 	}
+ }
+ #endif
+@@ -228,13 +234,13 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  
  	/* If kicker interrupt not initialized yet, just spin. */
  	if (unlikely(!cpu_online(raw_smp_processor_id()))
@@ -15591,7 +15600,7 @@ have been needed - see SLE11 SPn).
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
  	spinning.irq_count = UINT_MAX;
  	if (upcall_mask > flags) {
-@@ -248,10 +254,10 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -250,10 +256,10 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  	raw_local_irq_disable();
  #endif
  	smp_wmb();
@@ -15604,7 +15613,7 @@ have been needed - see SLE11 SPn).
  
  		/*
  		 * Check again to make sure it didn't become free while
-@@ -264,19 +270,19 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -266,19 +272,19 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  			 * without rechecking the lock.
  			 */
  			if (spinning.prev)
@@ -15627,7 +15636,7 @@ have been needed - see SLE11 SPn).
  		    HYPERVISOR_poll_no_timeout(&__get_cpu_var(poll_evtchn), 1))
  			BUG();
  
-@@ -286,7 +292,7 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -288,7 +294,7 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  		spinning.irq_count = UINT_MAX;
  #endif
  
@@ -15636,7 +15645,7 @@ have been needed - see SLE11 SPn).
  			inc_irq_stat(irq_lock_count);
  			break;
  		}
-@@ -298,7 +304,7 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -300,7 +306,7 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  	 */
  
  	/* announce we're done */
@@ -15645,7 +15654,7 @@ have been needed - see SLE11 SPn).
  	if (!CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING)
  		raw_local_irq_disable();
  	sequence(SEQ_REMOVE_BIAS);
-@@ -331,7 +337,7 @@ void xen_spin_kick(const raw_spinlock_t 
+@@ -333,7 +339,7 @@ void xen_spin_kick(const raw_spinlock_t 
  	if (unlikely(!cpu_online(local)))
  		stop = start = cpus_cycle(local, cpu_online_map);
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
@@ -15654,7 +15663,7 @@ have been needed - see SLE11 SPn).
  		start = local;
  #endif
  	else {
-@@ -348,7 +354,7 @@ void xen_spin_kick(const raw_spinlock_t 
+@@ -350,7 +356,7 @@ void xen_spin_kick(const raw_spinlock_t 
  
  		flags = __raw_local_irq_save();
  		if (cpu == local)
@@ -15663,7 +15672,7 @@ have been needed - see SLE11 SPn).
  		else for (;;) {
  			unsigned int rm_idx = per_cpu(rm_seq.idx, cpu);
  
-@@ -402,3 +408,5 @@ void xen_spin_kick(const raw_spinlock_t 
+@@ -404,3 +410,5 @@ void xen_spin_kick(const raw_spinlock_t 
  	}
  }
  EXPORT_SYMBOL(xen_spin_kick);
@@ -15771,7 +15780,7 @@ have been needed - see SLE11 SPn).
  
  	return 0;
  }
---- 13.1.orig/drivers/xen/sfc_netback/accel.h	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/drivers/xen/sfc_netback/accel.h	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/drivers/xen/sfc_netback/accel.h	2011-02-01 14:38:38.000000000 +0100
 @@ -25,6 +25,7 @@
  #ifndef NETBACK_ACCEL_H
@@ -15942,7 +15951,7 @@ have been needed - see SLE11 SPn).
  	if (fd < 0)
  		return fd;
  
---- 13.1.orig/include/uapi/Kbuild	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/include/uapi/Kbuild	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/include/uapi/Kbuild	2012-10-23 15:01:10.000000000 +0200
 @@ -10,5 +10,6 @@ header-y += mtd/
  header-y += rdma/
@@ -17897,7 +17906,7 @@ have been needed - see SLE11 SPn).
  #endif
 +
 +#endif /* ASM_X86_XEN__XOR_H */
---- 13.1.orig/arch/x86/include/mach-xen/asm/irq_vectors.h	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/arch/x86/include/mach-xen/asm/irq_vectors.h	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/arch/x86/include/mach-xen/asm/irq_vectors.h	2011-02-15 17:27:18.000000000 +0100
 @@ -1,97 +1,24 @@
 -/*
@@ -18033,7 +18042,7 @@ have been needed - see SLE11 SPn).
  #endif
  
  #define DYNIRQ_BASE		(PIRQ_BASE + NR_PIRQS)
---- 13.1.orig/arch/x86/include/asm/traps.h	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/arch/x86/include/asm/traps.h	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/arch/x86/include/asm/traps.h	2011-09-07 15:45:44.000000000 +0200
 @@ -40,6 +40,9 @@ asmlinkage void alignment_check(void);
  asmlinkage void machine_check(void);
@@ -18123,7 +18132,7 @@ have been needed - see SLE11 SPn).
  typedef struct xen_add_to_physmap xen_add_to_physmap_t;
  DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_t);
  
---- 13.1.orig/include/uapi/xen/public/Kbuild	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/include/uapi/xen/public/Kbuild	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/include/uapi/xen/public/Kbuild	2011-02-01 14:38:38.000000000 +0100
 @@ -1 +1,5 @@
 +header-y += evtchn.h
@@ -18131,7 +18140,7 @@ have been needed - see SLE11 SPn).
  header-y += iomulti.h
 +header-y += privcmd.h
 +header-y += xenbus.h
---- 13.1.orig/include/uapi/xen/public/privcmd.h	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/include/uapi/xen/public/privcmd.h	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/include/uapi/xen/public/privcmd.h	2011-02-01 14:38:38.000000000 +0100
 @@ -35,10 +35,6 @@
  
@@ -18144,7 +18153,7 @@ have been needed - see SLE11 SPn).
  typedef struct privcmd_hypercall
  {
  	__u64 op;
---- 13.1.orig/include/uapi/xen/public/xenbus.h	2013-11-26 11:16:06.000000000 +0100
+--- 13.1.orig/include/uapi/xen/public/xenbus.h	2014-04-08 17:00:41.000000000 +0200
 +++ 13.1/include/uapi/xen/public/xenbus.h	2011-02-01 14:38:38.000000000 +0100
 @@ -35,10 +35,6 @@
  

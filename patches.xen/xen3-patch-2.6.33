@@ -3399,7 +3399,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  		.procname	= "xen",
  		.mode		= 0555,
  		.child		= xen_subtable
---- 13.1.orig/arch/x86/kernel/traps-xen.c	2012-07-05 11:52:00.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/traps-xen.c	2013-11-26 11:27:38.000000000 +0100
 +++ 13.1/arch/x86/kernel/traps-xen.c	2011-02-01 14:55:46.000000000 +0100
 @@ -522,77 +522,56 @@ asmlinkage __kprobes struct pt_regs *syn
  dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
@@ -3547,7 +3547,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  	  .child = kernel_table2 },
  	{}
  };
---- 13.1.orig/arch/x86/kernel/x8664_ksyms_64.c	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/x8664_ksyms_64.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/kernel/x8664_ksyms_64.c	2013-03-21 15:17:09.000000000 +0100
 @@ -63,6 +63,6 @@ EXPORT_SYMBOL(memmove);
  EXPORT_SYMBOL(phys_base);
@@ -4016,7 +4016,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  		.procname = "abi",
  		.mode = 0555,
  		.child = abi_table2
---- 13.1.orig/drivers/gpu/drm/vmwgfx/Kconfig	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/drivers/gpu/drm/vmwgfx/Kconfig	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/gpu/drm/vmwgfx/Kconfig	2011-02-01 14:55:46.000000000 +0100
 @@ -1,6 +1,6 @@
  config DRM_VMWGFX
@@ -4458,7 +4458,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  	depends on ACPI
  	default !X86
  
---- 13.1.orig/drivers/scsi/Kconfig	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/drivers/scsi/Kconfig	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/scsi/Kconfig	2013-01-08 11:57:10.000000000 +0100
 @@ -642,7 +642,7 @@ config SCSI_FLASHPOINT
  
@@ -4622,7 +4622,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  #ifdef CONFIG_PM_SLEEP
  static void restore_cpu_virqs(unsigned int cpu)
  {
---- 13.1.orig/drivers/xen/core/spinlock.c	2013-10-14 14:59:04.000000000 +0200
+--- 13.1.orig/drivers/xen/core/spinlock.c	2014-03-11 10:20:03.000000000 +0100
 +++ 13.1/drivers/xen/core/spinlock.c	2013-10-14 14:59:27.000000000 +0200
 @@ -16,7 +16,7 @@
  #include <xen/evtchn.h>
@@ -4687,7 +4687,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  
  		if (spinning->irq_count < irq_count)
  			break;
-@@ -223,7 +223,7 @@ void xen_spin_irq_exit(void)
+@@ -225,7 +225,7 @@ void xen_spin_irq_exit(void)
  }
  #endif
  
@@ -4696,7 +4696,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  		   unsigned int flags)
  {
  	typeof(vcpu_info(0)->evtchn_upcall_mask) upcall_mask
-@@ -327,7 +327,7 @@ static inline unsigned int cpumask_cycle
+@@ -329,7 +329,7 @@ static inline unsigned int cpumask_cycle
  	return nxt;
  }
  
@@ -4860,7 +4860,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  
  #endif				/* CONFIG_CPU_FREQ */
  
---- 13.1.orig/include/xen/compat_ioctl.h	2010-01-18 15:23:12.000000000 +0100
+--- 13.1.orig/include/xen/compat_ioctl.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/include/xen/compat_ioctl.h	2011-02-01 14:55:46.000000000 +0100
 @@ -29,7 +29,7 @@
  #define xen_pfn32_t __u32
@@ -4901,7 +4901,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  /*
   * Use these to access the event channel underlying the IRQ handle returned
   * by bind_*_to_irqhandler().
---- 13.1.orig/include/xen/xen.h	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/include/xen/xen.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/include/xen/xen.h	2012-10-23 15:29:28.000000000 +0200
 @@ -7,8 +7,10 @@ enum xen_domain_type {
  	XEN_HVM_DOMAIN,		/* running in a Xen hvm domain */
@@ -4942,7 +4942,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  
  static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
  			    size_t data_len)
---- 13.1.orig/kernel/ksysfs.c	2013-10-14 14:42:32.000000000 +0200
+--- 13.1.orig/kernel/ksysfs.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/kernel/ksysfs.c	2013-01-08 11:57:32.000000000 +0100
 @@ -106,6 +106,7 @@ static ssize_t kexec_crash_size_show(str
  {

@@ -150,7 +150,7 @@ when the functions are used before the page fault handler gets set up.
  		if (!is_initial_xendomain() || kexec_enabled())
  			setup_pfn_to_mfn_frame_list(__alloc_bootmem);
 --- 13.1.orig/arch/x86/mm/init_64-xen.c	2013-05-27 14:15:19.000000000 +0200
-+++ 13.1/arch/x86/mm/init_64-xen.c	2013-05-27 14:15:41.000000000 +0200
++++ 13.1/arch/x86/mm/init_64-xen.c	2014-04-04 15:33:27.000000000 +0200
 @@ -510,6 +510,13 @@ static inline int __meminit make_readonl
  			 PFN_PHYS(xen_start_info->nr_pt_frames) -
  			 __START_KERNEL_map)))
@@ -178,14 +178,15 @@ when the functions are used before the page fault handler gets set up.
  	/* Do an early initialization of the fixmap area. */
  	addr = __fix_to_virt(FIX_EARLYCON_MEM_BASE);
  	if (pud_present(level3_kernel_pgt[pud_index(addr)])) {
-@@ -875,22 +888,27 @@ void __init xen_init_pt(void)
+@@ -875,6 +888,7 @@ void __init xen_init_pt(void)
  void __init xen_finish_init_mapping(void)
  {
  	unsigned long va;
 +	struct mmuext_op mmuext;
+ 	pud_t *pud;
  
  	/* Re-vector virtual addresses pointing into the initial
- 	   mapping to the just-established permanent ones. */
+@@ -882,16 +896,20 @@ void __init xen_finish_init_mapping(void
  	xen_start_info = __va(__pa(xen_start_info));
  	xen_start_info->pt_base = (unsigned long)
  		__va(__pa(xen_start_info->pt_base));
@@ -207,9 +208,9 @@ when the functions are used before the page fault handler gets set up.
 +	if (HYPERVISOR_mmuext_op(&mmuext, 1, NULL, DOMID_SELF))
 +		BUG();
 +
- 	/* Destroy the Xen-created mappings beyond the kernel image. */
- 	va = PAGE_ALIGN(_brk_end);
- 	while (!pmd_none(*early_get_pmd(va))) {
+ 	/* Kill mapping of memory below _text. */
+ 	va = __START_KERNEL_map;
+ 	while (va < (unsigned long)&_text) {
 --- 13.1.orig/arch/x86/mm/pageattr-xen.c	2013-05-24 11:49:51.000000000 +0200
 +++ 13.1/arch/x86/mm/pageattr-xen.c	2013-05-27 14:15:46.000000000 +0200
 @@ -1556,7 +1556,7 @@ static void __make_page_writable(unsigne

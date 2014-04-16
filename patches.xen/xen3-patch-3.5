@@ -62,7 +62,7 @@ Acked-by: jbeulich@suse.com
  	orl     $TS_COMPAT,TI_status+THREAD_INFO(%rsp,RIP-ARGOFFSET)
  	testl   $_TIF_WORK_SYSCALL_ENTRY,TI_flags+THREAD_INFO(%rsp,RIP-ARGOFFSET)
  	jnz   cstar_tracesys
---- 13.1.orig/arch/x86/include/asm/io_apic.h	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/x86/include/asm/io_apic.h	2014-04-08 17:00:39.000000000 +0200
 +++ 13.1/arch/x86/include/asm/io_apic.h	2013-03-21 15:35:08.000000000 +0100
 @@ -188,6 +188,7 @@ extern void mp_save_irq(struct mpc_intsr
  
@@ -3092,7 +3092,7 @@ Acked-by: jbeulich@suse.com
  	if (num_online_cpus() == 1)
  		alternatives_smp_switch(1);
 --- 13.1.orig/drivers/xen/core/spinlock.c	2012-07-26 09:42:00.000000000 +0200
-+++ 13.1/drivers/xen/core/spinlock.c	2013-10-14 15:07:25.000000000 +0200
++++ 13.1/drivers/xen/core/spinlock.c	2014-03-11 10:30:27.000000000 +0100
 @@ -86,13 +86,13 @@ void __cpuinit spinlock_resume(void)
  
  static inline void sequence(unsigned int bias)
@@ -3116,7 +3116,7 @@ Acked-by: jbeulich@suse.com
  {
 -	token.tail = spin_adjust(percpu_read(_spinning), lock, token.tail);
 +	token.tail = spin_adjust(__this_cpu_read(_spinning), lock, token.tail);
- 	token.head = ACCESS_ONCE(lock->tickets.head);
+ 	token.head = lock->tickets.head;
  	return token;
  }
 @@ -157,10 +157,10 @@ static unsigned int ticket_get(arch_spin
@@ -3150,7 +3150,16 @@ Acked-by: jbeulich@suse.com
  
  	/*
  	 * Make sure all xen_spin_kick() instances which may still have seen
-@@ -233,13 +233,13 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -221,7 +221,7 @@ void xen_spin_irq_exit(void)
+ 			continue;
+ 		spinning->ticket = ticket_get(lock, spinning->prev);
+ 		if (lock->tickets.head == spinning->ticket)
+-			set_evtchn(percpu_read(poll_evtchn));
++			set_evtchn(__this_cpu_read(poll_evtchn));
+ 	}
+ }
+ #endif
+@@ -235,13 +235,13 @@ bool xen_spin_wait(arch_spinlock_t *lock
  
  	/* If kicker interrupt not initialized yet, just spin. */
  	if (unlikely(!cpu_online(raw_smp_processor_id()))
@@ -3166,7 +3175,7 @@ Acked-by: jbeulich@suse.com
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
  	spinning.irq_count = UINT_MAX;
  	if (upcall_mask > flags) {
-@@ -255,10 +255,10 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -257,10 +257,10 @@ bool xen_spin_wait(arch_spinlock_t *lock
  	arch_local_irq_disable();
  #endif
  	smp_wmb();
@@ -3179,7 +3188,7 @@ Acked-by: jbeulich@suse.com
  
  		/*
  		 * Check again to make sure it didn't become free while
-@@ -271,19 +271,19 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -273,19 +273,19 @@ bool xen_spin_wait(arch_spinlock_t *lock
  			 * without rechecking the lock.
  			 */
  			if (spinning.prev)
@@ -3202,7 +3211,7 @@ Acked-by: jbeulich@suse.com
  		    HYPERVISOR_poll_no_timeout(&__get_cpu_var(poll_evtchn), 1))
  			BUG();
  
-@@ -293,7 +293,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -295,7 +295,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
  		spinning.irq_count = UINT_MAX;
  #endif
  
@@ -3211,7 +3220,7 @@ Acked-by: jbeulich@suse.com
  			inc_irq_stat(irq_lock_count);
  			break;
  		}
-@@ -305,7 +305,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -307,7 +307,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
  	 */
  
  	/* announce we're done */
@@ -3220,7 +3229,7 @@ Acked-by: jbeulich@suse.com
  	if (!CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING)
  		arch_local_irq_disable();
  	sequence(SEQ_REMOVE_BIAS);
-@@ -339,7 +339,7 @@ void xen_spin_kick(const arch_spinlock_t
+@@ -341,7 +341,7 @@ void xen_spin_kick(const arch_spinlock_t
  	if (unlikely(!cpu_online(local)))
  		stop = start = cpumask_cycle(local, cpu_online_mask);
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
@@ -3229,7 +3238,7 @@ Acked-by: jbeulich@suse.com
  		start = local;
  #endif
  	else {
-@@ -355,7 +355,7 @@ void xen_spin_kick(const arch_spinlock_t
+@@ -357,7 +357,7 @@ void xen_spin_kick(const arch_spinlock_t
  
  		flags = arch_local_irq_save();
  		if (cpu == local)

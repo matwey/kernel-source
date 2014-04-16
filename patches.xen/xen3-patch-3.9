@@ -33,7 +33,7 @@ Acked-by: jbeulich@suse.com
  
  	ALIGN
  GLOBAL(stub32_clone)
---- 13.1.orig/arch/x86/include/asm/efi.h	2013-12-13 16:54:51.000000000 +0100
+--- 13.1.orig/arch/x86/include/asm/efi.h	2014-04-08 17:00:39.000000000 +0200
 +++ 13.1/arch/x86/include/asm/efi.h	2013-06-20 15:32:48.000000000 +0200
 @@ -106,7 +106,11 @@ extern void efi_memory_uc(u64 addr, unsi
  
@@ -64,7 +64,7 @@ Acked-by: jbeulich@suse.com
  
  static inline unsigned long __phys_addr_nodebug(unsigned long x)
  {
---- 13.1.orig/arch/x86/include/asm/processor.h	2013-12-13 16:54:51.000000000 +0100
+--- 13.1.orig/arch/x86/include/asm/processor.h	2014-04-08 17:00:39.000000000 +0200
 +++ 13.1/arch/x86/include/asm/processor.h	2013-08-09 15:42:53.000000000 +0200
 @@ -975,7 +975,7 @@ extern unsigned long arch_align_stack(un
  extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
@@ -1076,7 +1076,7 @@ Acked-by: jbeulich@suse.com
  }
 --- 13.1.orig/arch/x86/kernel/cpu/amd.c	2013-05-23 17:54:53.000000000 +0200
 +++ 13.1/arch/x86/kernel/cpu/amd.c	2013-05-23 17:57:45.000000000 +0200
-@@ -568,7 +568,6 @@ static void init_amd(struct cpuinfo_x86 
+@@ -578,7 +578,6 @@ static void init_amd(struct cpuinfo_x86 
  #else
  			pr_warning("Long-mode LAHF feature wrongly enabled -"
  				   "hypervisor update needed\n");
@@ -1618,7 +1618,7 @@ Acked-by: jbeulich@suse.com
 -
  	start_kernel();
  }
---- 13.1.orig/arch/x86/kernel/head_64.S	2013-12-13 16:54:51.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/head_64.S	2014-04-08 17:00:39.000000000 +0200
 +++ 13.1/arch/x86/kernel/head_64.S	2013-06-04 13:59:45.000000000 +0200
 @@ -465,7 +465,7 @@ NEXT_PAGE(early_dynamic_pgts)
  
@@ -1668,7 +1668,7 @@ Acked-by: jbeulich@suse.com
  {
  	struct thread_struct *t = &current->thread;
  	unsigned int old = t->iopl >> 12;
---- 13.1.orig/arch/x86/kernel/process.c	2013-12-13 16:54:51.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/process.c	2014-04-08 17:00:39.000000000 +0200
 +++ 13.1/arch/x86/kernel/process.c	2013-07-02 09:49:24.000000000 +0200
 @@ -317,7 +317,7 @@ void default_idle(void)
  EXPORT_SYMBOL(default_idle);
@@ -2586,8 +2586,8 @@ Acked-by: jbeulich@suse.com
  
  	ret = spurious_fault_check(error_code, pte);
 --- 13.1.orig/arch/x86/mm/init-xen.c	2012-10-31 11:57:31.000000000 +0100
-+++ 13.1/arch/x86/mm/init-xen.c	2013-08-15 13:02:49.000000000 +0200
-@@ -16,105 +16,155 @@
++++ 13.1/arch/x86/mm/init-xen.c	2014-02-28 15:02:27.000000000 +0100
+@@ -16,105 +16,151 @@
  #include <asm/tlb.h>
  #include <asm/proto.h>
  #include <asm/dma.h>		/* for MAX_DMA_PFN */
@@ -2613,20 +2613,17 @@ Acked-by: jbeulich@suse.com
 -#define direct_gbpages 0
 -extern unsigned long extend_init_mapping(unsigned long tables_space);
 -#else
+-extern void xen_finish_init_mapping(void);
+-#endif
 +static unsigned long min_pfn_mapped;
-+
-+static bool __initdata can_use_brk_pgt = true;
-+
-+#ifdef CONFIG_X86_64
- extern void xen_finish_init_mapping(void);
- #endif
  
 -struct map_range {
 -	unsigned long start;
 -	unsigned long end;
 -	unsigned page_size_mask;
 -};
--
++static bool __initdata can_use_brk_pgt = true;
+ 
  /*
 - * First calculate space needed for kernel direct mapping page tables to cover
 - * mr[0].start to mr[nr_range - 1].end, while accounting for possible 2M and 1GB
@@ -2755,10 +2752,7 @@ Acked-by: jbeulich@suse.com
  
 -	pgt_buf_top = pgt_buf_start + (tables >> PAGE_SHIFT);
 +int after_bootmem;
- 
--	printk(KERN_DEBUG "kernel direct mapping tables up to %#lx @ [mem %#010lx-%#010lx]\n",
--		mr[nr_range - 1].end - 1, pgt_buf_start << PAGE_SHIFT,
--		(pgt_buf_top << PAGE_SHIFT) - 1);
++
 +#ifndef CONFIG_XEN
 +int direct_gbpages
 +#ifdef CONFIG_DIRECT_GBPAGES
@@ -2766,7 +2760,10 @@ Acked-by: jbeulich@suse.com
 +#endif
 +;
 +#endif
-+
+ 
+-	printk(KERN_DEBUG "kernel direct mapping tables up to %#lx @ [mem %#010lx-%#010lx]\n",
+-		mr[nr_range - 1].end - 1, pgt_buf_start << PAGE_SHIFT,
+-		(pgt_buf_top << PAGE_SHIFT) - 1);
 +static void __init init_gbpages(void)
 +{
 +#if defined(CONFIG_X86_64) && !defined(CONFIG_XEN)
@@ -2817,7 +2814,7 @@ Acked-by: jbeulich@suse.com
  }
  
  #ifdef CONFIG_X86_32
-@@ -140,58 +190,51 @@ static int __meminit save_mr(struct map_
+@@ -140,58 +186,51 @@ static int __meminit save_mr(struct map_
  }
  
  /*
@@ -2909,7 +2906,7 @@ Acked-by: jbeulich@suse.com
  #ifdef CONFIG_X86_32
  	/*
  	 * Don't use a large page for the first 2/4MB of memory
-@@ -199,66 +242,60 @@ unsigned long __init_refok init_memory_m
+@@ -199,66 +238,60 @@ unsigned long __init_refok init_memory_m
  	 * and overlapping MTRRs into large pages can cause
  	 * slowdowns.
  	 */
@@ -2997,7 +2994,7 @@ Acked-by: jbeulich@suse.com
  	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
  
  	/* try to merge same page size and continuous */
-@@ -275,102 +312,165 @@ unsigned long __init_refok init_memory_m
+@@ -275,102 +308,163 @@ unsigned long __init_refok init_memory_m
  		nr_range--;
  	}
  
@@ -3109,12 +3106,12 @@ Acked-by: jbeulich@suse.com
 -#endif
 +	add_pfn_range_mapped(start >> PAGE_SHIFT, ret >> PAGE_SHIFT);
  
- #ifdef CONFIG_X86_64
+-#ifdef CONFIG_X86_64
 -	BUG_ON(pgt_buf_end > pgt_buf_top);
  	if (!start)
  		xen_finish_init_mapping();
 -	else
- #endif
+-#endif
 -	if (pgt_buf_end < pgt_buf_top)
 -		/* Disable the 'table_end' allocator. */
 -		pgt_buf_top = pgt_buf_end;
@@ -3234,7 +3231,7 @@ Acked-by: jbeulich@suse.com
  
  /*
   * devmem_is_allowed() checks to see if /dev/mem access to a certain address
-@@ -466,6 +566,15 @@ void free_initmem(void)
+@@ -466,6 +560,15 @@ void free_initmem(void)
  #ifdef CONFIG_BLK_DEV_INITRD
  void __init free_initrd_mem(unsigned long start, unsigned long end)
  {
@@ -3508,7 +3505,7 @@ Acked-by: jbeulich@suse.com
  
  /*
 --- 13.1.orig/arch/x86/mm/init_64-xen.c	2013-04-05 09:23:18.000000000 +0200
-+++ 13.1/arch/x86/mm/init_64-xen.c	2013-04-05 09:25:24.000000000 +0200
++++ 13.1/arch/x86/mm/init_64-xen.c	2014-04-04 12:48:46.000000000 +0200
 @@ -58,6 +58,8 @@
  
  #include <xen/features.h>
@@ -3931,38 +3928,51 @@ Acked-by: jbeulich@suse.com
  	early_make_page_readonly(init_level4_pgt,
  				 XENFEAT_writable_page_tables);
  	early_make_page_readonly(__user_pgd(init_level4_pgt),
-@@ -783,7 +854,7 @@ void __init xen_init_pt(void)
+@@ -783,7 +854,8 @@ void __init xen_init_pt(void)
  
  void __init xen_finish_init_mapping(void)
  {
 -	unsigned long start, end;
 +	unsigned long va;
++	pud_t *pud;
  
  	/* Re-vector virtual addresses pointing into the initial
  	   mapping to the just-established permanent ones. */
-@@ -801,16 +872,12 @@ void __init xen_finish_init_mapping(void
+@@ -800,17 +872,24 @@ void __init xen_finish_init_mapping(void
+ 		xen_start_info->mod_start = (unsigned long)
  			__va(__pa(xen_start_info->mod_start));
  
- 	/* Destroy the Xen-created mappings beyond the kernel image. */
+-	/* Destroy the Xen-created mappings beyond the kernel image. */
 -	start = PAGE_ALIGN(_brk_end);
 -	end   = __START_KERNEL_map + (pgt_buf_start << PAGE_SHIFT);
 -	for (; start < end; start += PAGE_SIZE)
 -		if (HYPERVISOR_update_va_mapping(start, __pte_ma(0), 0))
-+	va = PAGE_ALIGN(_brk_end);
-+	while (!pmd_none(*early_get_pmd(va))) {
++	/* Kill mapping of memory below _text. */
++	va = __START_KERNEL_map;
++	while (va < (unsigned long)&_text) {
 +		if (HYPERVISOR_update_va_mapping(va, __pte_ma(0), 0))
  			BUG();
--
++		va += PAGE_SIZE;
++	}
+ 
 -	WARN(pgt_buf_end != pgt_buf_top, "start=%lx cur=%lx top=%lx\n",
 -	     pgt_buf_start, pgt_buf_end, pgt_buf_top);
 -	if (pgt_buf_end > pgt_buf_top)
 -		pgt_buf_top = pgt_buf_end;
++	/* Destroy the Xen-created mappings beyond the kernel image. */
++	va = PAGE_ALIGN(_brk_end);
++	pud = pud_offset(pgd_offset_k(va), va);
++	while (!pmd_none(*pmd_offset(pud, va))) {
++		if (HYPERVISOR_update_va_mapping(va, __pte_ma(0), 0))
++			BUG();
 +		va += PAGE_SIZE;
++		if (!(va & (PUD_SIZE - 1)))
++			pud = pud_offset(pgd_offset_k(va), va);
 +	}
  }
  
  unsigned long __meminit
-@@ -828,42 +895,34 @@ kernel_physical_mapping_init(unsigned lo
+@@ -828,42 +907,34 @@ kernel_physical_mapping_init(unsigned lo
  
  	for (; start < end; start = next) {
  		pgd_t *pgd = pgd_offset_k(start);
@@ -4015,7 +4025,7 @@ Acked-by: jbeulich@suse.com
  
  	return last_map_addr;
  }
-@@ -922,13 +981,11 @@ int arch_add_memory(int nid, u64 start, 
+@@ -922,13 +993,11 @@ int arch_add_memory(int nid, u64 start, 
  {
  	struct pglist_data *pgdat = NODE_DATA(nid);
  	struct zone *zone = pgdat->node_zones + ZONE_NORMAL;
@@ -4031,7 +4041,7 @@ Acked-by: jbeulich@suse.com
  
  	ret = __add_pages(nid, zone, start_pfn, nr_pages);
  	WARN_ON_ONCE(ret);
-@@ -940,10 +997,357 @@ int arch_add_memory(int nid, u64 start, 
+@@ -940,10 +1009,357 @@ int arch_add_memory(int nid, u64 start, 
  }
  EXPORT_SYMBOL_GPL(arch_add_memory);
  
@@ -4389,7 +4399,7 @@ Acked-by: jbeulich@suse.com
  void __init mem_init(void)
  {
  	long codesize, reservedpages, datasize, initsize;
-@@ -957,11 +1361,8 @@ void __init mem_init(void)
+@@ -957,11 +1373,8 @@ void __init mem_init(void)
  	reservedpages = 0;
  
  	/* this will put all low memory onto the freelists */
@@ -4402,7 +4412,7 @@ Acked-by: jbeulich@suse.com
  
  	/* XEN: init pages outside initial allocation. */
  	for (pfn = xen_start_info->nr_pages; pfn < max_pfn; pfn++) {
-@@ -1037,12 +1438,11 @@ void set_kernel_text_ro(void)
+@@ -1037,12 +1450,11 @@ void set_kernel_text_ro(void)
  void mark_rodata_ro(void)
  {
  	unsigned long start = PFN_ALIGN(_text);
@@ -4419,7 +4429,7 @@ Acked-by: jbeulich@suse.com
  
  	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
  	       (end - start) >> 10);
-@@ -1051,10 +1451,10 @@ void mark_rodata_ro(void)
+@@ -1051,10 +1463,10 @@ void mark_rodata_ro(void)
  	kernel_set_to_readonly = 1;
  
  	/*
@@ -4433,7 +4443,7 @@ Acked-by: jbeulich@suse.com
  
  	rodata_test();
  
-@@ -1067,12 +1467,12 @@ void mark_rodata_ro(void)
+@@ -1067,12 +1479,12 @@ void mark_rodata_ro(void)
  #endif
  
  	free_init_pages("unused kernel memory",
@@ -4451,7 +4461,7 @@ Acked-by: jbeulich@suse.com
  }
  
  #endif
-@@ -1262,10 +1662,70 @@ vmemmap_populate(struct page *start_page
+@@ -1262,10 +1674,70 @@ vmemmap_populate(struct page *start_page
  		}
  
  	}
@@ -4523,10 +4533,17 @@ Acked-by: jbeulich@suse.com
  void __meminit vmemmap_populate_print_last(void)
  {
  	if (p_start) {
---- 13.1.orig/arch/x86/mm/mm_internal.h	2013-12-13 16:54:51.000000000 +0100
-+++ 13.1/arch/x86/mm/mm_internal.h	2013-04-03 17:43:19.000000000 +0200
-@@ -14,6 +14,8 @@ unsigned long kernel_physical_mapping_in
+--- 13.1.orig/arch/x86/mm/mm_internal.h	2014-04-08 17:00:39.000000000 +0200
++++ 13.1/arch/x86/mm/mm_internal.h	2014-02-28 15:02:10.000000000 +0100
+@@ -12,8 +12,15 @@ void early_ioremap_page_table_range_init
+ unsigned long kernel_physical_mapping_init(unsigned long start,
+ 					     unsigned long end,
  					     unsigned long page_size_mask);
++#ifdef CONFIG_X86_64_XEN
++void xen_finish_init_mapping(void);
++#else
++static inline void xen_finish_init_mapping(void) {}
++#endif
  void zone_sizes_init(void);
  
 +bool in_pgt_buf(unsigned long paddr);
@@ -4989,7 +5006,7 @@ Acked-by: jbeulich@suse.com
  	{ 0x36, ANY, 100000 },	/* Atom Cedar Trail/Cedarview (N2xxx, D2xxx) */
  };
  
---- 13.1.orig/drivers/misc/vmw_vmci/Kconfig	2013-12-13 16:54:51.000000000 +0100
+--- 13.1.orig/drivers/misc/vmw_vmci/Kconfig	2014-04-08 17:00:39.000000000 +0200
 +++ 13.1/drivers/misc/vmw_vmci/Kconfig	2013-06-04 13:59:32.000000000 +0200
 @@ -4,7 +4,7 @@
  
@@ -5270,7 +5287,7 @@ Acked-by: jbeulich@suse.com
  }
  
  /**
---- 13.1.orig/drivers/thermal/Kconfig	2013-12-13 16:54:51.000000000 +0100
+--- 13.1.orig/drivers/thermal/Kconfig	2014-04-08 17:00:39.000000000 +0200
 +++ 13.1/drivers/thermal/Kconfig	2013-05-23 17:57:14.000000000 +0200
 @@ -162,7 +162,7 @@ config DB8500_CPUFREQ_COOLING
  config INTEL_POWERCLAMP
@@ -5789,7 +5806,7 @@ Acked-by: jbeulich@suse.com
      } u;
  } __attribute__((__packed__));
  #endif
---- 13.1.orig/include/xen/interface/io/pciif.h	2013-12-13 16:54:51.000000000 +0100
+--- 13.1.orig/include/xen/interface/io/pciif.h	2014-04-08 17:00:39.000000000 +0200
 +++ 13.1/include/xen/interface/io/pciif.h	2013-08-08 11:31:59.000000000 +0200
 @@ -46,6 +46,7 @@
  #define	XEN_PCI_OP_aer_resume		(7)
@@ -5862,7 +5879,7 @@ Acked-by: jbeulich@suse.com
  void pci_frontend_disable_msi(struct pci_dev *);
  int pci_frontend_enable_msix(struct pci_dev *, struct msix_entry *, int nvec);
  void pci_frontend_disable_msix(struct pci_dev *);
---- 13.1.orig/kernel/context_tracking.c	2013-12-13 16:54:51.000000000 +0100
+--- 13.1.orig/kernel/context_tracking.c	2014-04-08 17:00:39.000000000 +0200
 +++ 13.1/kernel/context_tracking.c	2013-07-02 09:49:19.000000000 +0200
 @@ -142,6 +142,8 @@ void user_exit(void)
  	local_irq_restore(flags);

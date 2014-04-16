@@ -48,7 +48,7 @@ Acked-by: jbeulich@suse.com
  /*
   * Check if the CPU can handle C2 and deeper
   */
---- 13.1.orig/arch/x86/include/asm/compat.h	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/arch/x86/include/asm/compat.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/include/asm/compat.h	2012-10-23 16:00:15.000000000 +0200
 @@ -301,7 +301,11 @@ static inline void __user *arch_compat_a
  		sp = task_pt_regs(current)->sp;
@@ -1068,7 +1068,7 @@ Acked-by: jbeulich@suse.com
  }
 --- 13.1.orig/arch/x86/kernel/cpu/amd.c	2013-08-09 15:26:04.000000000 +0200
 +++ 13.1/arch/x86/kernel/cpu/amd.c	2013-05-23 17:53:36.000000000 +0200
-@@ -619,6 +619,7 @@ static void init_amd(struct cpuinfo_x86 
+@@ -629,6 +629,7 @@ static void init_amd(struct cpuinfo_x86 
  		}
  	}
  
@@ -1076,7 +1076,7 @@ Acked-by: jbeulich@suse.com
  	/* re-enable TopologyExtensions if switched off by BIOS */
  	if ((c->x86 == 0x15) &&
  	    (c->x86_model >= 0x10) && (c->x86_model <= 0x1f) &&
-@@ -635,6 +636,7 @@ static void init_amd(struct cpuinfo_x86 
+@@ -645,6 +646,7 @@ static void init_amd(struct cpuinfo_x86 
  			}
  		}
  	}
@@ -1978,7 +1978,7 @@ Acked-by: jbeulich@suse.com
  #endif
  #else /* CONFIG_XEN */
  #ifdef CONFIG_X86_32
---- 13.1.orig/arch/x86/kernel/tboot.c	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/tboot.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/kernel/tboot.c	2013-08-09 15:36:50.000000000 +0200
 @@ -274,7 +274,8 @@ static void tboot_copy_fadt(const struct
  		offsetof(struct acpi_table_facs, firmware_waking_vector);
@@ -2419,7 +2419,7 @@ Acked-by: jbeulich@suse.com
  #include <linux/spinlock_types.h>
  #include <linux/threads.h>
  
---- 13.1.orig/arch/x86/lib/scrub.c	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/arch/x86/lib/scrub.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/lib/scrub.c	2012-04-13 14:47:07.000000000 +0200
 @@ -2,7 +2,7 @@
  #include <asm/page.h>
@@ -2594,7 +2594,7 @@ Acked-by: jbeulich@suse.com
  #include <asm/pgtable.h>
  #include <asm/pgalloc.h>
  #include <asm/fixmap.h>
---- 13.1.orig/arch/x86/vdso/vclock_gettime.c	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/arch/x86/vdso/vclock_gettime.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/vdso/vclock_gettime.c	2013-03-21 15:31:34.000000000 +0100
 @@ -26,6 +26,9 @@
  
@@ -2709,7 +2709,7 @@ Acked-by: jbeulich@suse.com
  					      vdso32_pages);
  
  		if (ret)
---- 13.1.orig/drivers/acpi/acpica/hwesleep.c	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/drivers/acpi/acpica/hwesleep.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/acpi/acpica/hwesleep.c	2013-02-13 16:36:49.000000000 +0100
 @@ -43,6 +43,7 @@
   */
@@ -2733,7 +2733,7 @@ Acked-by: jbeulich@suse.com
  	/*
  	 * Set the SLP_TYP and SLP_EN bits.
  	 *
---- 13.1.orig/drivers/acpi/acpica/hwsleep.c	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/drivers/acpi/acpica/hwsleep.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/acpi/acpica/hwsleep.c	2013-03-21 15:30:58.000000000 +0100
 @@ -153,7 +153,7 @@ acpi_status acpi_hw_legacy_sleep(u8 slee
  	ACPI_FLUSH_CPU_CACHE();
@@ -2813,7 +2813,7 @@ Acked-by: jbeulich@suse.com
  	free_cpumask_var(pr->throttling.shared_cpu_map);
  	device->driver_data = NULL;
  #ifdef CONFIG_XEN
---- 13.1.orig/drivers/gpu/drm/i915/i915_gem_gtt.c	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/drivers/gpu/drm/i915/i915_gem_gtt.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/gpu/drm/i915/i915_gem_gtt.c	2013-08-09 15:36:31.000000000 +0200
 @@ -392,7 +392,6 @@ void i915_ppgtt_unbind_object(struct i91
  			   obj->base.size >> PAGE_SHIFT);
@@ -2953,7 +2953,7 @@ Acked-by: jbeulich@suse.com
  
  	err = platform_driver_register(&via_cputemp_driver);
  	if (err)
---- 13.1.orig/drivers/input/misc/Kconfig	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/drivers/input/misc/Kconfig	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/input/misc/Kconfig	2012-08-20 13:22:44.000000000 +0200
 @@ -626,7 +626,7 @@ config INPUT_CMA3000_I2C
  
@@ -2986,7 +2986,7 @@ Acked-by: jbeulich@suse.com
  xen-evtchn-y				:= evtchn.o
  xen-gntdev-y				:= gntdev.o
  xen-gntalloc-y				:= gntalloc.o
---- 13.1.orig/drivers/xen/acpi.c	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/drivers/xen/acpi.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/xen/acpi.c	2013-02-13 17:01:02.000000000 +0100
 @@ -35,27 +35,27 @@
  #include <asm/xen/hypercall.h>
@@ -3272,7 +3272,7 @@ Acked-by: jbeulich@suse.com
  
  	if (HYPERVISOR_grant_table_op(GNTTABOP_unmap_grant_ref, &op, 1))
  		BUG();
---- 13.1.orig/include/drm/intel-gtt.h	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/include/drm/intel-gtt.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/include/drm/intel-gtt.h	2013-04-03 10:41:37.000000000 +0200
 @@ -27,6 +27,8 @@ void intel_gtt_clear_range(unsigned int 
  
@@ -3283,7 +3283,7 @@ Acked-by: jbeulich@suse.com
  #endif
  
  #endif
---- 13.1.orig/include/linux/acpi.h	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/include/linux/acpi.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/include/linux/acpi.h	2013-08-09 15:36:40.000000000 +0200
 @@ -470,11 +470,11 @@ static inline bool acpi_driver_match_dev
  #endif	/* !CONFIG_ACPI */
@@ -3310,7 +3310,7 @@ Acked-by: jbeulich@suse.com
  #endif
  
  #ifdef CONFIG_ACPI_INITRD_TABLE_OVERRIDE
---- 13.1.orig/include/linux/timex.h	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/include/linux/timex.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/include/linux/timex.h	2013-10-14 15:04:40.000000000 +0200
 @@ -139,6 +139,9 @@ extern unsigned long tick_nsec;		/* SHIF
  
@@ -3322,7 +3322,7 @@ Acked-by: jbeulich@suse.com
  
  int read_current_timer(unsigned long *timer_val);
  void ntp_notify_cmos_timer(void);
---- 13.1.orig/include/xen/acpi.h	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/include/xen/acpi.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/include/xen/acpi.h	2013-08-09 15:36:45.000000000 +0200
 @@ -75,8 +75,8 @@ static inline int xen_acpi_get_pxm(acpi_
  	return -ENXIO;
@@ -3335,7 +3335,7 @@ Acked-by: jbeulich@suse.com
  
  static inline int xen_acpi_suspend_lowlevel(void)
  {
---- 13.1.orig/include/xen/barrier.h	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/include/xen/barrier.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/include/xen/barrier.h	2012-06-08 11:37:53.000000000 +0200
 @@ -1,7 +1,7 @@
  #ifndef __XEN_BARRIER_H__
@@ -3371,7 +3371,7 @@ Acked-by: jbeulich@suse.com
  
  /* Single printf and write: returns -errno or 0. */
  __printf(4, 5)
---- 13.1.orig/kernel/time/ntp.c	2014-02-10 16:07:57.000000000 +0100
+--- 13.1.orig/kernel/time/ntp.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/kernel/time/ntp.c	2013-05-23 17:52:40.000000000 +0200
 @@ -234,7 +234,10 @@ static inline void pps_fill_timex(struct
   * ntp_synced - Returns 1 if the NTP status is not UNSYNC

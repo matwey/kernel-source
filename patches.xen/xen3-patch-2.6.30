@@ -24,7 +24,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  extern struct shared_info *HYPERVISOR_shared_info;
  extern struct start_info *xen_start_info;
  
---- 13.1.orig/arch/ia64/kernel/vmlinux.lds.S	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/ia64/kernel/vmlinux.lds.S	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/ia64/kernel/vmlinux.lds.S	2012-04-10 16:57:52.000000000 +0200
 @@ -182,7 +182,7 @@ SECTIONS {
  		__start_gate_section = .;
@@ -171,7 +171,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  #endif
  
  # define KEXEC_CONTROL_CODE_MAX_SIZE	2048
---- 13.1.orig/arch/x86/include/asm/page_64.h	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/x86/include/asm/page_64.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/include/asm/page_64.h	2013-03-21 14:43:37.000000000 +0100
 @@ -31,7 +31,15 @@ extern unsigned long __phys_addr_symbol(
  #define __phys_reloc_hide(x)	(x)
@@ -3548,7 +3548,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  	printk(KERN_WARNING PREFIX "x2apic entry ignored\n");
  #endif
  
---- 13.1.orig/arch/x86/kernel/apic/Makefile	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/apic/Makefile	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/kernel/apic/Makefile	2012-02-08 12:11:33.000000000 +0100
 @@ -25,3 +25,9 @@ obj-$(CONFIG_X86_ES7000)	+= es7000_32.o
  
@@ -11200,7 +11200,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  #ifdef CONFIG_XEN
  static int
  xen_panic_event(struct notifier_block *this, unsigned long event, void *ptr)
---- 13.1.orig/arch/x86/kernel/setup_percpu.c	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/setup_percpu.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/kernel/setup_percpu.c	2012-05-23 13:34:18.000000000 +0200
 @@ -231,7 +231,7 @@ void __init setup_per_cpu_areas(void)
  		 * are zeroed indicating that the static arrays are
@@ -11421,7 +11421,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  #endif
  
  #include <asm-generic/vmlinux.lds.h>
---- 13.1.orig/arch/x86/mach-xen/Makefile	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/x86/mach-xen/Makefile	2014-04-08 17:00:40.000000000 +0200
 +++ /dev/null	1970-01-01 00:00:00.000000000 +0000
 @@ -1,5 +0,0 @@
 -#
@@ -17684,7 +17684,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  }
  
 --- 13.1.orig/drivers/xen/core/spinlock.c	2013-10-14 13:14:13.000000000 +0200
-+++ 13.1/drivers/xen/core/spinlock.c	2013-10-14 14:59:04.000000000 +0200
++++ 13.1/drivers/xen/core/spinlock.c	2014-03-11 10:20:03.000000000 +0100
 @@ -85,13 +85,13 @@ void __cpuinit spinlock_resume(void)
  
  static inline void sequence(unsigned int bias)
@@ -17733,7 +17733,16 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  	/*
  	 * Despite its counterpart being first in xen_spin_irq_enter() (to make
  	 * xen_spin_kick() properly handle locks that get owned after their
-@@ -232,13 +232,13 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -220,7 +220,7 @@ void xen_spin_irq_exit(void)
+ 			continue;
+ 		spinning->ticket = ticket_get(lock, spinning->prev);
+ 		if (lock->cur == spinning->ticket)
+-			set_evtchn(x86_read_percpu(poll_evtchn));
++			set_evtchn(percpu_read(poll_evtchn));
+ 	}
+ }
+ #endif
+@@ -234,13 +234,13 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  
  	/* If kicker interrupt not initialized yet, just spin. */
  	if (unlikely(!cpu_online(raw_smp_processor_id()))
@@ -17749,7 +17758,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
  	spinning.irq_count = UINT_MAX;
  	if (upcall_mask > flags) {
-@@ -254,10 +254,10 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -256,10 +256,10 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  	raw_local_irq_disable();
  #endif
  	smp_wmb();
@@ -17762,7 +17771,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  
  		/*
  		 * Check again to make sure it didn't become free while
-@@ -270,19 +270,19 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -272,19 +272,19 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  			 * without rechecking the lock.
  			 */
  			if (spinning.prev)
@@ -17785,7 +17794,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  		    HYPERVISOR_poll_no_timeout(&__get_cpu_var(poll_evtchn), 1))
  			BUG();
  
-@@ -292,7 +292,7 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -294,7 +294,7 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  		spinning.irq_count = UINT_MAX;
  #endif
  
@@ -17794,7 +17803,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  			inc_irq_stat(irq_lock_count);
  			break;
  		}
-@@ -304,7 +304,7 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -306,7 +306,7 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  	 */
  
  	/* announce we're done */
@@ -17803,7 +17812,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  	if (!CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING)
  		raw_local_irq_disable();
  	sequence(SEQ_REMOVE_BIAS);
-@@ -337,7 +337,7 @@ void xen_spin_kick(const raw_spinlock_t 
+@@ -339,7 +339,7 @@ void xen_spin_kick(const raw_spinlock_t 
  	if (unlikely(!cpu_online(local)))
  		stop = start = cpumask_cycle(local, cpu_online_mask);
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
@@ -17812,7 +17821,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  		start = local;
  #endif
  	else {
-@@ -354,7 +354,7 @@ void xen_spin_kick(const raw_spinlock_t 
+@@ -356,7 +356,7 @@ void xen_spin_kick(const raw_spinlock_t 
  
  		flags = __raw_local_irq_save();
  		if (cpu == local)
@@ -18017,7 +18026,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  	},
  };
  
---- 13.1.orig/kernel/mutex.c	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/kernel/mutex.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/kernel/mutex.c	2013-08-09 14:49:59.000000000 +0200
 @@ -163,6 +163,9 @@ static void mspin_unlock(struct mspin_no
  /*
@@ -18226,7 +18235,7 @@ Automatically created from "patches.kernel.org/patch-2.6.30" by xen-port-patches
  }
 --- 13.1.orig/mm/page_alloc.c	2013-08-09 12:17:26.000000000 +0200
 +++ 13.1/mm/page_alloc.c	2013-08-09 14:50:06.000000000 +0200
-@@ -5516,11 +5516,9 @@ static void __setup_per_zone_wmarks(void
+@@ -5518,11 +5518,9 @@ static void __setup_per_zone_wmarks(void
  	}
  
  #ifdef CONFIG_XEN

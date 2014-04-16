@@ -93,7 +93,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  
  typedef int vector_irq_t[NR_VECTORS];
  DECLARE_PER_CPU(vector_irq_t, vector_irq);
---- 13.1.orig/arch/x86/include/asm/hypervisor.h	2013-12-13 16:54:52.000000000 +0100
+--- 13.1.orig/arch/x86/include/asm/hypervisor.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/include/asm/hypervisor.h	2013-05-23 17:21:57.000000000 +0200
 @@ -62,3 +62,7 @@ static inline void init_hypervisor_platf
  static inline bool hypervisor_x2apic_available(void) { return false; }
@@ -8815,7 +8815,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  int acpi_processor_cst_has_changed(struct acpi_processor *pr)
  {
  	int cpu;
---- 13.1.orig/drivers/gpu/drm/i915/i915_drv.c	2013-12-13 16:54:52.000000000 +0100
+--- 13.1.orig/drivers/gpu/drm/i915/i915_drv.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/gpu/drm/i915/i915_drv.c	2013-08-09 14:49:09.000000000 +0200
 @@ -1108,7 +1108,7 @@ static const struct file_operations i915
  	.open = drm_open,
@@ -8826,7 +8826,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	.poll = drm_poll,
  	.fasync = drm_fasync,
  	.read = drm_read,
---- 13.1.orig/drivers/gpu/drm/i915/i915_drv.h	2013-12-13 16:54:52.000000000 +0100
+--- 13.1.orig/drivers/gpu/drm/i915/i915_drv.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/gpu/drm/i915/i915_drv.h	2013-10-14 14:58:12.000000000 +0200
 @@ -1781,6 +1781,11 @@ int __i915_add_request(struct intel_ring
  	__i915_add_request(ring, NULL, NULL, seqno)
@@ -8840,7 +8840,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  int i915_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf);
  int __must_check
  i915_gem_object_set_to_gtt_domain(struct drm_i915_gem_object *obj,
---- 13.1.orig/drivers/gpu/drm/i915/i915_gem.c	2013-12-13 16:54:52.000000000 +0100
+--- 13.1.orig/drivers/gpu/drm/i915/i915_gem.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/gpu/drm/i915/i915_gem.c	2013-08-09 14:49:10.000000000 +0200
 @@ -1303,6 +1303,17 @@ i915_gem_mmap_ioctl(struct drm_device *d
  	return 0;
@@ -9886,9 +9886,9 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	preempt_enable_no_resched();
  	VOID(HYPERVISOR_vcpu_op(VCPUOP_down, smp_processor_id(), NULL));
  	cpu_bringup();
---- 13.1.orig/drivers/xen/core/spinlock.c	2013-10-14 14:57:17.000000000 +0200
+--- 13.1.orig/drivers/xen/core/spinlock.c	2014-03-11 10:19:06.000000000 +0100
 +++ 13.1/drivers/xen/core/spinlock.c	2013-10-14 13:14:13.000000000 +0200
-@@ -318,12 +318,12 @@ bool xen_spin_wait(raw_spinlock_t *lock,
+@@ -320,12 +320,12 @@ bool xen_spin_wait(raw_spinlock_t *lock,
  	return false;
  }
  
@@ -9905,7 +9905,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	return nxt;
  }
  
-@@ -335,13 +335,13 @@ void xen_spin_kick(const raw_spinlock_t 
+@@ -337,13 +337,13 @@ void xen_spin_kick(const raw_spinlock_t 
  		return;
  
  	if (unlikely(!cpu_online(local)))
@@ -9921,7 +9921,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  		if (start == stop)
  			return;
  	}
-@@ -402,7 +402,7 @@ void xen_spin_kick(const raw_spinlock_t 
+@@ -404,7 +404,7 @@ void xen_spin_kick(const raw_spinlock_t 
  			notify_remote_via_evtchn(per_cpu(poll_evtchn, cpu));
  			return;
  		}

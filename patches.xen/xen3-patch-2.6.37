@@ -76,7 +76,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  #endif
  #endif
  
---- 13.1.orig/arch/x86/include/asm/io.h	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/x86/include/asm/io.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/include/asm/io.h	2011-09-07 16:07:28.000000000 +0200
 @@ -331,7 +331,7 @@ extern void early_iounmap(void __iomem *
  extern void fixup_early_ioremap(void);
@@ -3937,7 +3937,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  
  	return 0;
  }
---- 13.1.orig/arch/x86/kernel/resource.c	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/arch/x86/kernel/resource.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/arch/x86/kernel/resource.c	2011-09-23 14:48:43.000000000 +0200
 @@ -1,3 +1,7 @@
 +#ifdef CONFIG_XEN
@@ -5697,7 +5697,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  config HT_IRQ
  	bool "Interrupts on hypertransport devices"
  	default y
---- 13.1.orig/drivers/pci/Makefile	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/drivers/pci/Makefile	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/pci/Makefile	2013-01-08 11:58:55.000000000 +0100
 @@ -67,7 +67,7 @@ obj-$(CONFIG_PCI_SYSCALL) += syscall.o
  
@@ -7189,7 +7189,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  /*
   * Protect removal of objects: Addition can be done lockless, and even
   * removal itself doesn't need protection - what needs to be prevented is
-@@ -227,7 +227,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -229,7 +229,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
  		   unsigned int flags)
  {
  	typeof(vcpu_info(0)->evtchn_upcall_mask) upcall_mask
@@ -7198,7 +7198,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  	struct spinning spinning;
  
  	/* If kicker interrupt not initialized yet, just spin. */
-@@ -251,7 +251,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -253,7 +253,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
  				break;
  			}
  	}
@@ -7207,7 +7207,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  #endif
  	smp_wmb();
  	percpu_write(_spinning, &spinning);
-@@ -278,7 +278,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -280,7 +280,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
  		if (upcall_mask > flags) {
  			spinning.irq_count = percpu_read(_irq_count);
  			smp_wmb();
@@ -7216,7 +7216,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  		}
  #endif
  
-@@ -287,7 +287,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -289,7 +289,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
  			BUG();
  
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
@@ -7225,7 +7225,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  		smp_wmb();
  		spinning.irq_count = UINT_MAX;
  #endif
-@@ -306,9 +306,9 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -308,9 +308,9 @@ bool xen_spin_wait(arch_spinlock_t *lock
  	/* announce we're done */
  	percpu_write(_spinning, spinning.prev);
  	if (!CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING)
@@ -7237,7 +7237,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  	smp_rmb();
  	if (lock->cur == spinning.ticket)
  		return true;
-@@ -352,7 +352,7 @@ void xen_spin_kick(const arch_spinlock_t
+@@ -354,7 +354,7 @@ void xen_spin_kick(const arch_spinlock_t
  		atomic_t *rm_ctr = NULL;
  		struct spinning *spinning;
  
@@ -7246,7 +7246,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  		if (cpu == local)
  			spinning = percpu_read(_spinning);
  		else for (;;) {
-@@ -388,7 +388,7 @@ void xen_spin_kick(const arch_spinlock_t
+@@ -390,7 +390,7 @@ void xen_spin_kick(const arch_spinlock_t
  
  		if (rm_ctr)
  			atomic_dec(rm_ctr);
@@ -7302,7 +7302,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  	/* Allocate space for the per-instance private data. */
  	private_data = kmalloc(sizeof(*private_data), GFP_KERNEL);
  	if (!private_data)
---- 13.1.orig/drivers/xen/pci.c	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/drivers/xen/pci.c	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/xen/pci.c	2012-06-19 12:04:27.000000000 +0200
 @@ -23,11 +23,20 @@
  #include <xen/interface/physdev.h>
@@ -7424,7 +7424,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  }
  
  
---- 13.1.orig/drivers/xen/sfc_netback/ci/tools/platform/linux_kernel.h	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/drivers/xen/sfc_netback/ci/tools/platform/linux_kernel.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/drivers/xen/sfc_netback/ci/tools/platform/linux_kernel.h	2011-02-01 15:09:47.000000000 +0100
 @@ -54,7 +54,6 @@
  #include <linux/in6.h>
@@ -7551,7 +7551,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  typedef struct xen_memory_map xen_memory_map_t;
  DEFINE_XEN_GUEST_HANDLE(xen_memory_map_t);
  
---- 13.1.orig/include/uapi/xen/privcmd.h	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/include/uapi/xen/privcmd.h	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/include/uapi/xen/privcmd.h	2012-10-23 15:44:46.000000000 +0200
 @@ -1,98 +1,3 @@
 -/******************************************************************************
@@ -7665,7 +7665,7 @@ Automatically created from "patches.kernel.org/patch-2.6.37" by xen-port-patches
  
  typedef struct privcmd_hypercall
  {
---- 13.1.orig/kernel/power/Kconfig	2013-11-26 11:16:05.000000000 +0100
+--- 13.1.orig/kernel/power/Kconfig	2014-04-08 17:00:40.000000000 +0200
 +++ 13.1/kernel/power/Kconfig	2013-08-09 15:10:07.000000000 +0200
 @@ -165,7 +165,7 @@ config PM_ADVANCED_DEBUG
  

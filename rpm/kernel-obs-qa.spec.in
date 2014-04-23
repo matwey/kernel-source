@@ -24,6 +24,9 @@
 
 Name:           kernel-obs-qa
 BuildRequires:  kernel-default
+# kernel-obs-build must be also configured as VMinstall, but is required
+# here as well to avoid that qa and build package build parallel
+BuildRequires:  kernel-obs-build
 BuildRequires:  modutils
 %ifarch %ix86 x86_64
 BuildRequires:  kernel-xen

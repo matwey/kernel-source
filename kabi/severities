@@ -13,3 +13,6 @@ drivers/staging/*		PASS
 arch/x86/kvm/*                  PASS
 net/l2tp/*			PASS
 net/irda/*			PASS
+drivers/misc/mei/mei		PASS
+ipv6_recv_error			PASS
+pingv6_ops			PASS

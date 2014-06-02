@@ -1,0 +1,37 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: Fix struct musb kABI breakage
+Patch-mainline: Never
+References: bnc#872715
+
+Move the newly added field by usb-musb-tusb6010-Add-tusb_revision-to-struct-musb-t to the tail and protect from kABI check.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ drivers/usb/musb/musb_core.h |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+--- a/drivers/usb/musb/musb_core.h
++++ b/drivers/usb/musb/musb_core.h
+@@ -338,7 +338,6 @@ struct musb {
+ 	dma_addr_t		async;
+ 	dma_addr_t		sync;
+ 	void __iomem		*sync_va;
+-	u8			tusb_revision;
+ #endif
+ 
+ 	/* passed down from chip/board specific irq handlers */
+@@ -433,6 +432,13 @@ struct musb {
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry		*debugfs_root;
+ #endif
++
++#ifndef __GENKSYMS__
++#if defined(CONFIG_USB_MUSB_TUSB6010) || \
++	defined(CONFIG_USB_MUSB_TUSB6010_MODULE)
++	u8			tusb_revision;
++#endif
++#endif
+ };
+ 
+ static inline struct musb *gadget_to_musb(struct usb_gadget *g)

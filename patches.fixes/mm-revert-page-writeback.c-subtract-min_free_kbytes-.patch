@@ -1,0 +1,40 @@
+From 72457c0a05ed06f978d3a8a7c9d5ad527db88b4c Mon Sep 17 00:00:00 2001
+From: Johannes Weiner <hannes@cmpxchg.org>
+Date: Wed, 11 Sep 2013 14:20:49 -0700
+Subject: [PATCH] mm: revert "page-writeback.c: subtract min_free_kbytes from dirtyable memory"
+Git-commit: 72457c0a05ed06f978d3a8a7c9d5ad527db88b4c
+Patch-mainline: 3.12-rc1
+References: bnc#879792
+
+This reverts commit 75f7ad8e043d.  It was the result of a problem
+observed with a 3.2 kernel and merged in 3.9, while the issue had been
+resolved upstream in 3.3 (commit ab8fabd46f81: "mm: exclude reserved
+pages from dirtyable memory").
+
+The "reserved pages" are a superset of min_free_kbytes, thus this change
+is redundant and confusing.  Revert it.
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Paul Szabo <psz@maths.usyd.edu.au>
+Cc: Rik van Riel <riel@redhat.com>
+Acked-by: Minchan Kim <minchan@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Acked-by: Michal Hocko <mhocko@suse.cz>
+
+---
+ mm/page-writeback.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -262,9 +262,6 @@
+ 	if (!vm_highmem_is_dirtyable)
+ 		x -= highmem_dirtyable_memory(x);
+ 
+-	/* Subtract min_free_kbytes */
+-	x -= min_t(unsigned long, x, min_free_kbytes >> (PAGE_SHIFT - 10));
+-
+ 	return x + 1;	/* Ensure that we never return 0 */
+ }
+ 

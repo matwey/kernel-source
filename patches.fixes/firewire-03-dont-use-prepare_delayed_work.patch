@@ -1,6 +1,7 @@
 From: Tejun Heo <tj@kernel.org>
 Date: Fri, 7 Mar 2014 10:19:57 -0500
 Subject: firewire: don't use PREPARE_DELAYED_WORK
+References: bnc#881697
 Git-commit: 70044d71d31d6973665ced5be04ef39ac1c09a48
 Patch-mainline: v3.14
 

@@ -1,6 +1,7 @@
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Date: Thu, 6 Mar 2014 20:39:04 +0100
 Subject: firewire: ohci: fix probe failure with Agere/LSI controllers
+References: bnc#881697
 Git-commit: 0ca49345b6f489e95f8d6edeb0b092e257475b2a
 Patch-mainline: v3.14
 

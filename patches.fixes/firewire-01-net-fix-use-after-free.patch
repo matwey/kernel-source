@@ -1,6 +1,7 @@
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Date: Tue, 18 Feb 2014 22:25:15 +0100
 Subject: firewire: net: fix use after free
+References: bnc#881697
 Git-commit: 8987583366ae9e03c306c2b7d73bdb952df1d08d
 Patch-mainline: v3.14
 

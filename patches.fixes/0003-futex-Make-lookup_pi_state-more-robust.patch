@@ -68,6 +68,7 @@ Cc: Will Drewry <wad@chromium.org>
 Cc: Darren Hart <dvhart@linux.intel.com>
 Cc: stable@vger.kernel.org
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 ---
  kernel/futex.c | 134 +++++++++++++++++++++++++++++++++++++++++++++------------
  1 file changed, 106 insertions(+), 28 deletions(-)

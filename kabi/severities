@@ -16,3 +16,6 @@ net/irda/*			PASS
 drivers/misc/mei/mei		PASS
 ipv6_recv_error			PASS
 pingv6_ops			PASS
+# ignore kABI change after fix (bnc#882648)
+i915_request_power_well		PASS
+i915_release_power_well		PASS

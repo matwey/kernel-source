@@ -1,0 +1,87 @@
+From 23adbe12ef7d3d4195e80800ab36b37bee28cd03 Mon Sep 17 00:00:00 2001
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Tue, 10 Jun 2014 12:45:42 -0700
+Subject: fs,userns: Change inode_capable to inode_capable
+Git-commit: 23adbe12ef7d3d4195e80800ab36b37bee28cd03
+Patch-mainline: v3.16-rc1
+References: bnc#882189 CVE-2014-4014
+X-Note: We don't rename the function since it's exported. -jeffm
+
+The kernel has no concept of capabilities with respect to inodes; inodes
+exist independently of namespaces.  For example, inode_capable(inode,
+CAP_LINUX_IMMUTABLE) would be nonsense.
+
+This patch changes inode_capable to check for uid and gid mappings and
+renames it to inode_capable, which should make it more
+obvious what it does.
+
+Fixes CVE-2014-4014.
+
+Cc: Theodore Ts'o <tytso@mit.edu>
+Cc: Serge Hallyn <serge.hallyn@ubuntu.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Dave Chinner <david@fromorbit.com>
+Cc: stable@vger.kernel.org
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ fs/inode.c          |   10 +++++++---
+ kernel/capability.c |   16 ++++++----------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
+
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -1842,14 +1842,18 @@ EXPORT_SYMBOL(inode_init_owner);
+  * inode_owner_or_capable - check current task permissions to inode
+  * @inode: inode being checked
+  *
+- * Return true if current either has CAP_FOWNER to the inode, or
+- * owns the file.
++ * Return true if current either has CAP_FOWNER in a namespace with the
++ * inode owner uid mapped, or owns the file.
+  */
+ bool inode_owner_or_capable(const struct inode *inode)
+ {
++	struct user_namespace *ns;
++
+ 	if (uid_eq(current_fsuid(), inode->i_uid))
+ 		return true;
+-	if (inode_capable(inode, CAP_FOWNER))
++
++	ns = current_user_ns();
++	if (ns_capable(ns, CAP_FOWNER) && kuid_has_mapping(ns, inode->i_uid))
+ 		return true;
+ 	return false;
+ }
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -421,22 +421,18 @@ bool nsown_capable(int cap)
+ }
+ 
+ /**
+- * inode_capable - Check superior capability over inode
++ * inode_capable - Check nsown_capable and uid and gid mapped
+  * @inode: The inode in question
+  * @cap: The capability in question
+  *
+- * Return true if the current task has the given superior capability
+- * targeted at it's own user namespace and that the given inode is owned
+- * by the current user namespace or a child namespace.
+- *
+- * Currently we check to see if an inode is owned by the current
+- * user namespace by seeing if the inode's owner maps into the
+- * current user namespace.
+- *
++ * Return true if the current task has the given capability targeted at
++ * its own user namespace and that the given inode's uid and gid are
++ * mapped into the current user namespace.
+  */
+ bool inode_capable(const struct inode *inode, int cap)
+ {
+ 	struct user_namespace *ns = current_user_ns();
+ 
+-	return ns_capable(ns, cap) && kuid_has_mapping(ns, inode->i_uid);
++	return ns_capable(ns, cap) && kuid_has_mapping(ns, inode->i_uid) &&
++		kgid_has_mapping(ns, inode->i_gid);
+ }

@@ -1,7 +1,7 @@
 From 23adbe12ef7d3d4195e80800ab36b37bee28cd03 Mon Sep 17 00:00:00 2001
 From: Andy Lutomirski <luto@amacapital.net>
 Date: Tue, 10 Jun 2014 12:45:42 -0700
-Subject: fs,userns: Change inode_capable to inode_capable
+Subject: fs,userns: Change inode_capable to capable_wrt_inode_uidgid
 Git-commit: 23adbe12ef7d3d4195e80800ab36b37bee28cd03
 Patch-mainline: v3.16-rc1
 References: bnc#882189 CVE-2014-4014
@@ -12,7 +12,7 @@ exist independently of namespaces.  For example, inode_capable(inode,
 CAP_LINUX_IMMUTABLE) would be nonsense.
 
 This patch changes inode_capable to check for uid and gid mappings and
-renames it to inode_capable, which should make it more
+renames it to capable_wrt_inode_uidgid, which should make it more
 obvious what it does.
 
 Fixes CVE-2014-4014.

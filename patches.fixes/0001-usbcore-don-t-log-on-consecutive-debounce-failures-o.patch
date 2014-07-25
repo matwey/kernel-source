@@ -1,0 +1,50 @@
+From ff9341684cdacb3b126cd70baaba4a90e3b3febd Mon Sep 17 00:00:00 2001
+From: Oliver Neukum <oneukum@suse.de>
+Date: Fri, 25 Jul 2014 14:51:19 +0200
+Subject: [PATCH] usbcore: don't log on consecutive debounce failures of the
+ same port
+Git-Commit: 5ee0f803cc3a0738a63288e4a2f453c85889fbda
+Patch-Mainline: v3.16
+References: bnc#818966
+
+Some laptops have an internal port for a BT device which picks
+up noise when the kill switch is used, but not enough to trigger
+printk_rlimit(). So we shouldn't log consecutive faults of this kind.
+
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+---
+ drivers/usb/core/hub.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 9b48e59..d121c24 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -4345,6 +4345,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
+ 	struct usb_device *udev;
+ 	int status, i;
+ 	unsigned unit_load;
++	static int unreliable_port = -1;
+ 
+ 	dev_dbg (hub_dev,
+ 		"port %d, status %04x, change %04x, %s\n",
+@@ -4410,10 +4411,13 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
+ 				USB_PORT_STAT_C_ENABLE)) {
+ 		status = hub_port_debounce_be_stable(hub, port1);
+ 		if (status < 0) {
+-			if (status != -ENODEV && printk_ratelimit())
+-				dev_err(hub_dev, "connect-debounce failed, "
+-						"port %d disabled\n", port1);
++			if (status != -ENODEV &&
++				port1 != unreliable_port &&
++				printk_ratelimit())
++				dev_err(hub_dev, "connect-debounce failed, port %d disabled\n",
++					port1);
+ 			portstatus &= ~USB_PORT_STAT_CONNECTION;
++			unreliable_port = port1;
+ 		} else {
+ 			portstatus = status;
+ 		}
+-- 
+1.8.4.5
+

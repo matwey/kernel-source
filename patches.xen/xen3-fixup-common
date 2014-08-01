@@ -67,16 +67,6 @@ Patch-mainline: n/a
  
  	if (drive->queue)
  		blk_queue_bounce_limit(drive->queue, addr);
---- head.orig/drivers/xen/console/console.c	2012-03-22 13:27:48.000000000 +0100
-+++ head/drivers/xen/console/console.c	2012-03-22 13:40:44.000000000 +0100
-@@ -86,7 +86,6 @@ static int __init xencons_setup(char *st
- {
- 	char *q;
- 	int n;
--	extern int console_use_vt;
- 
- 	console_use_vt = 1;
- 	if (!strncmp(str, "ttyS", 4)) {
 --- head.orig/drivers/xen/core/smpboot.c	2012-04-04 08:57:09.000000000 +0200
 +++ head/drivers/xen/core/smpboot.c	2012-01-20 14:38:21.000000000 +0100
 @@ -53,7 +53,6 @@ static char callfunc_name[NR_CPUS][15];
@@ -87,16 +77,6 @@ Patch-mainline: n/a
  
  #if defined(__i386__)
  u8 x86_cpu_to_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = 0xff };
---- head.orig/include/linux/console.h	2012-10-22 15:53:28.000000000 +0200
-+++ head/include/linux/console.h	2011-01-31 14:30:58.000000000 +0100
-@@ -73,6 +73,7 @@ extern const struct consw dummy_con;	/* 
- extern const struct consw vga_con;	/* VGA text console */
- extern const struct consw newport_con;	/* SGI Newport console  */
- extern const struct consw prom_con;	/* SPARC PROM console */
-+extern int console_use_vt;
- 
- int con_is_bound(const struct consw *csw);
- int register_con_driver(const struct consw *csw, int first, int last);
 --- head.orig/include/linux/page-flags.h	2012-08-20 10:18:05.000000000 +0200
 +++ head/include/linux/page-flags.h	2012-08-20 10:33:16.000000000 +0200
 @@ -111,7 +111,7 @@ enum pageflags {

@@ -689,7 +689,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  }
  
  void mtrr_ap_init(void)
---- 12.3.orig/arch/x86/kernel/cpu/bugs.c	2013-11-27 11:08:56.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/cpu/bugs.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/kernel/cpu/bugs.c	2012-08-20 10:41:38.000000000 +0200
 @@ -17,6 +17,7 @@
  #include <asm/paravirt.h>
@@ -732,7 +732,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  }
  
  /*
---- 12.3.orig/arch/x86/kernel/cpu/proc.c	2013-11-27 11:08:56.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/cpu/proc.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/kernel/cpu/proc.c	2011-03-03 16:38:42.000000000 +0100
 @@ -10,7 +10,7 @@
  static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
@@ -2225,7 +2225,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  		return error;
  	}
  
---- 12.3.orig/arch/x86/kernel/mmconf-fam10h_64.c	2013-11-27 11:08:56.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/mmconf-fam10h_64.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/kernel/mmconf-fam10h_64.c	2011-01-31 18:07:35.000000000 +0100
 @@ -205,12 +205,20 @@ void __cpuinit fam10h_check_enable_mmcfg
  		return;
@@ -13032,7 +13032,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  EXPORT_SYMBOL(pci_disable_msix);
  
  /**
---- 12.3.orig/drivers/video/Kconfig	2013-11-27 11:08:56.000000000 +0100
+--- 12.3.orig/drivers/video/Kconfig	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/video/Kconfig	2012-10-23 14:58:07.000000000 +0200
 @@ -2237,7 +2237,7 @@ config FB_VIRTUAL
  
@@ -13874,7 +13874,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  				      size, vma->vm_page_prot, DOMID_IO);
 --- 12.3.orig/drivers/xen/console/console.c	2013-02-05 10:51:54.000000000 +0100
 +++ 12.3/drivers/xen/console/console.c	2013-02-05 10:52:18.000000000 +0100
-@@ -541,16 +541,18 @@ static int xencons_write(
+@@ -542,16 +542,18 @@ static int xencons_write(
  	return i;
  }
  
@@ -13896,7 +13896,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  }
  
  static void xencons_flush_chars(struct tty_struct *tty)
-@@ -572,7 +574,7 @@ static void xencons_wait_until_sent(stru
+@@ -573,7 +575,7 @@ static void xencons_wait_until_sent(stru
  	if (DUMMY_TTY(tty))
  		return;
  
@@ -13905,7 +13905,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  		set_current_state(TASK_INTERRUPTIBLE);
  		schedule_timeout(1);
  		if (signal_pending(current))
-@@ -621,8 +623,7 @@ static void xencons_close(struct tty_str
+@@ -622,8 +624,7 @@ static void xencons_close(struct tty_str
  
  	tty->closing = 1;
  	tty_wait_until_sent(tty, 0);
@@ -14080,7 +14080,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  };
  
  static int xenfb_mmap(struct fb_info *fb_info, struct vm_area_struct *vma)
---- 12.3.orig/drivers/xen/features.c	2013-11-27 11:08:56.000000000 +0100
+--- 12.3.orig/drivers/xen/features.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/features.c	2011-01-31 18:07:35.000000000 +0100
 @@ -9,14 +9,21 @@
  #include <linux/cache.h>
@@ -14148,8 +14148,8 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  };
  
  static int privcmd_mmap(struct file * file, struct vm_area_struct * vma)
---- sle11sp3.orig/drivers/xen/usbfront/usbfront-hcd.c	2011-02-01 15:04:27.000000000 +0100
-+++ sle11sp3/drivers/xen/usbfront/usbfront-hcd.c	2013-12-16 14:47:16.000000000 +0100
+--- 12.3.orig/drivers/xen/usbfront/usbfront-hcd.c	2011-01-31 17:56:27.000000000 +0100
++++ 12.3/drivers/xen/usbfront/usbfront-hcd.c	2013-12-16 14:47:16.000000000 +0100
 @@ -77,6 +77,9 @@ static int xenhcd_setup(struct usb_hcd *
  	init_timer(&info->watchdog);
  	info->watchdog.function = xenhcd_watchdog;
@@ -17852,7 +17852,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  	struct mm_struct *active_mm;
  	int state;
  	char __cacheline_padding[L1_CACHE_BYTES-8];
---- 12.3.orig/arch/x86/include/mach-xen/asm/vga.h	2013-11-27 11:08:56.000000000 +0100
+--- 12.3.orig/arch/x86/include/mach-xen/asm/vga.h	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/include/mach-xen/asm/vga.h	2011-01-31 18:07:35.000000000 +0100
 @@ -12,9 +12,9 @@
   *	access the videoram directly without any black magic.

@@ -16,7 +16,7 @@ Acked-by: jbeulich@suse.com
 +	.quad compat_sys_process_vm_readv
 +	.quad compat_sys_process_vm_writev
  ia32_syscall_end:
---- 12.3.orig/arch/x86/include/asm/mach_traps.h	2014-04-08 15:45:32.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/mach_traps.h	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/arch/x86/include/asm/mach_traps.h	2011-11-28 11:36:37.000000000 +0100
 @@ -5,6 +5,8 @@
  #ifndef _ASM_X86_MACH_DEFAULT_MACH_TRAPS_H
@@ -1857,7 +1857,7 @@ Acked-by: jbeulich@suse.com
  
  #include <asm/apic.h>
  #include <asm/io_apic.h>
---- 12.3.orig/arch/x86/kernel/nmi.c	2014-04-08 15:45:32.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/nmi.c	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/arch/x86/kernel/nmi.c	2012-06-13 15:57:05.000000000 +0200
 @@ -191,15 +191,12 @@ pci_serr_error(unsigned char reason, str
  	pr_emerg("Dazed and confused, but trying to continue\n");
@@ -2339,6 +2339,17 @@ Acked-by: jbeulich@suse.com
  		/* Register acpi_idle_driver if not already registered */
  		if (!acpi_processor_registered) {
  			acpi_processor_setup_cpuidle_states(pr);
+--- 12.3.orig/drivers/char/agp/intel-gtt.c	2013-04-03 10:27:17.000000000 +0200
++++ 12.3/drivers/char/agp/intel-gtt.c	2014-06-23 12:14:11.000000000 +0200
+@@ -1251,7 +1251,7 @@ static void gen6_cleanup(void)
+  */
+ static inline int needs_idle_maps(void)
+ {
+-#ifdef CONFIG_INTEL_IOMMU
++#if defined(CONFIG_INTEL_IOMMU) || defined(CONFIG_XEN)
+ 	const unsigned short gpu_devid = intel_private.pcidev->device;
+ 
+ 	/* Query intel_iommu to see if we need the workaround. Presumably that
 --- 12.3.orig/drivers/edac/Kconfig	2012-08-20 13:11:02.000000000 +0200
 +++ 12.3/drivers/edac/Kconfig	2012-08-20 13:19:08.000000000 +0200
 @@ -49,7 +49,7 @@ config EDAC_DEBUG
@@ -2368,7 +2379,7 @@ Acked-by: jbeulich@suse.com
  	depends on PCI_MMCONFIG && EXPERIMENTAL
  	help
  	  Support for error detection and correction the Intel
---- 12.3.orig/drivers/edac/sb_edac.c	2014-04-08 15:45:32.000000000 +0200
+--- 12.3.orig/drivers/edac/sb_edac.c	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/drivers/edac/sb_edac.c	2012-10-04 13:09:34.000000000 +0200
 @@ -1552,7 +1552,11 @@ static int sbridge_mce_check_error(struc
  		mce->socketid, mce->apicid);
@@ -3594,7 +3605,7 @@ Acked-by: jbeulich@suse.com
  	.ndo_set_mac_address    = xennet_set_mac_address,
  	.ndo_validate_addr      = eth_validate_addr,
  	.ndo_fix_features       = xennet_fix_features,
---- 12.3.orig/drivers/xen/pcifront/pci.c	2014-04-08 15:45:32.000000000 +0200
+--- 12.3.orig/drivers/xen/pcifront/pci.c	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/drivers/xen/pcifront/pci.c	2011-11-18 15:48:41.000000000 +0100
 @@ -3,8 +3,6 @@
   *
@@ -4067,7 +4078,7 @@ Acked-by: jbeulich@suse.com
  
  #endif /* CONFIG_PARAVIRT_XEN */
  
---- 12.3.orig/include/xen/blkif.h	2014-04-08 15:45:32.000000000 +0200
+--- 12.3.orig/include/xen/blkif.h	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/include/xen/blkif.h	2012-04-04 10:27:25.000000000 +0200
 @@ -46,12 +46,21 @@ struct blkif_x86_32_request {
  	blkif_sector_t sector_number;/* start sector idx on disk (r/w only)  */

@@ -428,7 +428,7 @@ Automatically created from "patches.kernel.org/patch-2.6.36" by xen-port-patches
  
  	/*
  	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if BIOS did not.
---- 12.3.orig/arch/x86/kernel/cpu/scattered.c	2014-02-10 15:05:49.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/cpu/scattered.c	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/arch/x86/kernel/cpu/scattered.c	2012-02-16 13:40:13.000000000 +0100
 @@ -41,6 +41,7 @@ void __cpuinit init_scattered_cpuid_feat
  		{ X86_FEATURE_XSAVEOPT,		CR_EAX,	0, 0x0000000d, 1 },
@@ -1052,7 +1052,7 @@ Automatically created from "patches.kernel.org/patch-2.6.36" by xen-port-patches
  
  config XEN_MAX_DOMAIN_MEMORY
         int
---- 12.3.orig/arch/x86/xen/enlighten.c	2014-02-10 15:05:49.000000000 +0100
+--- 12.3.orig/arch/x86/xen/enlighten.c	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/arch/x86/xen/enlighten.c	2012-10-31 11:18:38.000000000 +0100
 @@ -142,8 +142,8 @@ static DEFINE_PER_CPU(struct tls_descs, 
  static void clamp_max_cpus(void)
@@ -1439,7 +1439,7 @@ Automatically created from "patches.kernel.org/patch-2.6.36" by xen-port-patches
  };
 --- 12.3.orig/drivers/xen/console/console.c	2013-02-05 10:54:36.000000000 +0100
 +++ 12.3/drivers/xen/console/console.c	2013-02-05 10:54:40.000000000 +0100
-@@ -369,7 +369,7 @@ void xencons_rx(char *buf, unsigned len)
+@@ -375,7 +375,7 @@ void xencons_rx(char *buf, unsigned len)
  			sysrq_requested = 0;
  			if (time_before(jiffies, sysrq_timeout)) {
  				spin_unlock_irqrestore(&xencons_lock, flags);
@@ -1448,7 +1448,7 @@ Automatically created from "patches.kernel.org/patch-2.6.36" by xen-port-patches
  				spin_lock_irqsave(&xencons_lock, flags);
  				continue;
  			}
-@@ -603,7 +603,14 @@ static void xencons_close(struct tty_str
+@@ -609,7 +609,14 @@ static void xencons_close(struct tty_str
  	if (DUMMY_TTY(tty))
  		return;
  

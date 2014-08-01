@@ -1857,7 +1857,7 @@ Automatically created from "patches.kernel.org/patch-2.6.35" by xen-port-patches
  }
  
  static void *memtype_seq_start(struct seq_file *seq, loff_t *pos)
---- 12.3.orig/arch/x86/mm/pat_internal.h	2013-11-27 11:08:56.000000000 +0100
+--- 12.3.orig/arch/x86/mm/pat_internal.h	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/arch/x86/mm/pat_internal.h	2011-04-13 14:02:46.000000000 +0200
 @@ -21,6 +21,10 @@ static inline char *cattr_name(unsigned 
  	case _PAGE_CACHE_UC_MINUS:	return "uncached-minus";
@@ -1949,7 +1949,7 @@ Automatically created from "patches.kernel.org/patch-2.6.35" by xen-port-patches
  
  	if (processor_pm_external())
  		processor_notify_external(pr,
---- 12.3.orig/drivers/gpu/drm/ttm/ttm_page_alloc.c	2013-11-27 11:08:56.000000000 +0100
+--- 12.3.orig/drivers/gpu/drm/ttm/ttm_page_alloc.c	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/drivers/gpu/drm/ttm/ttm_page_alloc.c	2012-04-10 17:05:48.000000000 +0200
 @@ -491,6 +491,19 @@ static int ttm_alloc_new_pages(struct li
  	for (i = 0, cpages = 0; i < count; ++i) {
@@ -2271,9 +2271,9 @@ Automatically created from "patches.kernel.org/patch-2.6.35" by xen-port-patches
  module_exit(blktap_exit);
  MODULE_LICENSE("Dual BSD/GPL");
 +MODULE_ALIAS("devname:" BLKTAP2_DEV_DIR "control");
---- 12.3.orig/drivers/xen/console/console.c	2013-02-05 10:53:23.000000000 +0100
+--- 12.3.orig/drivers/xen/console/console.c	2014-06-23 12:02:26.000000000 +0200
 +++ 12.3/drivers/xen/console/console.c	2013-02-05 10:54:36.000000000 +0100
-@@ -355,27 +355,23 @@ void xencons_rx(char *buf, unsigned len)
+@@ -361,27 +361,23 @@ void xencons_rx(char *buf, unsigned len)
  
  	for (i = 0; i < len; i++) {
  #ifdef CONFIG_MAGIC_SYSRQ

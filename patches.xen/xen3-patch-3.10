@@ -1121,6 +1121,17 @@ Acked-by: jbeulich@suse.com
  			continue;
  		per_cpu(xen_vcpu, cpu) = &HYPERVISOR_shared_info->vcpu_info[cpu];
  	}
+--- 13.1.orig/drivers/gpu/drm/i915/intel_display.c	2013-11-26 11:08:48.000000000 +0100
++++ 13.1/drivers/gpu/drm/i915/intel_display.c	2014-06-23 12:23:13.000000000 +0200
+@@ -1752,7 +1752,7 @@ static void intel_disable_plane(struct d
+ 
+ static bool need_vtd_wa(struct drm_device *dev)
+ {
+-#ifdef CONFIG_INTEL_IOMMU
++#if defined(CONFIG_INTEL_IOMMU) || defined(CONFIG_XEN)
+ 	if (INTEL_INFO(dev)->gen >= 6 && intel_iommu_gfx_mapped)
+ 		return true;
+ #endif
 --- 13.1.orig/drivers/hwmon/coretemp-xen.c	2013-03-25 09:13:58.000000000 +0100
 +++ 13.1/drivers/hwmon/coretemp-xen.c	2013-05-24 11:49:51.000000000 +0200
 @@ -414,8 +414,7 @@ static int chk_ucode_version(unsigned in
@@ -1133,7 +1144,7 @@ Acked-by: jbeulich@suse.com
  		return -ENODEV;
  	}
  	return 0;
---- 13.1.orig/drivers/net/caif/Kconfig	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/drivers/net/caif/Kconfig	2014-06-23 14:00:26.000000000 +0200
 +++ 13.1/drivers/net/caif/Kconfig	2013-06-05 14:20:37.000000000 +0200
 @@ -43,7 +43,7 @@ config CAIF_HSI
  
@@ -1424,7 +1435,7 @@ Acked-by: jbeulich@suse.com
 +	if (dev->msix_cap)
 +		msix_set_enable(dev, 0);
  }
---- 13.1.orig/drivers/platform/x86/Kconfig	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/drivers/platform/x86/Kconfig	2014-06-23 14:00:26.000000000 +0200
 +++ 13.1/drivers/platform/x86/Kconfig	2013-08-09 15:43:43.000000000 +0200
 @@ -811,7 +811,7 @@ config INTEL_SMARTCONNECT
  
@@ -1435,7 +1446,7 @@ Acked-by: jbeulich@suse.com
  	---help---
  	  This driver provides support for the pvpanic device.  pvpanic is
  	  a paravirtualized device provided by QEMU; it lets a virtual machine
---- 13.1.orig/drivers/scsi/lpfc/lpfc_init.c	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/drivers/scsi/lpfc/lpfc_init.c	2014-06-23 14:00:26.000000000 +0200
 +++ 13.1/drivers/scsi/lpfc/lpfc_init.c	2013-08-09 15:43:33.000000000 +0200
 @@ -8400,9 +8400,6 @@ lpfc_sli4_set_affinity(struct lpfc_hba *
  	int i, idx, saved_chann, used_chann, cpu, phys_id;
@@ -2167,7 +2178,7 @@ Acked-by: jbeulich@suse.com
  
  	err = 0;
  out:
---- 13.1.orig/include/xen/xen_proc.h	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/include/xen/xen_proc.h	2014-06-23 14:00:26.000000000 +0200
 +++ 13.1/include/xen/xen_proc.h	2013-05-27 17:41:43.000000000 +0200
 @@ -4,9 +4,9 @@
  

@@ -33,7 +33,7 @@ Acked-by: jbeulich@suse.com
  
  	ALIGN
  GLOBAL(stub32_clone)
---- 13.1.orig/arch/x86/include/asm/efi.h	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/arch/x86/include/asm/efi.h	2014-06-23 14:00:26.000000000 +0200
 +++ 13.1/arch/x86/include/asm/efi.h	2013-06-20 15:32:48.000000000 +0200
 @@ -106,7 +106,11 @@ extern void efi_memory_uc(u64 addr, unsi
  
@@ -64,7 +64,7 @@ Acked-by: jbeulich@suse.com
  
  static inline unsigned long __phys_addr_nodebug(unsigned long x)
  {
---- 13.1.orig/arch/x86/include/asm/processor.h	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/arch/x86/include/asm/processor.h	2014-06-23 14:00:26.000000000 +0200
 +++ 13.1/arch/x86/include/asm/processor.h	2013-08-09 15:42:53.000000000 +0200
 @@ -975,7 +975,7 @@ extern unsigned long arch_align_stack(un
  extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
@@ -1618,7 +1618,7 @@ Acked-by: jbeulich@suse.com
 -
  	start_kernel();
  }
---- 13.1.orig/arch/x86/kernel/head_64.S	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/head_64.S	2014-06-23 14:00:26.000000000 +0200
 +++ 13.1/arch/x86/kernel/head_64.S	2013-06-04 13:59:45.000000000 +0200
 @@ -465,7 +465,7 @@ NEXT_PAGE(early_dynamic_pgts)
  
@@ -1668,7 +1668,7 @@ Acked-by: jbeulich@suse.com
  {
  	struct thread_struct *t = &current->thread;
  	unsigned int old = t->iopl >> 12;
---- 13.1.orig/arch/x86/kernel/process.c	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/process.c	2014-06-23 14:00:27.000000000 +0200
 +++ 13.1/arch/x86/kernel/process.c	2013-07-02 09:49:24.000000000 +0200
 @@ -317,7 +317,7 @@ void default_idle(void)
  EXPORT_SYMBOL(default_idle);
@@ -4533,7 +4533,7 @@ Acked-by: jbeulich@suse.com
  void __meminit vmemmap_populate_print_last(void)
  {
  	if (p_start) {
---- 13.1.orig/arch/x86/mm/mm_internal.h	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/arch/x86/mm/mm_internal.h	2014-06-23 14:00:27.000000000 +0200
 +++ 13.1/arch/x86/mm/mm_internal.h	2014-02-28 15:02:10.000000000 +0100
 @@ -12,8 +12,15 @@ void early_ioremap_page_table_range_init
  unsigned long kernel_physical_mapping_init(unsigned long start,
@@ -5006,7 +5006,7 @@ Acked-by: jbeulich@suse.com
  	{ 0x36, ANY, 100000 },	/* Atom Cedar Trail/Cedarview (N2xxx, D2xxx) */
  };
  
---- 13.1.orig/drivers/misc/vmw_vmci/Kconfig	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/drivers/misc/vmw_vmci/Kconfig	2014-06-23 14:00:27.000000000 +0200
 +++ 13.1/drivers/misc/vmw_vmci/Kconfig	2013-06-04 13:59:32.000000000 +0200
 @@ -4,7 +4,7 @@
  
@@ -5287,7 +5287,7 @@ Acked-by: jbeulich@suse.com
  }
  
  /**
---- 13.1.orig/drivers/thermal/Kconfig	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/drivers/thermal/Kconfig	2014-06-23 14:00:27.000000000 +0200
 +++ 13.1/drivers/thermal/Kconfig	2013-05-23 17:57:14.000000000 +0200
 @@ -162,7 +162,7 @@ config DB8500_CPUFREQ_COOLING
  config INTEL_POWERCLAMP
@@ -5455,7 +5455,7 @@ Acked-by: jbeulich@suse.com
  
 --- 13.1.orig/drivers/xen/console/console.c	2013-07-17 17:38:50.000000000 +0200
 +++ 13.1/drivers/xen/console/console.c	2013-04-02 16:43:06.000000000 +0200
-@@ -351,10 +351,12 @@ void xencons_rx(char *buf, unsigned len)
+@@ -357,10 +357,12 @@ void xencons_rx(char *buf, unsigned len)
  {
  	int           i;
  	unsigned long flags;
@@ -5468,7 +5468,7 @@ Acked-by: jbeulich@suse.com
  
  	for (i = 0; i < len; i++) {
  #ifdef CONFIG_MAGIC_SYSRQ
-@@ -378,9 +380,9 @@ void xencons_rx(char *buf, unsigned len)
+@@ -384,9 +386,9 @@ void xencons_rx(char *buf, unsigned len)
  			}
  		}
  #endif
@@ -5806,7 +5806,7 @@ Acked-by: jbeulich@suse.com
      } u;
  } __attribute__((__packed__));
  #endif
---- 13.1.orig/include/xen/interface/io/pciif.h	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/include/xen/interface/io/pciif.h	2014-06-23 14:00:27.000000000 +0200
 +++ 13.1/include/xen/interface/io/pciif.h	2013-08-08 11:31:59.000000000 +0200
 @@ -46,6 +46,7 @@
  #define	XEN_PCI_OP_aer_resume		(7)
@@ -5879,7 +5879,7 @@ Acked-by: jbeulich@suse.com
  void pci_frontend_disable_msi(struct pci_dev *);
  int pci_frontend_enable_msix(struct pci_dev *, struct msix_entry *, int nvec);
  void pci_frontend_disable_msix(struct pci_dev *);
---- 13.1.orig/kernel/context_tracking.c	2014-04-08 17:00:39.000000000 +0200
+--- 13.1.orig/kernel/context_tracking.c	2014-06-23 14:00:27.000000000 +0200
 +++ 13.1/kernel/context_tracking.c	2013-07-02 09:49:19.000000000 +0200
 @@ -142,6 +142,8 @@ void user_exit(void)
  	local_irq_restore(flags);

@@ -1,0 +1,64 @@
+From 2c181379a8bee14901fa6ba77726d5b8abb06703 Mon Sep 17 00:00:00 2001
+From: Mathias Nyman <mathias.nyman@linux.intel.com>
+Date: Wed, 28 May 2014 23:18:35 +0300
+Subject: [PATCH 3/3] usb: pci-quirks: Prevent Sony VAIO t-series from
+ switching usb ports
+References: bnc#864375
+Git-Commit: b38f09ccc3fd453180e96273bf3f34083c30809a
+Patch-Mainline: v3.15
+
+Sony VAIO t-series machines are not capable of switching usb2 ports over
+from Intel EHCI to xHCI controller. If tried the USB2 port will be left
+unconnected and unusable.
+
+This patch should be backported to stable kernels as old as 3.12,
+that contain the commit 26b76798e0507429506b93cd49f8c4cfdab06896
+"Intel xhci: refactor EHCI/xHCI port switching"
+
+Cc: stable <stable@vger.kernel.org> # 3.12
+Reported-by: Jorge <xxopxe@gmail.com>
+Tested-by: Jorge <xxopxe@gmail.com>
+Signed-off-by: Mathias Nyman <mathias.nyman@linux.intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+Conflicts:
+	drivers/usb/host/pci-quirks.c
+---
+ drivers/usb/host/pci-quirks.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/drivers/usb/host/pci-quirks.c b/drivers/usb/host/pci-quirks.c
+index b9848e4..49f14ac 100644
+--- a/drivers/usb/host/pci-quirks.c
++++ b/drivers/usb/host/pci-quirks.c
+@@ -782,6 +782,27 @@ EXPORT_SYMBOL_GPL(usb_is_intel_switchable_xhci);
+ void usb_enable_xhci_ports(struct pci_dev *xhci_pdev)
+ {
+ 	u32		ports_available;
++	bool		ehci_found = false;
++	struct pci_dev	*companion = NULL;
++
++	/* Sony VAIO t-series with subsystem device ID 90a8 is not capable of
++	 * switching ports from EHCI to xHCI
++	 */
++	if (xhci_pdev->subsystem_vendor == PCI_VENDOR_ID_SONY &&
++	    xhci_pdev->subsystem_device == 0x90a8)
++		return;
++
++	/* make sure an intel EHCI controller exists */
++	for_each_pci_dev(companion) {
++		if (companion->class == PCI_CLASS_SERIAL_USB_EHCI &&
++		    companion->vendor == PCI_VENDOR_ID_INTEL) {
++			ehci_found = true;
++			break;
++		}
++	}
++
++	if (!ehci_found)
++		return;
+ 
+ 	/* Don't switchover the ports if the user hasn't compiled the xHCI
+ 	 * driver.  Otherwise they will see "dead" USB ports that don't power
+-- 
+1.8.4.5
+

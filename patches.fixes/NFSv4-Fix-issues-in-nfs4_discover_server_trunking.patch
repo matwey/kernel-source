@@ -1,0 +1,43 @@
+Git-commit: ea33e6c3e79d23ef693b7ed3171ef90dddfbfc15
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Fri, 5 Apr 2013 13:22:50 -0400
+Subject: [PATCH] NFSv4: Fix issues in nfs4_discover_server_trunking
+Patch-mainline: 3.10
+References: bnc#811746
+
+- Ensure that we exit with ENOENT if the call to ops->get_clid_cred()
+  fails.
+- Handle the case where ops->detect_trunking() exits with an
+  unexpected error, and return EIO.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Acked-by: NeilBrown <neilb@suse.de>
+
+---
+ fs/nfs/nfs4state.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+--- linux-3.7-openSUSE-12.3.orig/fs/nfs/nfs4state.c
++++ linux-3.7-openSUSE-12.3/fs/nfs/nfs4state.c
+@@ -1823,8 +1823,8 @@ int nfs4_discover_server_trunking(struct
+ 	i = 0;
+ 
+ 	mutex_lock(&nfs_clid_init_mutex);
+-	status  = -ENOENT;
+ again:
++	status  = -ENOENT;
+ 	cred = ops->get_clid_cred(clp);
+ 	status = ops->detect_trunking(clp, result, cred);
+ 	if (cred)
+@@ -1873,6 +1873,11 @@ again:
+ 	case -NFS4ERR_NOT_SAME: /* FixMe: implement recovery
+ 				 * in nfs4_exchange_id */
+ 		status = -EKEYEXPIRED;
++		break;
++	default:
++		pr_warn("NFS: %s unhandled error %d. Exiting with error EIO\n",
++				__func__, status);
++		status = -EIO;
+ 	}
+ 
+ 	mutex_unlock(&nfs_clid_init_mutex);

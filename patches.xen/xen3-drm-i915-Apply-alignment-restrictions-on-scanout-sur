@@ -1,0 +1,51 @@
+From 693db1842d864ca2771e881127cdb4d09979758b Mon Sep 17 00:00:00 2001
+From: Chris Wilson <chris@chris-wilson.co.uk>
+Date: Tue, 5 Mar 2013 14:52:39 +0000
+Subject: [PATCH] drm/i915: Apply alignment restrictions on scanout surfaces for VT-d
+Patch-mainline: 3.10-rc2
+References: bnc#818561
+
+From the w/a database:
+
+'To prevent false VT-d type 6 error:
+
+  The primary display plane must be 256KiB aligned, and require an extra
+  128 PTEs of padding afterward;
+
+  The sprites planes must be 128KiB aligned, and require an extra 64 PTEs
+  of padding afterward;
+
+  The cursors must be 64KiB aligned, and require an extra 2 PTEs of
+  padding afterward.'
+
+As we use the same function to pin the primary and sprite planes, we can
+simply use the more strict requirements for scanouts for both.
+
+Instead of using explicit padding PTEs following the scanout objects, we
+should be able to use the scratch page that is always mapped into the
+unused PTEs to avoid the VT-d error.
+
+References: https://bugs.freedesktop.org/show_bug.cgi?id=59626
+References: https://bugs.freedesktop.org/show_bug.cgi?id=59627
+References: https://bugs.freedesktop.org/show_bug.cgi?id=59631
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Reviewed-by: Damien Lespiau <damien.lespiau@intel.com>
+[danvet: Apply s/vtd_wa/vtd_scanout_wa/ bikeshed since Damien likes
+it, too.]
+
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Acked-by: Takashi Iwai <tiwai@suse.de>
+
+Automatically created from "patches.drivers/drm-i915-Apply-alignment-restrictions-on-scanout-sur" by xen-port-patches.py
+
+--- 12.3.orig/drivers/gpu/drm/i915/intel_display.c	2013-08-08 14:01:51.000000000 +0200
++++ 12.3/drivers/gpu/drm/i915/intel_display.c	2014-06-23 12:23:13.000000000 +0200
+@@ -1864,7 +1864,7 @@ static void intel_disable_plane(struct d
+ 
+ static bool need_vtd_wa(struct drm_device *dev)
+ {
+-#ifdef CONFIG_INTEL_IOMMU
++#if defined(CONFIG_INTEL_IOMMU) || defined(CONFIG_XEN)
+ 	if (INTEL_INFO(dev)->gen >= 6 && intel_iommu_gfx_mapped)
+ 		return true;
+ #endif

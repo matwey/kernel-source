@@ -485,7 +485,7 @@ Acked-by: jbeulich@suse.com
 -	.quad compat_sys_process_vm_readv
 -	.quad compat_sys_process_vm_writev
 -ia32_syscall_end:
---- 12.3.orig/arch/x86/include/asm/debugreg.h	2013-04-16 14:02:56.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/debugreg.h	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/arch/x86/include/asm/debugreg.h	2012-04-10 17:25:00.000000000 +0200
 @@ -168,7 +168,7 @@ extern void aout_dump_debugregs(struct u
  
@@ -1549,7 +1549,7 @@ Acked-by: jbeulich@suse.com
  	inc_irq_stat(x86_platform_ipis);
  
  	if (x86_platform_ipi_callback)
---- 12.3.orig/arch/x86/kernel/irq_64.c	2013-04-16 14:02:56.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/irq_64.c	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/arch/x86/kernel/irq_64.c	2012-05-11 10:57:43.000000000 +0200
 @@ -39,7 +39,9 @@ static inline void stack_overflow_check(
  {
@@ -2138,7 +2138,7 @@ Acked-by: jbeulich@suse.com
 +};
 +#endif /* TIF_CSTAR */
 --- 12.3.orig/arch/x86/kernel/traps-xen.c	2011-11-17 16:50:15.000000000 +0100
-+++ 12.3/arch/x86/kernel/traps-xen.c	2012-07-05 12:00:31.000000000 +0200
++++ 12.3/arch/x86/kernel/traps-xen.c	2013-11-27 11:32:36.000000000 +0100
 @@ -310,19 +310,20 @@ dotraplinkage void __kprobes do_int3(str
  			== NOTIFY_STOP)
  		return;
@@ -2241,8 +2241,8 @@ Acked-by: jbeulich@suse.com
  
  	/* NB. 'clts' is done for us by Xen during virtual trap. */
  	percpu_and(xen_x86_cr0, ~X86_CR0_TS);
-@@ -622,8 +608,17 @@ asmlinkage void math_state_restore(void)
- 		local_irq_disable();
+@@ -623,8 +609,17 @@ asmlinkage void math_state_restore(void)
+ 		clts();
  	}
  
 -	/* clts();			Allow maths ops (or we recurse) */
@@ -2720,7 +2720,7 @@ Acked-by: jbeulich@suse.com
  	 * The return value is ignored as the calls cannot fail.
  	 * Large pages for identity mappings are not used at boot time
  	 * and hence no memory allocations during large page split.
---- 12.3.orig/drivers/acpi/osl.c	2013-04-16 14:02:56.000000000 +0200
+--- 12.3.orig/drivers/acpi/osl.c	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/drivers/acpi/osl.c	2012-04-10 17:24:36.000000000 +0200
 @@ -326,8 +326,12 @@ acpi_map_lookup_virt(void __iomem *virt,
  }
@@ -3292,7 +3292,7 @@ Acked-by: jbeulich@suse.com
  obj-$(CONFIG_XEN_NETDEV_ACCEL_SFC_UTIL)		+= sfc_netutil/
  obj-$(CONFIG_XEN_NETDEV_ACCEL_SFC_FRONTEND)	+= sfc_netfront/
 --- 12.3.orig/drivers/xen/balloon/balloon.c	2012-06-06 14:04:25.000000000 +0200
-+++ 12.3/drivers/xen/balloon/balloon.c	2012-06-08 10:38:14.000000000 +0200
++++ 12.3/drivers/xen/balloon/balloon.c	2014-02-10 15:11:55.000000000 +0100
 @@ -73,11 +73,6 @@ static DEFINE_MUTEX(balloon_mutex);
   */
  DEFINE_SPINLOCK(balloon_lock);
@@ -3353,7 +3353,7 @@ Acked-by: jbeulich@suse.com
  	bs.current_pages = min(xen_start_info->nr_pages, max_pfn);
  	totalram_pages   = bs.current_pages;
  #else 
-@@ -726,7 +707,7 @@ struct page **alloc_empty_pages_and_page
+@@ -720,7 +701,7 @@ struct page **alloc_empty_pages_and_page
  
  		if (ret != 0) {
  			balloon_free_page(page);
@@ -3559,8 +3559,8 @@ Acked-by: jbeulich@suse.com
 -	unregister_balloon(&balloon_sysdev);
 +	unregister_balloon(&balloon_dev);
  }
---- 12.3.orig/drivers/xen/blkback/blkback.c	2013-04-16 14:08:35.000000000 +0200
-+++ 12.3/drivers/xen/blkback/blkback.c	2013-04-16 14:09:08.000000000 +0200
+--- 12.3.orig/drivers/xen/blkback/blkback.c	2013-06-24 16:46:12.000000000 +0200
++++ 12.3/drivers/xen/blkback/blkback.c	2013-06-24 16:47:05.000000000 +0200
 @@ -62,7 +62,7 @@ module_param_named(reqs, blkif_reqs, uin
  MODULE_PARM_DESC(reqs, "Number of blkback requests to allocate");
  
@@ -3570,7 +3570,7 @@ Acked-by: jbeulich@suse.com
  static unsigned int debug_lvl;
  module_param(log_stats, bool, 0644);
  module_param(debug_lvl, uint, 0644);
-@@ -320,8 +320,11 @@ irqreturn_t blkif_be_int(int irq, void *
+@@ -330,8 +330,11 @@ irqreturn_t blkif_be_int(int irq, void *
  
  static void dispatch_discard(blkif_t *blkif, struct blkif_request_discard *req)
  {
@@ -3583,7 +3583,7 @@ Acked-by: jbeulich@suse.com
  
  	blkif->st_ds_req++;
  
-@@ -338,12 +341,8 @@ static void dispatch_discard(blkif_t *bl
+@@ -348,12 +351,8 @@ static void dispatch_discard(blkif_t *bl
  		return;
  	}
  
@@ -3598,7 +3598,7 @@ Acked-by: jbeulich@suse.com
  	case 0:
  		status = BLKIF_RSP_OKAY;
  		break;
---- 12.3.orig/drivers/xen/blkback/common.h	2013-04-16 14:08:36.000000000 +0200
+--- 12.3.orig/drivers/xen/blkback/common.h	2013-06-24 16:46:13.000000000 +0200
 +++ 12.3/drivers/xen/blkback/common.h	2012-06-08 10:38:21.000000000 +0200
 @@ -43,16 +43,12 @@
  	pr_debug("(file=%s, line=%d) " _f,	\
@@ -3707,34 +3707,28 @@ Acked-by: jbeulich@suse.com
  
  	err = xenbus_printf(xbt, dev->nodename, "feature-discard",
  			    "%d", state);
---- 12.3.orig/drivers/xen/blkfront/blkfront.c	2012-10-04 13:09:21.000000000 +0200
-+++ 12.3/drivers/xen/blkfront/blkfront.c	2012-10-04 13:11:38.000000000 +0200
-@@ -334,11 +334,13 @@ static void blkfront_setup_discard(struc
- 	char *type;
+--- 12.3.orig/drivers/xen/blkfront/blkfront.c	2014-01-22 14:13:52.000000000 +0100
++++ 12.3/drivers/xen/blkfront/blkfront.c	2014-02-10 15:11:57.000000000 +0100
+@@ -332,6 +332,7 @@ static void blkfront_setup_discard(struc
+ {
  	unsigned int discard_granularity;
  	unsigned int discard_alignment;
 +	int discard_secure;
  
- 	type = xenbus_read(XBT_NIL, info->xbdev->otherend, "type", NULL);
- 	if (IS_ERR(type))
- 		return;
+ 	info->feature_discard = 1;
+ 	if (!xenbus_gather(XBT_NIL, info->xbdev->otherend,
+@@ -341,6 +342,10 @@ static void blkfront_setup_discard(struc
+ 		info->discard_granularity = discard_granularity;
+ 		info->discard_alignment = discard_alignment;
+ 	}
++	if (xenbus_scanf(XBT_NIL, info->xbdev->otherend,
++			 "discard-secure", "%d", &discard_secure) != 1)
++		discard_secure = 0;
++	info->feature_secdiscard = !!discard_secure;
+ }
  
-+	info->feature_secdiscard = 0;
- 	if (strncmp(type, "phy", 3) == 0) {
- 		err = xenbus_gather(XBT_NIL, info->xbdev->otherend,
- 			"discard-granularity", "%u", &discard_granularity,
-@@ -349,6 +351,10 @@ static void blkfront_setup_discard(struc
- 			info->discard_granularity = discard_granularity;
- 			info->discard_alignment = discard_alignment;
- 		}
-+		err = xenbus_scanf(XBT_NIL, info->xbdev->otherend,
-+			    "discard-secure", "%d", &discard_secure);
-+		if (err == 1)
-+			info->feature_secdiscard = discard_secure;
- 	} else if (strncmp(type, "file", 4) == 0)
- 		info->feature_discard = 1;
- 
-@@ -767,10 +773,13 @@ int blkif_ioctl(struct block_device *bd,
+ /*
+@@ -755,10 +760,13 @@ int blkif_ioctl(struct block_device *bd,
  				return scsi_cmd_ioctl(filep, info->rq,
  						      info->gd, command,
  						      (void __user *)argument);
@@ -3749,7 +3743,7 @@ Acked-by: jbeulich@suse.com
  #endif
  			}
  		}
-@@ -847,13 +856,15 @@ static int blkif_queue_request(struct re
+@@ -835,13 +843,15 @@ static int blkif_queue_request(struct re
  #endif
  		ring_req->operation = info->flush_op;
  
@@ -3766,7 +3760,7 @@ Acked-by: jbeulich@suse.com
  	} else {
  		ring_req->nr_segments = blk_rq_map_sg(req->q, req, info->sg);
  		BUG_ON(ring_req->nr_segments > BLKIF_MAX_SEGMENTS_PER_REQUEST);
-@@ -1038,7 +1049,9 @@ static irqreturn_t blkif_int(int irq, vo
+@@ -1026,7 +1036,9 @@ static irqreturn_t blkif_int(int irq, vo
  					info->gd->disk_name);
  				ret = -EOPNOTSUPP;
  				info->feature_discard = 0;
@@ -3776,7 +3770,7 @@ Acked-by: jbeulich@suse.com
  			}
  			__blk_end_request_all(req, ret);
  			break;
-@@ -1095,6 +1108,9 @@ static void blkif_free(struct blkfront_i
+@@ -1083,6 +1095,9 @@ static void blkif_free(struct blkfront_i
  static void blkif_completion(struct blk_shadow *s)
  {
  	int i;
@@ -3933,7 +3927,7 @@ Acked-by: jbeulich@suse.com
  }
  
  #ifndef CONFIG_X86_LOCAL_APIC
---- 12.3.orig/drivers/xen/core/spinlock.c	2012-07-26 14:13:33.000000000 +0200
+--- 12.3.orig/drivers/xen/core/spinlock.c	2013-11-27 11:32:25.000000000 +0100
 +++ 12.3/drivers/xen/core/spinlock.c	2012-07-26 09:42:00.000000000 +0200
 @@ -38,7 +38,7 @@ struct rm_seq {
  };
@@ -3967,11 +3961,42 @@ Acked-by: jbeulich@suse.com
  {
  	netif_t *netif = netdev_priv(dev);
  
---- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:17:14.000000000 +0100
-+++ 12.3/drivers/xen/netback/netback.c	2013-02-18 12:17:22.000000000 +0100
-@@ -164,10 +164,10 @@ static unsigned long mfn_list[MAX_MFN_AL
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-06-24 16:46:05.000000000 +0200
++++ 12.3/drivers/xen/netback/netback.c	2013-06-24 12:44:29.000000000 +0200
+@@ -51,6 +51,12 @@ struct netbk_rx_meta {
+ 	u8 copy:1;
+ };
+ 
++struct netbk_tx_cb {
++	u16 copy_slots;
++	u16 pending_idx[1 + XEN_NETIF_NR_SLOTS_MIN];
++};
++#define netbk_tx_cb(skb) ((struct netbk_tx_cb *)skb->cb)
++
+ struct netbk_tx_pending_inuse {
+ 	struct list_head list;
+ 	unsigned long alloc_time;
+@@ -155,6 +161,8 @@ static struct sk_buff_head tx_queue;
+ static grant_handle_t grant_tx_handle[MAX_PENDING_REQS];
+ static gnttab_unmap_grant_ref_t tx_unmap_ops[MAX_PENDING_REQS];
+ static gnttab_map_grant_ref_t tx_map_ops[MAX_PENDING_REQS];
++static gnttab_copy_t tx_copy_ops[2 * MAX_PENDING_REQS];
++static netif_tx_request_t tx_slots[XEN_NETIF_NR_SLOTS_MIN];
+ 
+ static struct list_head net_schedule_list;
+ static spinlock_t net_schedule_list_lock;
+@@ -163,11 +171,19 @@ static spinlock_t net_schedule_list_lock
+ static unsigned long mfn_list[MAX_MFN_ALLOC];
  static unsigned int alloc_index = 0;
  
++/*
++ * This is the maximum slots a TX request can have. If a guest sends a TX
++ * request which exceeds this limit it is considered malicious.
++ */
++static unsigned int max_tx_slots = XEN_NETIF_NR_SLOTS_MIN;
++module_param(max_tx_slots, uint, 0444);
++MODULE_PARM_DESC(max_tx_slots, "Maximum number of slots accepted in netfront TX requests");
++
  /* Setting this allows the safe use of this driver without netloop. */
 -static int MODPARM_copy_skb = 1;
 +static bool MODPARM_copy_skb = true;
@@ -3982,9 +4007,459 @@ Acked-by: jbeulich@suse.com
  module_param_named(permute_returns, MODPARM_permute_returns, bool, S_IRUSR|S_IWUSR);
  MODULE_PARM_DESC(permute_returns, "Randomly permute the order in which TX responses are sent to the frontend");
  
---- 12.3.orig/drivers/xen/netfront/netfront.c	2012-12-18 12:11:24.000000000 +0100
-+++ 12.3/drivers/xen/netfront/netfront.c	2012-12-18 12:11:48.000000000 +0100
-@@ -82,15 +82,15 @@ struct netfront_cb {
+@@ -1047,26 +1063,48 @@ static int netbk_count_requests(netif_t 
+ 				netif_tx_request_t *txp, int work_to_do)
+ {
+ 	RING_IDX cons = netif->tx.req_cons;
+-	int frags = 0, drop_err = 0;
++	int slots = 0, drop_err = 0;
+ 
+ 	if (!(first->flags & XEN_NETTXF_more_data))
+ 		return 0;
+ 
+ 	do {
+-		if (frags >= work_to_do) {
+-			pr_err("%s: Need more frags\n", netif->dev->name);
++		if (slots >= work_to_do) {
++			netdev_err(netif->dev, "Need more slots\n");
+ 			netbk_fatal_tx_err(netif);
+ 			return -ENODATA;
+ 		}
+ 
+-		if (unlikely(frags >= MAX_SKB_FRAGS)) {
+-			pr_err("%s: Too many frags\n", netif->dev->name);
++		if (unlikely(slots >= max_tx_slots)) {
++			netdev_err(netif->dev, "Too many slots\n");
+ 			netbk_fatal_tx_err(netif);
+ 			return -E2BIG;
+ 		}
+ 
+-		memcpy(txp, RING_GET_REQUEST(&netif->tx, cons + frags),
+-		       sizeof(*txp));
++		/*
++		 * The Xen network protocol had an implicit dependency on
++		 * MAX_SKB_FRAGS. XEN_NETIF_NR_SLOTS_MIN is set to the
++		 * historical MAX_SKB_FRAGS value 18 to honor the same
++		 * behavior as before. Any packet using more than 18 slots
++		 * but less than max_tx_slots slots is dropped.
++		 */
++		switch (slots) {
++		case 0 ... XEN_NETIF_NR_SLOTS_MIN - 1:
++			break;
++		case XEN_NETIF_NR_SLOTS_MIN:
++			if (net_ratelimit())
++				netdev_dbg(netif->dev,
++					   "slot count exceeding limit of %d, dropping packet\n",
++					   XEN_NETIF_NR_SLOTS_MIN);
++			if (!drop_err)
++				drop_err = -E2BIG;
++			/* fall through */
++		default:
++			--txp;
++			break;
++		}
++
++		*txp = *RING_GET_REQUEST(&netif->tx, cons + slots);
+ 
+ 		/*
+ 		 * If the guest submitted a frame >= 64 KiB then first->size
+@@ -1086,7 +1124,7 @@ static int netbk_count_requests(netif_t 
+ 		}
+ 
+ 		first->size -= txp->size;
+-		frags++;
++		slots++;
+ 
+ 		if (unlikely((txp->offset + txp->size) > PAGE_SIZE)) {
+ 			pr_err("%s: txp->offset: %x, size: %u\n",
+@@ -1097,30 +1135,77 @@ static int netbk_count_requests(netif_t 
+ 	} while ((txp++)->flags & XEN_NETTXF_more_data);
+ 
+ 	if (drop_err) {
+-		netbk_tx_err(netif, first, cons + frags);
++		netbk_tx_err(netif, first, cons + slots);
+ 		return drop_err;
+ 	}
+ 
+-	return frags;
++	return slots;
++}
++
++struct netbk_tx_gop {
++	gnttab_map_grant_ref_t *map;
++	gnttab_copy_t *copy;
++	void *ptr;
++};
++
++static void netbk_fill_tx_copy(const netif_tx_request_t *txreq,
++			       struct netbk_tx_gop *gop, domid_t domid)
++{
++	gop->copy--;
++	gop->copy->source.u.ref = txreq->gref;
++	gop->copy->source.domid = domid;
++	gop->copy->source.offset = txreq->offset;
++	gop->copy->dest.u.gmfn = virt_to_mfn(gop->ptr);
++	gop->copy->dest.domid = DOMID_SELF;
++	gop->copy->dest.offset = offset_in_page(gop->ptr);
++	gop->copy->flags = GNTCOPY_source_gref;
++
++	if (gop->copy->dest.offset + txreq->size > PAGE_SIZE) {
++		unsigned int first = PAGE_SIZE - gop->copy->dest.offset;
++
++		gop->copy->len = first;
++		gop->ptr += first;
++
++		gop->copy--;
++		gop->copy->source = gop->copy[-1].source;
++		gop->copy->source.offset += first;
++		gop->copy->dest.u.gmfn = virt_to_mfn(gop->ptr);
++		gop->copy->dest.domid = DOMID_SELF;
++		gop->copy->dest.offset = 0;
++		gop->copy->flags = GNTCOPY_source_gref;
++		gop->copy->len = txreq->size - first;
++	} else
++		gop->copy->len = txreq->size;
++
++	gop->ptr += gop->copy->len;
+ }
+ 
+-static gnttab_map_grant_ref_t *netbk_get_requests(netif_t *netif,
+-						  struct sk_buff *skb,
+-						  netif_tx_request_t *txp,
+-						  gnttab_map_grant_ref_t *mop)
++void netbk_get_requests(netif_t *netif, struct sk_buff *skb,
++			netif_tx_request_t *txp, struct netbk_tx_gop *gop)
+ {
+ 	struct skb_shared_info *shinfo = skb_shinfo(skb);
+ 	skb_frag_t *frags = shinfo->frags;
+-	u16 pending_idx = *(u16 *)skb->data;
++	u16 pending_idx = netbk_tx_cb(skb)->pending_idx[0];
+ 	int i, start;
+ 
+ 	/* Skip first skb fragment if it is on same page as header fragment. */
+ 	start = (frag_get_pending_idx(frags) == pending_idx);
+ 
++	for (i = 0; i < netbk_tx_cb(skb)->copy_slots; ++i, txp++) {
++		pending_idx = pending_ring[MASK_PEND_IDX(pending_cons++)];
++
++		netbk_fill_tx_copy(txp, gop, netif->domid);
++
++		pending_tx_info[pending_idx].req = *txp;
++		netif_get(netif);
++		pending_tx_info[pending_idx].netif = netif;
++		netbk_tx_cb(skb)->pending_idx[1 + i] = pending_idx;
++	}
++
+ 	for (i = start; i < shinfo->nr_frags; i++, txp++) {
+ 		pending_idx = pending_ring[MASK_PEND_IDX(pending_cons++)];
+ 
+-		gnttab_set_map_op(mop++, idx_to_kaddr(pending_idx),
++		gnttab_set_map_op(gop->map++, idx_to_kaddr(pending_idx),
+ 				  GNTMAP_host_map | GNTMAP_readonly,
+ 				  txp->gref, netif->domid);
+ 
+@@ -1130,14 +1215,17 @@ static gnttab_map_grant_ref_t *netbk_get
+ 		frag_set_pending_idx(&frags[i], pending_idx);
+ 	}
+ 
+-	return mop;
++	if ((void *)gop->map > (void *)gop->copy && net_ratelimit())
++		netdev_warn(netif->dev, "Grant op overrun (%p > %p)\n",
++			    gop->map, gop->copy);
+ }
+ 
+-static int netbk_tx_check_mop(struct sk_buff *skb,
+-			       gnttab_map_grant_ref_t **mopp)
++static int netbk_tx_check_gop(struct sk_buff *skb,
++			      struct netbk_tx_gop *gop, bool hdr_copied)
+ {
+-	gnttab_map_grant_ref_t *mop = *mopp;
+-	u16 pending_idx = *(u16 *)skb->data;
++	gnttab_copy_t *cop = gop->copy;
++	gnttab_map_grant_ref_t *mop = gop->map;
++	u16 pending_idx = netbk_tx_cb(skb)->pending_idx[0];
+ 	netif_t *netif = pending_tx_info[pending_idx].netif;
+ 	netif_tx_request_t *txp;
+ 	struct skb_shared_info *shinfo = skb_shinfo(skb);
+@@ -1145,8 +1233,18 @@ static int netbk_tx_check_mop(struct sk_
+ 	int i, err, start;
+ 
+ 	/* Check status of header. */
+-	err = mop->status;
+-	if (unlikely(err != GNTST_okay)) {
++	if (hdr_copied) {
++		err = (--cop)->status;
++		txp = &pending_tx_info[pending_idx].req;
++		if (txp->size > cop->len)
++			cmpxchg_local(&err, GNTST_okay, (--cop)->status);
++		make_tx_response(netif, txp,
++				 err == GNTST_okay ? XEN_NETIF_RSP_OKAY
++						   : XEN_NETIF_RSP_ERROR);
++		pending_ring[MASK_PEND_IDX(pending_prod++)] = pending_idx;
++		netif_put(netif);
++	} else if (unlikely((err = mop->status) != GNTST_okay)) {
++		++mop;
+ 		txp = &pending_tx_info[pending_idx].req;
+ 		make_tx_response(netif, txp, XEN_NETIF_RSP_ERROR);
+ 		pending_ring[MASK_PEND_IDX(pending_prod++)] = pending_idx;
+@@ -1154,19 +1252,34 @@ static int netbk_tx_check_mop(struct sk_
+ 	} else {
+ 		set_phys_to_machine(idx_to_pfn(pending_idx),
+ 			FOREIGN_FRAME(mop->dev_bus_addr >> PAGE_SHIFT));
+-		grant_tx_handle[pending_idx] = mop->handle;
++		grant_tx_handle[pending_idx] = mop++->handle;
+ 	}
+ 
+ 	/* Skip first skb fragment if it is on same page as header fragment. */
+ 	start = (frag_get_pending_idx(shinfo->frags) == pending_idx);
+ 
+-	for (i = start; i < nr_frags; i++) {
++	for (i = 0; i < netbk_tx_cb(skb)->copy_slots; ++i) {
++		int newerr = (--cop)->status;
++
++		pending_idx = netbk_tx_cb(skb)->pending_idx[1 + i];
++		txp = &pending_tx_info[pending_idx].req;
++		if (txp->size > cop->len)
++			cmpxchg_local(&newerr, GNTST_okay, (--cop)->status);
++		make_tx_response(netif, txp,
++				 newerr == GNTST_okay ? XEN_NETIF_RSP_OKAY
++						      : XEN_NETIF_RSP_ERROR);
++		cmpxchg_local(&err, GNTST_okay, newerr);
++		pending_ring[MASK_PEND_IDX(pending_prod++)] = pending_idx;
++		netif_put(netif);
++	}
++
++	for (i = start; i < nr_frags; i++, mop++) {
+ 		int j, newerr;
+ 
+ 		pending_idx = frag_get_pending_idx(&shinfo->frags[i]);
+ 
+ 		/* Check error status: if okay then remember grant handle. */
+-		newerr = (++mop)->status;
++		newerr = mop->status;
+ 		if (likely(newerr == GNTST_okay)) {
+ 			set_phys_to_machine(idx_to_pfn(pending_idx),
+ 				FOREIGN_FRAME(mop->dev_bus_addr>>PAGE_SHIFT));
+@@ -1188,8 +1301,10 @@ static int netbk_tx_check_mop(struct sk_
+ 			continue;
+ 
+ 		/* First error: invalidate header and preceding fragments. */
+-		pending_idx = *((u16 *)skb->data);
+-		netif_idx_release(pending_idx);
++		if (!hdr_copied) {
++			pending_idx = netbk_tx_cb(skb)->pending_idx[0];
++			netif_idx_release(pending_idx);
++		}
+ 		for (j = start; j < i; j++) {
+ 			pending_idx = frag_get_pending_idx(&shinfo->frags[j]);
+ 			netif_idx_release(pending_idx);
+@@ -1199,7 +1314,11 @@ static int netbk_tx_check_mop(struct sk_
+ 		err = newerr;
+ 	}
+ 
+-	*mopp = mop + 1;
++	gop->map = mop;
++	gop->copy = cop;
++	if ((void *)mop > (void *)cop && net_ratelimit())
++		netdev_warn(netif->dev, "Grant op check overrun (%p > %p)\n",
++			    mop, cop);
+ 	return err;
+ }
+ 
+@@ -1291,20 +1410,23 @@ static void net_tx_action(unsigned long 
+ {
+ 	struct sk_buff *skb;
+ 	netif_t *netif;
+-	netif_tx_request_t txreq;
+-	netif_tx_request_t txfrags[MAX_SKB_FRAGS];
++	netif_tx_request_t txreq, *txslot;
+ 	struct netif_extra_info extras[XEN_NETIF_EXTRA_TYPE_MAX - 1];
+ 	u16 pending_idx;
+ 	RING_IDX i;
+-	gnttab_map_grant_ref_t *mop;
++	struct netbk_tx_gop gop;
++	multicall_entry_t mcl[2];
+ 	unsigned int data_len;
+ 	int ret, work_to_do;
+ 
++	BUILD_BUG_ON(sizeof(skb->cb) < sizeof(struct netbk_tx_cb));
++
+ 	net_tx_action_dealloc();
+ 
+-	mop = tx_map_ops;
+-	while (((NR_PENDING_REQS + MAX_SKB_FRAGS) < MAX_PENDING_REQS) &&
+-		!list_empty(&net_schedule_list)) {
++	gop.map = tx_map_ops;
++	gop.copy = tx_copy_ops + ARRAY_SIZEOF(tx_copy_ops);
++	while (NR_PENDING_REQS + XEN_NETIF_NR_SLOTS_MIN < MAX_PENDING_REQS
++	       && !list_empty(&net_schedule_list)) {
+ 		/* Get a netif from the list with work to do. */
+ 		netif = poll_net_schedule_list();
+ 		/*
+@@ -1385,7 +1507,8 @@ static void net_tx_action(unsigned long 
+ 				continue;
+ 		}
+ 
+-		ret = netbk_count_requests(netif, &txreq, txfrags, work_to_do);
++		txslot = netbk->tx.slots;
++		ret = netbk_count_requests(netif, &txreq, txslot, work_to_do);
+ 		if (unlikely(ret < 0))
+ 			continue;
+ 
+@@ -1411,6 +1534,12 @@ static void net_tx_action(unsigned long 
+ 		data_len = (txreq.size > PKT_PROT_LEN &&
+ 			    ret < MAX_SKB_FRAGS) ?
+ 			PKT_PROT_LEN : txreq.size;
++		while (ret > MAX_SKB_FRAGS ||
++		       (ret && (data_len + txslot->size <= PKT_PROT_LEN ||
++				netbk_copy_skb_mode == NETBK_ALWAYS_COPY_SKB))) {
++			data_len += txslot++->size;
++			--ret;
++		}
+ 
+ 		skb = alloc_skb(data_len + 16 + NET_IP_ALIGN,
+ 				GFP_ATOMIC | __GFP_NOWARN);
+@@ -1434,39 +1563,38 @@ static void net_tx_action(unsigned long 
+ 			}
+ 		}
+ 
+-		gnttab_set_map_op(mop, idx_to_kaddr(pending_idx),
+-				  GNTMAP_host_map | GNTMAP_readonly,
+-				  txreq.gref, netif->domid);
+-		mop++;
+-
+ 		memcpy(&pending_tx_info[pending_idx].req,
+ 		       &txreq, sizeof(txreq));
+ 		pending_tx_info[pending_idx].netif = netif;
+-		*((u16 *)skb->data) = pending_idx;
++		netbk_tx_cb(skb)->pending_idx[0] = pending_idx;
++		netbk_tx_cb(skb)->copy_slots = txslot - netbk->tx.slots;
+ 
+ 		__skb_put(skb, data_len);
++		gop.ptr = skb->data;
+ 
+ 		skb_shinfo(skb)->nr_frags = ret;
+-		if (data_len < txreq.size)
++		if (data_len < txreq.size) {
++			gnttab_set_map_op(gop.map++, idx_to_kaddr(pending_idx),
++					  GNTMAP_host_map | GNTMAP_readonly,
++					  txreq.gref, netif->domid);
+ 			skb_shinfo(skb)->nr_frags++;
+-		else
++		} else {
++			netbk_fill_tx_copy(&txreq, &gop, netif->domid);
+ 			pending_idx = INVALID_PENDING_IDX;
++		}
+ 		frag_set_pending_idx(skb_shinfo(skb)->frags, pending_idx);
+ 
+ 		__skb_queue_tail(&tx_queue, skb);
+ 
+ 		pending_cons++;
+ 
+-		mop = netbk_get_requests(netif, skb, txfrags, mop);
++		netbk_get_requests(netif, skb, netbk->tx.slots, &gop);
+ 
+ 		netif->tx.req_cons = i;
+ 		netif_schedule_work(netif);
+-
+-		if ((mop - tx_map_ops) >= ARRAY_SIZE(tx_map_ops))
+-			break;
+ 	}
+ 
+-	if (mop == tx_map_ops)
++	if (skb_queue_empty(&tx_queue))
+ 		goto out;
+ 
+     /* NOTE: some maps may fail with GNTST_eagain, which could be successfully
+@@ -1474,22 +1602,28 @@ static void net_tx_action(unsigned long 
+      * req and let the frontend resend the relevant packet again. This is fine
+      * because it is unlikely that a network buffer will be paged out or shared,
+      * and therefore it is unlikely to fail with GNTST_eagain. */
+-	ret = HYPERVISOR_grant_table_op(
+-		GNTTABOP_map_grant_ref, tx_map_ops, mop - tx_map_ops);
+-	BUG_ON(ret);
++	MULTI_grant_table_op(&mcl[0], GNTTABOP_copy, gop.copy,
++			     tx_copy_ops + ARRAY_SIZE(tx_copy_ops) - gop.copy);
++	MULTI_grant_table_op(&mcl[1], GNTTABOP_map_grant_ref,
++			     tx_map_ops, gop.map - tx_map_ops);
++	if (HYPERVISOR_multicall_check(mcl, 2, NULL))
++		BUG();
+ 
+-	mop = tx_map_ops;
++	gop.map = tx_map_ops;
++	gop.copy = tx_copy_ops + ARRAY_SIZE(tx_copy_ops);
+ 	while ((skb = __skb_dequeue(&tx_queue)) != NULL) {
+ 		struct net_device *dev;
+ 		netif_tx_request_t *txp;
+ 
+-		pending_idx = *((u16 *)skb->data);
++		pending_idx = netbk_tx_cb(skb)->pending_idx[0];
+ 		netif       = pending_tx_info[pending_idx].netif;
+ 		dev         = netif->dev;
+ 		txp         = &pending_tx_info[pending_idx].req;
++		data_len    = skb->len;
+ 
+-		/* Check the remap error code. */
+-		if (unlikely(netbk_tx_check_mop(skb, &mop))) {
++		/* Check the remap/copy error code. */
++		if (unlikely(netbk_tx_check_gop(skb, &gop,
++						data_len >= txp->size))) {
+ 			DPRINTK("netback grant failed.\n");
+ 			skb_shinfo(skb)->nr_frags = 0;
+ 			kfree_skb(skb);
+@@ -1497,17 +1631,13 @@ static void net_tx_action(unsigned long 
+ 			continue;
+ 		}
+ 
+-		data_len = skb->len;
+-		memcpy(skb->data,
+-		       (void *)(idx_to_kaddr(pending_idx)|txp->offset),
+-		       data_len);
+ 		if (data_len < txp->size) {
++			memcpy(skb->data,
++			       (void *)(idx_to_kaddr(pending_idx) + txp->offset),
++			       data_len);
+ 			/* Append the packet payload as a fragment. */
+ 			txp->offset += data_len;
+ 			txp->size -= data_len;
+-		} else {
+-			/* Schedule a response immediately. */
+-			netif_idx_release(pending_idx);
+ 		}
+ 
+ 		if (txp->flags & XEN_NETTXF_csum_blank)
+@@ -1537,14 +1667,6 @@ static void net_tx_action(unsigned long 
+ 			continue;
+ 		}
+ 
+-		if (unlikely(netbk_copy_skb_mode == NETBK_ALWAYS_COPY_SKB) &&
+-		    unlikely(skb_linearize(skb))) {
+-			DPRINTK("Can't linearize skb in net_tx_action.\n");
+-			kfree_skb(skb);
+-			dev->stats.rx_errors++;
+-			continue;
+-		}
+-
+ 		dev->stats.rx_bytes += skb->len;
+ 		dev->stats.rx_packets++;
+ 
+@@ -1695,6 +1817,13 @@ static int __init netback_init(void)
+ 	if (!is_running_on_xen())
+ 		return -ENODEV;
+ 
++	BUILD_BUG_ON(XEN_NETIF_NR_SLOTS_MIN >= MAX_PENDING_REQS);
++	if (max_tx_slots < XEN_NETIF_NR_SLOTS_MIN) {
++		pr_info("netback: max_tx_slots too small (%u), using XEN_NETIF_NR_SLOTS_MIN (%d)\n",
++			max_tx_slots, XEN_NETIF_NR_SLOTS_MIN);
++		max_tx_slots = XEN_NETIF_NR_SLOTS_MIN;
++	}
++
+ 	/* We can increase reservation by this much in net_rx_action(). */
+ 	balloon_update_driver_allowance(NET_RX_RING_SIZE);
+ 
+--- 12.3.orig/drivers/xen/netfront/netfront.c	2013-06-24 16:46:03.000000000 +0200
++++ 12.3/drivers/xen/netfront/netfront.c	2013-06-24 16:46:35.000000000 +0200
+@@ -83,15 +83,15 @@ struct netfront_cb {
   * For paravirtualised guests, flipping is the default.
   */
  #ifdef CONFIG_XEN
@@ -4004,7 +4479,7 @@ Acked-by: jbeulich@suse.com
  #endif
  
  #define RX_COPY_THRESHOLD 256
-@@ -230,7 +230,7 @@ static void xennet_sysfs_delif(struct ne
+@@ -231,7 +231,7 @@ static void xennet_sysfs_delif(struct ne
  #define xennet_sysfs_delif(dev) do { } while(0)
  #endif
  
@@ -4013,7 +4488,7 @@ Acked-by: jbeulich@suse.com
  {
  	return dev->features & NETIF_F_SG;
  }
-@@ -2036,7 +2036,8 @@ static void network_set_multicast_list(s
+@@ -2048,7 +2048,8 @@ static void network_set_multicast_list(s
  {
  }
  
@@ -4023,7 +4498,7 @@ Acked-by: jbeulich@suse.com
  {
  	struct netfront_info *np = netdev_priv(dev);
  	int val;
-@@ -2062,7 +2063,8 @@ static u32 xennet_fix_features(struct ne
+@@ -2074,7 +2075,8 @@ static u32 xennet_fix_features(struct ne
  	return features;
  }
  
@@ -4033,7 +4508,7 @@ Acked-by: jbeulich@suse.com
  {
  	if (!(features & NETIF_F_SG) && dev->mtu > ETH_DATA_LEN) {
  		netdev_info(dev, "Reducing MTU because no SG offload");
-@@ -2243,7 +2245,7 @@ static int __init netif_init(void)
+@@ -2259,7 +2261,7 @@ static int __init netif_init(void)
  	}
  
  	if (!MODPARM_rx_flip && !MODPARM_rx_copy)
@@ -4085,7 +4560,7 @@ Acked-by: jbeulich@suse.com
  
  	spin_lock_irqsave(&found_psdev->lock, flags);
  	found_psdev->pdev = NULL;
---- 12.3.orig/drivers/xen/scsiback/scsiback.c	2013-02-05 10:55:39.000000000 +0100
+--- 12.3.orig/drivers/xen/scsiback/scsiback.c	2013-06-24 16:45:37.000000000 +0200
 +++ 12.3/drivers/xen/scsiback/scsiback.c	2013-01-25 15:10:30.000000000 +0100
 @@ -56,7 +56,7 @@ static unsigned int vscsiif_reqs = 128;
  module_param_named(reqs, vscsiif_reqs, uint, 0);
@@ -4441,7 +4916,7 @@ Acked-by: jbeulich@suse.com
  /* For xenbus internal use. */
  enum {
  	XENBUS_XSD_UNCOMMITTED = 0,
---- 12.3.orig/drivers/xen/xenbus/xenbus_dev_backend.c	2013-04-16 14:02:56.000000000 +0200
+--- 12.3.orig/drivers/xen/xenbus/xenbus_dev_backend.c	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/drivers/xen/xenbus/xenbus_dev_backend.c	2012-06-13 16:00:49.000000000 +0200
 @@ -7,7 +7,9 @@
  #include <linux/capability.h>
@@ -4495,7 +4970,7 @@ Acked-by: jbeulich@suse.com
 +void xenbus_ring_ops_init(void);
 +
  #endif
---- 12.3.orig/include/linux/pci_ids.h	2013-04-16 14:02:56.000000000 +0200
+--- 12.3.orig/include/linux/pci_ids.h	2014-02-10 15:05:49.000000000 +0100
 +++ 12.3/include/linux/pci_ids.h	2012-06-21 08:31:17.000000000 +0200
 @@ -75,6 +75,7 @@
  #define PCI_CLASS_SYSTEM_RTC		0x0803
@@ -4686,6 +5161,33 @@ Acked-by: jbeulich@suse.com
  typedef struct blkif_request blkif_request_t;
  
  #if !defined(CONFIG_PARAVIRT_XEN) || defined(HAVE_XEN_PLATFORM_COMPAT_H)
+--- 12.3.orig/include/xen/interface/io/netif.h	2013-06-24 16:45:08.000000000 +0200
++++ 12.3/include/xen/interface/io/netif.h	2013-06-24 12:44:23.000000000 +0200
+@@ -31,6 +31,24 @@
+ #include "../grant_table.h"
+ 
+ /*
++ * Older implementation of Xen network frontend / backend has an
++ * implicit dependency on the MAX_SKB_FRAGS as the maximum number of
++ * ring slots a skb can use. Netfront / netback may not work as
++ * expected when frontend and backend have different MAX_SKB_FRAGS.
++ *
++ * A better approach is to add mechanism for netfront / netback to
++ * negotiate this value. However we cannot fix all possible
++ * frontends, so we need to define a value which states the minimum
++ * slots backend must support.
++ *
++ * The minimum value derives from older Linux kernel's MAX_SKB_FRAGS
++ * (18), which is proved to work with most frontends. Any new backend
++ * which doesn't negotiate with frontend should expect frontend to
++ * send a valid packet using slots up to this value.
++ */
++#define XEN_NETIF_NR_SLOTS_MIN 18
++
++/*
+  * Notifications after enqueuing any type of message should be conditional on
+  * the appropriate req_event or rsp_event field in the shared ring.
+  * If the client sends notification for rx requests then it should specify
 --- 12.3.orig/lib/swiotlb-xen.c	2011-07-01 15:19:35.000000000 +0200
 +++ 12.3/lib/swiotlb-xen.c	2012-02-09 12:32:50.000000000 +0100
 @@ -114,11 +114,11 @@ setup_io_tlb_npages(char *str)

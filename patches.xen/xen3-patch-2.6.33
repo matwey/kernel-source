@@ -22,7 +22,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  #include <asm/xen/hypercall.h>
  
  extern struct shared_info *HYPERVISOR_shared_info;
---- 12.3.orig/arch/x86/Kconfig	2012-10-23 15:15:45.000000000 +0200
+--- 12.3.orig/arch/x86/Kconfig	2013-04-16 14:06:07.000000000 +0200
 +++ 12.3/arch/x86/Kconfig	2012-10-23 15:30:35.000000000 +0200
 @@ -25,7 +25,7 @@ config X86
  	select HAVE_IDE
@@ -1885,8 +1885,8 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  #endif
  END(error_entry)
  
---- 12.3.orig/arch/x86/kernel/head-xen.c	2011-09-07 15:59:12.000000000 +0200
-+++ 12.3/arch/x86/kernel/head-xen.c	2011-09-07 16:01:12.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/head-xen.c	2013-05-13 14:00:16.000000000 +0200
++++ 12.3/arch/x86/kernel/head-xen.c	2014-02-10 15:09:13.000000000 +0100
 @@ -1,5 +1,6 @@
  #include <linux/kernel.h>
  #include <linux/init.h>
@@ -1903,15 +1903,19 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  	xen_init_pt();
  #endif
  
-@@ -154,6 +155,8 @@ void __init xen_start_kernel(void)
- 	if (is_initial_xendomain()) {
+@@ -151,8 +152,11 @@ void __init xen_start_kernel(void)
+ 				     virt_to_machine(empty_zero_page),
+ 				     PAGE_KERNEL_RO);
+ 
+-	if (is_initial_xendomain())
++	if (is_initial_xendomain()) {
  		x86_platform.get_wallclock = mach_get_cmos_time;
- 		x86_platform.set_wallclock = mach_set_rtc_mmss;
 +
 +		pci_request_acs();
- 	}
++	}
  }
  
+ void __init xen_arch_setup(void)
 --- 12.3.orig/arch/x86/kernel/head32-xen.c	2011-05-09 11:40:41.000000000 +0200
 +++ 12.3/arch/x86/kernel/head32-xen.c	2011-02-01 14:55:46.000000000 +0100
 @@ -48,8 +48,6 @@ void __init i386_start_kernel(void)
@@ -3397,7 +3401,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  		.procname	= "xen",
  		.mode		= 0555,
  		.child		= xen_subtable
---- 12.3.orig/arch/x86/kernel/traps-xen.c	2012-07-05 11:52:00.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/traps-xen.c	2013-11-27 11:30:32.000000000 +0100
 +++ 12.3/arch/x86/kernel/traps-xen.c	2011-02-01 14:55:46.000000000 +0100
 @@ -522,77 +522,56 @@ asmlinkage __kprobes struct pt_regs *syn
  dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
@@ -3545,7 +3549,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  	  .child = kernel_table2 },
  	{}
  };
---- 12.3.orig/arch/x86/kernel/x8664_ksyms_64.c	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/arch/x86/kernel/x8664_ksyms_64.c	2014-04-08 15:45:32.000000000 +0200
 +++ 12.3/arch/x86/kernel/x8664_ksyms_64.c	2012-10-23 15:30:32.000000000 +0200
 @@ -60,6 +60,6 @@ EXPORT_SYMBOL(__memcpy);
  EXPORT_SYMBOL(memmove);
@@ -4014,7 +4018,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  		.procname = "abi",
  		.mode = 0555,
  		.child = abi_table2
---- 12.3.orig/drivers/gpu/drm/vmwgfx/Kconfig	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/drivers/gpu/drm/vmwgfx/Kconfig	2014-04-08 15:45:32.000000000 +0200
 +++ 12.3/drivers/gpu/drm/vmwgfx/Kconfig	2011-02-01 14:55:46.000000000 +0100
 @@ -1,6 +1,6 @@
  config DRM_VMWGFX
@@ -4456,7 +4460,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  	depends on ACPI
  	depends on HOTPLUG
  	default !X86
---- 12.3.orig/drivers/scsi/Kconfig	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/drivers/scsi/Kconfig	2014-04-08 15:45:32.000000000 +0200
 +++ 12.3/drivers/scsi/Kconfig	2012-08-20 13:12:50.000000000 +0200
 @@ -641,7 +641,7 @@ config SCSI_FLASHPOINT
  
@@ -4606,8 +4610,8 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  #ifdef CONFIG_PM_SLEEP
  static void restore_cpu_virqs(unsigned int cpu)
  {
---- 12.3.orig/drivers/xen/core/spinlock.c	2012-07-26 14:12:17.000000000 +0200
-+++ 12.3/drivers/xen/core/spinlock.c	2012-07-26 14:12:52.000000000 +0200
+--- 12.3.orig/drivers/xen/core/spinlock.c	2014-03-11 10:20:03.000000000 +0100
++++ 12.3/drivers/xen/core/spinlock.c	2013-11-27 11:30:40.000000000 +0100
 @@ -16,7 +16,7 @@
  #include <xen/evtchn.h>
  
@@ -4671,7 +4675,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  
  		if (spinning->irq_count < irq_count)
  			break;
-@@ -224,7 +224,7 @@ void xen_spin_irq_exit(void)
+@@ -226,7 +226,7 @@ void xen_spin_irq_exit(void)
  }
  #endif
  
@@ -4680,16 +4684,16 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  		   unsigned int flags)
  {
  	typeof(vcpu_info(0)->evtchn_upcall_mask) upcall_mask
-@@ -319,7 +319,7 @@ bool xen_spin_wait(raw_spinlock_t *lock,
- 	return false;
+@@ -330,7 +330,7 @@ static inline unsigned int cpumask_cycle
+ 	return nxt;
  }
  
 -void xen_spin_kick(const raw_spinlock_t *lock, unsigned int token)
 +void xen_spin_kick(const arch_spinlock_t *lock, unsigned int token)
  {
- 	unsigned int cpu = raw_smp_processor_id(), anchor = cpu;
+ 	unsigned int local = raw_smp_processor_id(), start, stop = local, cpu;
  
---- 12.3.orig/drivers/xen/evtchn.c	2011-02-01 14:54:13.000000000 +0100
+--- 12.3.orig/drivers/xen/evtchn.c	2013-04-16 14:06:16.000000000 +0200
 +++ 12.3/drivers/xen/evtchn.c	2011-02-01 14:55:46.000000000 +0100
 @@ -48,15 +48,14 @@
  #include <linux/mutex.h>
@@ -4829,7 +4833,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  
  #endif				/* CONFIG_CPU_FREQ */
  
---- 12.3.orig/include/xen/compat_ioctl.h	2010-01-18 15:23:12.000000000 +0100
+--- 12.3.orig/include/xen/compat_ioctl.h	2014-04-08 15:45:32.000000000 +0200
 +++ 12.3/include/xen/compat_ioctl.h	2011-02-01 14:55:46.000000000 +0100
 @@ -29,7 +29,7 @@
  #define xen_pfn32_t __u32
@@ -4870,7 +4874,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  /*
   * Use these to access the event channel underlying the IRQ handle returned
   * by bind_*_to_irqhandler().
---- 12.3.orig/include/xen/xen.h	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/include/xen/xen.h	2014-04-08 15:45:32.000000000 +0200
 +++ 12.3/include/xen/xen.h	2012-10-23 15:29:28.000000000 +0200
 @@ -7,8 +7,10 @@ enum xen_domain_type {
  	XEN_HVM_DOMAIN,		/* running in a Xen hvm domain */
@@ -4911,7 +4915,7 @@ Automatically created from "patches.kernel.org/patch-2.6.33" by xen-port-patches
  
  static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
  			    size_t data_len)
---- 12.3.orig/kernel/ksysfs.c	2013-02-05 10:40:06.000000000 +0100
+--- 12.3.orig/kernel/ksysfs.c	2014-04-08 15:45:32.000000000 +0200
 +++ 12.3/kernel/ksysfs.c	2011-12-02 14:07:10.000000000 +0100
 @@ -107,6 +107,7 @@ static ssize_t kexec_crash_size_show(str
  {

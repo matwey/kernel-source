@@ -1,0 +1,41 @@
+From 2fb0815c9ee6b9ac50e15dd8360ec76d9fa46a22 Mon Sep 17 00:00:00 2001
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Mon, 29 Apr 2013 16:17:15 -0700
+Subject: gcc4: disable __compiletime_object_size for GCC 4.6+
+Git-commit: 2fb0815c9ee6b9ac50e15dd8360ec76d9fa46a22
+Patch-mainline: v3.10-rc1
+References: bnc#837258
+
+__builtin_object_size is known to be broken on gcc 4.6+.
+See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=48880 for details.
+
+This causes unnecssary build warnings and errors such as
+
+  In function 'copy_from_user', inlined from 'sb16_copy_from_user'
+	at sound/oss/sb_audio.c:878:22:
+  arch/x86/include/asm/uaccess_32.h:211:26: error: call to 'copy_from_user_overflow'
+	declared with attribute error: copy_from_user() buffer size is not provably correct
+  make[3]: [sound/oss/sb_audio.o] Error 1 (ignored)
+
+Disable it where broken.
+
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Cc: David Howells <dhowells@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Acked-by: Jeff Mahoney <jeffm@suse.com>
+---
+ include/linux/compiler-gcc4.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/linux/compiler-gcc4.h	2013-09-27 16:03:14.459543588 -0400
++++ b/include/linux/compiler-gcc4.h	2013-09-27 16:03:24.935393786 -0400
+@@ -56,7 +56,7 @@
+ #define __visible __attribute__((externally_visible))
+ #endif
+ 
+-#if __GNUC_MINOR__ > 0
++#if GCC_VERSION >= 40100 && GCC_VERSION < 40600
+ #define __compiletime_object_size(obj) __builtin_object_size(obj, 0)
+ #endif
+ #if __GNUC_MINOR__ >= 3 && !defined(__CHECKER__)

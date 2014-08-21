@@ -187,7 +187,7 @@ Acked-by: jbeulich@novell.com
  disabled-obj-$(CONFIG_XEN_UNPRIVILEGED_GUEST) += mpparse_64.o
 -%/head_64.o %/head_64.s: $(if $(CONFIG_XEN),EXTRA_AFLAGS,dummy) :=
 +%/head_64.o %/head_64.s: asflags-$(CONFIG_XEN) :=
---- 12.3.orig/arch/x86/kernel/acpi/processor_extcntl_xen.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/acpi/processor_extcntl_xen.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/kernel/acpi/processor_extcntl_xen.c	2011-01-31 17:56:27.000000000 +0100
 @@ -68,7 +68,7 @@ static int xen_cx_notifier(struct acpi_p
  
@@ -207,7 +207,7 @@ Acked-by: jbeulich@novell.com
  		kfree(buf);
  		return -EINVAL;
  	}
---- 12.3.orig/arch/x86/kernel/cpu/Makefile	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/cpu/Makefile	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/kernel/cpu/Makefile	2012-08-20 10:38:35.000000000 +0200
 @@ -42,6 +42,8 @@ obj-$(CONFIG_MTRR)			+= mtrr/
  
@@ -239,7 +239,7 @@ Acked-by: jbeulich@novell.com
  	c->x86_clflush_size = 32;
  	memset(&c->x86_capability, 0, sizeof c->x86_capability);
  
---- 12.3.orig/arch/x86/kernel/cpu/intel.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/cpu/intel.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/kernel/cpu/intel.c	2012-02-08 11:36:23.000000000 +0100
 @@ -302,6 +302,7 @@ static void __cpuinit srat_detect_node(s
  #endif
@@ -661,7 +661,7 @@ Acked-by: jbeulich@novell.com
  	call do_exit
  	CFI_ENDPROC
  ENDPROC(child_rip)
---- 12.3.orig/arch/x86/kernel/fixup.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/fixup.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/kernel/fixup.c	2011-01-31 17:56:27.000000000 +0100
 @@ -34,7 +34,7 @@
  #include <linux/delay.h>
@@ -4059,7 +4059,7 @@ Acked-by: jbeulich@novell.com
  {
  	memset(pmd, 0, PTRS_PER_PMD*sizeof(pmd_t));
  }
---- 12.3.orig/arch/x86/pci/pcifront.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/pci/pcifront.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/pci/pcifront.c	2011-01-31 17:56:27.000000000 +0100
 @@ -31,7 +31,7 @@ static int __init pcifront_x86_stub_init
  	if (raw_pci_ops)
@@ -4070,7 +4070,7 @@ Acked-by: jbeulich@novell.com
  
  	/* Copied from arch/i386/pci/common.c */
  	pci_cache_line_size = 32 >> 2;
---- 12.3.orig/drivers/acpi/processor_core.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/acpi/processor_core.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/acpi/processor_core.c	2012-07-25 09:16:30.000000000 +0200
 @@ -201,11 +201,21 @@ int acpi_get_cpuid(acpi_handle handle, i
  	}
@@ -4136,7 +4136,7 @@ Acked-by: jbeulich@novell.com
  
  
  static inline int
---- 12.3.orig/drivers/cpuidle/Kconfig	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/cpuidle/Kconfig	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/cpuidle/Kconfig	2012-02-29 10:35:17.000000000 +0100
 @@ -1,6 +1,7 @@
  
@@ -4146,7 +4146,7 @@ Acked-by: jbeulich@novell.com
  	default y if ACPI || PPC_PSERIES
  	help
  	  CPU idle is a generic framework for supporting software-controlled
---- 12.3.orig/drivers/dma/Kconfig	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/dma/Kconfig	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/dma/Kconfig	2012-08-20 10:38:08.000000000 +0200
 @@ -62,7 +62,7 @@ config INTEL_IOATDMA
  	tristate "Intel I/OAT DMA support"
@@ -4157,14 +4157,14 @@ Acked-by: jbeulich@novell.com
  	select ASYNC_TX_DISABLE_PQ_VAL_DMA
  	select ASYNC_TX_DISABLE_XOR_VAL_DMA
  	help
---- 12.3.orig/drivers/dma/ioat/Makefile	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/dma/ioat/Makefile	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/dma/ioat/Makefile	2011-01-31 17:56:27.000000000 +0100
 @@ -1,2 +1,3 @@
  obj-$(CONFIG_INTEL_IOATDMA) += ioatdma.o
 -ioatdma-y := pci.o dma.o dma_v2.o dma_v3.o dca.o
 +dca-$(CONFIG_DCA) := dca.o
 +ioatdma-y := pci.o dma.o dma_v2.o dma_v3.o $(dca-y) $(dca-m)
---- 12.3.orig/drivers/dma/ioat/dca.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/dma/ioat/dca.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/dma/ioat/dca.c	2011-01-31 17:56:27.000000000 +0100
 @@ -682,3 +682,15 @@ ioat3_dca_init(struct pci_dev *pdev, voi
  
@@ -4182,7 +4182,7 @@ Acked-by: jbeulich@novell.com
 +	free_dca_provider(device->dca);
 +	device->dca = NULL;
 +}
---- 12.3.orig/drivers/dma/ioat/dma.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/dma/ioat/dma.h	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/dma/ioat/dma.h	2012-04-10 16:38:51.000000000 +0200
 @@ -324,4 +324,22 @@ void ioat_kobject_del(struct ioatdma_dev
  extern const struct sysfs_ops ioat_sysfs_ops;
@@ -4207,7 +4207,7 @@ Acked-by: jbeulich@novell.com
 +#endif
 +
  #endif /* IOATDMA_H */
---- 12.3.orig/drivers/dma/ioat/pci.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/dma/ioat/pci.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/dma/ioat/pci.c	2012-10-23 14:53:42.000000000 +0200
 @@ -29,7 +29,6 @@
  #include <linux/module.h>
@@ -4435,8 +4435,8 @@ Acked-by: jbeulich@novell.com
  	return NOTIFY_DONE;
  }
 --- 12.3.orig/drivers/xen/blkback/blkback.c	2012-03-26 12:21:55.000000000 +0200
-+++ 12.3/drivers/xen/blkback/blkback.c	2013-02-05 10:51:48.000000000 +0100
-@@ -278,13 +278,10 @@ static void __end_block_io_op(pending_re
++++ 12.3/drivers/xen/blkback/blkback.c	2013-06-24 16:38:54.000000000 +0200
+@@ -288,13 +288,10 @@ static void __end_block_io_op(pending_re
  	}
  }
  
@@ -4451,7 +4451,22 @@ Acked-by: jbeulich@novell.com
  }
  
  
-@@ -663,7 +660,7 @@ static int __init blkif_init(void)
+@@ -333,10 +330,10 @@ static int _do_block_io_op(blkif_t *blki
+ 
+ 	if (RING_REQUEST_PROD_OVERFLOW(&blk_rings->common, rp)) {
+ 		rc = blk_rings->common.rsp_prod_pvt;
+-		printk(KERN_WARNING "blkback:"
+-		       " Dom%d provided bogus ring requests (%#x - %#x = %u)."
+-		       " Halting ring processing on dev=%04x\n",
+-		       blkif->domid, rp, rc, rp - rc, blkif->vbd.pdevice);
++		pr_warning("blkback:"
++			   " Dom%d provided bogus ring requests (%#x - %#x = %u)."
++			   " Halting ring processing on dev=%04x\n",
++			   blkif->domid, rp, rc, rp - rc, blkif->vbd.pdevice);
+ 		return -EACCES;
+ 	}
+ 
+@@ -682,7 +679,7 @@ static int __init blkif_init(void)
  	kfree(pending_reqs);
  	kfree(pending_grant_handles);
  	free_empty_pages_and_pagevec(pending_pages, mmap_pages);
@@ -4460,7 +4475,7 @@ Acked-by: jbeulich@novell.com
  	return -ENOMEM;
  }
  
---- 12.3.orig/drivers/xen/blkback/blkback-pagemap.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/blkback/blkback-pagemap.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/blkback/blkback-pagemap.c	2011-01-31 17:56:27.000000000 +0100
 @@ -38,8 +38,8 @@ blkback_pagemap_set(int idx, struct page
  
@@ -4491,7 +4506,7 @@ Acked-by: jbeulich@novell.com
  		BUG();
  	}
  
---- 12.3.orig/drivers/xen/blkback/vbd.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/blkback/vbd.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/blkback/vbd.c	2011-06-30 16:32:27.000000000 +0200
 @@ -133,18 +133,18 @@ void vbd_resize(blkif_t *blkif)
  	struct xenbus_device *dev = blkif->be->dev;
@@ -4736,8 +4751,8 @@ Acked-by: jbeulich@novell.com
  }
  #endif
 --- 12.3.orig/drivers/xen/blktap/blktap.c	2011-01-31 17:32:16.000000000 +0100
-+++ 12.3/drivers/xen/blktap/blktap.c	2012-01-06 10:44:12.000000000 +0100
-@@ -794,8 +794,8 @@ static int blktap_ioctl(struct inode *in
++++ 12.3/drivers/xen/blktap/blktap.c	2013-06-24 16:38:18.000000000 +0200
+@@ -795,8 +795,8 @@ static int blktap_ioctl(struct inode *in
  	case BLKTAP_IOCTL_PRINT_IDXS:
          {
  		if (info) {
@@ -4748,6 +4763,21 @@ Acked-by: jbeulich@novell.com
  				"| req_prod: %2d, rsp_prod: %2d\n",
  				info->ufe_ring.rsp_cons,
  				info->ufe_ring.req_prod_pvt,
+@@ -1333,10 +1333,10 @@ static int _do_block_io_op(blkif_t *blki
+ 
+ 	if (RING_REQUEST_PROD_OVERFLOW(&blk_rings->common, rp)) {
+ 		rc = blk_rings->common.rsp_prod_pvt;
+-		printk(KERN_WARNING "blktap:"
+-		       " Dom%d provided bogus ring requests (%#x - %#x = %u)."
+-		       " Halting ring processing on tap%d\n",
+-		       blkif->domid, rp, rc, rp - rc, info->minor);
++		pr_warning("blktap:"
++			   " Dom%d provided bogus ring requests (%#x - %#x = %u)."
++			   " Halting ring processing on tap%d\n",
++			   blkif->domid, rp, rc, rp - rc, info->minor);
+ 		return -EACCES;
+ 	}
+ 
 --- 12.3.orig/drivers/xen/blktap/common.h	2013-02-05 10:47:33.000000000 +0100
 +++ 12.3/drivers/xen/blktap/common.h	2013-02-05 10:51:47.000000000 +0100
 @@ -41,8 +41,7 @@
@@ -4760,9 +4790,9 @@ Acked-by: jbeulich@novell.com
  
  struct backend_info;
  
---- 12.3.orig/drivers/xen/blktap/xenbus.c	2012-02-16 12:30:42.000000000 +0100
-+++ 12.3/drivers/xen/blktap/xenbus.c	2012-04-04 10:19:53.000000000 +0200
-@@ -354,8 +354,8 @@ static void tap_frontend_changed(struct 
+--- 12.3.orig/drivers/xen/blktap/xenbus.c	2013-06-24 16:36:11.000000000 +0200
++++ 12.3/drivers/xen/blktap/xenbus.c	2013-06-24 16:38:33.000000000 +0200
+@@ -358,8 +358,8 @@ static void tap_frontend_changed(struct 
  	switch (frontend_state) {
  	case XenbusStateInitialising:
  		if (dev->state == XenbusStateClosed) {
@@ -4773,7 +4803,7 @@ Acked-by: jbeulich@novell.com
  			xenbus_switch_state(dev, XenbusStateInitWait);
  		}
  		break;
-@@ -457,10 +457,9 @@ static int connect_ring(struct backend_i
+@@ -461,10 +461,9 @@ static int connect_ring(struct backend_i
  		kfree(protocol);
  		return -1;
  	}
@@ -4854,7 +4884,7 @@ Acked-by: jbeulich@novell.com
  
 --- 12.3.orig/drivers/xen/console/console.c	2013-02-05 10:47:19.000000000 +0100
 +++ 12.3/drivers/xen/console/console.c	2013-02-05 10:51:54.000000000 +0100
-@@ -704,10 +704,10 @@ static int __init xencons_init(void)
+@@ -705,10 +705,10 @@ static int __init xencons_init(void)
  	tty_set_operations(xencons_driver, &xencons_ops);
  
  	if ((rc = tty_register_driver(DRV(xencons_driver))) != 0) {
@@ -4869,7 +4899,7 @@ Acked-by: jbeulich@novell.com
  		put_tty_driver(xencons_driver);
  		xencons_driver = NULL;
  		return rc;
-@@ -724,8 +724,8 @@ static int __init xencons_init(void)
+@@ -725,8 +725,8 @@ static int __init xencons_init(void)
  		BUG_ON(xencons_priv_irq < 0);
  	}
  
@@ -4891,7 +4921,7 @@ Acked-by: jbeulich@novell.com
  		return irq;
  	}
  
---- 12.3.orig/drivers/xen/core/cpu_hotplug.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/core/cpu_hotplug.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/core/cpu_hotplug.c	2013-01-25 14:08:38.000000000 +0100
 @@ -36,7 +36,7 @@ static void vcpu_hotplug(unsigned int cp
  	sprintf(dir, "cpu/%u", cpu);
@@ -4976,7 +5006,7 @@ Acked-by: jbeulich@novell.com
  		       irq, type_from_irq(irq), index_from_irq(irq), xen_pirq);
  		return -EINVAL;
  	}
---- 12.3.orig/drivers/xen/core/firmware.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/core/firmware.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/core/firmware.c	2012-06-12 15:13:59.000000000 +0200
 @@ -1,4 +1,5 @@
  #include <linux/kernel.h>
@@ -5531,8 +5561,8 @@ Acked-by: jbeulich@novell.com
  	.get_ethtool_stats = netbk_get_ethtool_stats,
  	.get_strings = netbk_get_strings,
  };
---- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:15:20.000000000 +0100
-+++ 12.3/drivers/xen/netback/netback.c	2013-02-18 12:15:37.000000000 +0100
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-06-24 16:35:31.000000000 +0200
++++ 12.3/drivers/xen/netback/netback.c	2013-06-24 16:41:35.000000000 +0200
 @@ -364,8 +364,8 @@ static void xen_network_done_notify(void
  {
  	static struct net_device *eth0_dev = NULL;
@@ -5544,7 +5574,99 @@ Acked-by: jbeulich@novell.com
  }
  /* 
   * Add following to poll() function in NAPI driver (Tigon3 is example):
-@@ -1643,28 +1643,30 @@ static irqreturn_t netif_be_dbg(int irq,
+@@ -1024,8 +1024,7 @@ static void netbk_tx_err(netif_t *netif,
+ 
+ static void netbk_fatal_tx_err(netif_t *netif)
+ {
+-	printk(KERN_ERR "%s: fatal error; disabling device\n",
+-	       netif->dev->name);
++	pr_err("%s: fatal error; disabling device\n", netif->dev->name);
+ 	netif->busted = 1;
+ 	disable_irq(netif->irq);
+ 	netif_deschedule_work(netif);
+@@ -1043,15 +1042,13 @@ static int netbk_count_requests(netif_t 
+ 
+ 	do {
+ 		if (frags >= work_to_do) {
+-			printk(KERN_ERR "%s: Need more frags\n",
+-			       netif->dev->name);
++			pr_err("%s: Need more frags\n", netif->dev->name);
+ 			netbk_fatal_tx_err(netif);
+ 			return -ENODATA;
+ 		}
+ 
+ 		if (unlikely(frags >= MAX_SKB_FRAGS)) {
+-			printk(KERN_ERR "%s: Too many frags\n",
+-			       netif->dev->name);
++			pr_err("%s: Too many frags\n", netif->dev->name);
+ 			netbk_fatal_tx_err(netif);
+ 			return -E2BIG;
+ 		}
+@@ -1080,7 +1077,7 @@ static int netbk_count_requests(netif_t 
+ 		frags++;
+ 
+ 		if (unlikely((txp->offset + txp->size) > PAGE_SIZE)) {
+-			printk(KERN_ERR "%s: txp->offset: %x, size: %u\n",
++			pr_err("%s: txp->offset: %x, size: %u\n",
+ 			       netif->dev->name, txp->offset, txp->size);
+ 			netbk_fatal_tx_err(netif);
+ 			return -EINVAL;
+@@ -1230,8 +1227,7 @@ int netbk_get_extras(netif_t *netif, str
+ 
+ 	do {
+ 		if (unlikely(work_to_do-- <= 0)) {
+-			printk(KERN_ERR "%s: Missing extra info\n",
+-			       netif->dev->name);
++			pr_err("%s: Missing extra info\n", netif->dev->name);
+ 			netbk_fatal_tx_err(netif);
+ 			return -EBADR;
+ 		}
+@@ -1241,7 +1237,7 @@ int netbk_get_extras(netif_t *netif, str
+ 		if (unlikely(!extra.type ||
+ 			     extra.type >= XEN_NETIF_EXTRA_TYPE_MAX)) {
+ 			netif->tx.req_cons = ++cons;
+-			printk(KERN_ERR "%s: Invalid extra type: %d\n",
++			pr_err("%s: Invalid extra type: %d\n",
+ 			       netif->dev->name, extra.type);
+ 			netbk_fatal_tx_err(netif);
+ 			return -EINVAL;
+@@ -1258,7 +1254,7 @@ static int netbk_set_skb_gso(netif_t *ne
+ 			     struct netif_extra_info *gso)
+ {
+ 	if (!gso->u.gso.size) {
+-		printk(KERN_ERR "%s: GSO size must not be zero.\n",
++		pr_err("%s: GSO size must not be zero.\n",
+ 		       netif->dev->name);
+ 		netbk_fatal_tx_err(netif);
+ 		return -EINVAL;
+@@ -1266,7 +1262,7 @@ static int netbk_set_skb_gso(netif_t *ne
+ 
+ 	/* Currently only TCPv4 S.O. is supported. */
+ 	if (gso->u.gso.type != XEN_NETIF_GSO_TYPE_TCPV4) {
+-		printk(KERN_ERR "%s: Bad GSO type %d.\n",
++		pr_err("%s: Bad GSO type %d.\n",
+ 		       netif->dev->name, gso->u.gso.type);
+ 		netbk_fatal_tx_err(netif);
+ 		return -EINVAL;
+@@ -1319,7 +1315,7 @@ static void net_tx_action(unsigned long 
+ 
+ 		if (netif->tx.sring->req_prod - netif->tx.req_cons >
+ 		    NET_TX_RING_SIZE) {
+-			printk(KERN_ERR "%s: Impossible number of requests. "
++			pr_err("%s: Impossible number of requests. "
+ 			       "req_prod %u, req_cons %u, size %lu\n",
+ 			       netif->dev->name, netif->tx.sring->req_prod,
+ 			       netif->tx.req_cons, NET_TX_RING_SIZE);
+@@ -1396,7 +1392,7 @@ static void net_tx_action(unsigned long 
+ 
+ 		/* No crossing a page as the payload mustn't fragment. */
+ 		if (unlikely((txreq.offset + txreq.size) > PAGE_SIZE)) {
+-			printk(KERN_ERR "%s: txreq.offset: %x, size: %u, end: %lu\n",
++			pr_err("%s: txreq.offset: %x, size: %u, end: %lu\n",
+ 			       netif->dev->name, txreq.offset, txreq.size,
+ 			       (txreq.offset & ~PAGE_MASK) + txreq.size);
+ 			netbk_fatal_tx_err(netif);
+@@ -1659,28 +1655,30 @@ static irqreturn_t netif_be_dbg(int irq,
  	netif_t *netif;
  	int i = 0;
  
@@ -5589,7 +5711,7 @@ Acked-by: jbeulich@novell.com
  
  	return IRQ_HANDLED;
  }
-@@ -1694,7 +1696,7 @@ static int __init netback_init(void)
+@@ -1710,7 +1708,7 @@ static int __init netback_init(void)
  
  	mmap_pages = alloc_empty_pages_and_pagevec(MAX_PENDING_REQS);
  	if (mmap_pages == NULL) {
@@ -5701,9 +5823,9 @@ Acked-by: jbeulich@novell.com
  }
  
  
---- 12.3.orig/drivers/xen/netfront/netfront.c	2012-12-18 11:57:55.000000000 +0100
-+++ 12.3/drivers/xen/netfront/netfront.c	2012-12-18 12:04:18.000000000 +0100
-@@ -206,10 +206,8 @@ static inline grant_ref_t xennet_get_rx_
+--- 12.3.orig/drivers/xen/netfront/netfront.c	2013-06-24 16:35:24.000000000 +0200
++++ 12.3/drivers/xen/netfront/netfront.c	2013-06-24 16:39:41.000000000 +0200
+@@ -207,10 +207,8 @@ static inline grant_ref_t xennet_get_rx_
  #define DPRINTK(fmt, args...)				\
  	pr_debug("netfront (%s:%d) " fmt,		\
  		 __FUNCTION__, __LINE__, ##args)
@@ -5716,7 +5838,7 @@ Acked-by: jbeulich@novell.com
  
  static int setup_device(struct xenbus_device *, struct netfront_info *);
  static struct net_device *create_netdev(struct xenbus_device *);
-@@ -262,16 +260,16 @@ static int __devinit netfront_probe(stru
+@@ -263,16 +261,16 @@ static int __devinit netfront_probe(stru
  
  	err = register_netdev(info->netdev);
  	if (err) {
@@ -5737,7 +5859,7 @@ Acked-by: jbeulich@novell.com
  		goto fail;
  	}
  
-@@ -627,11 +625,12 @@ int netfront_check_queue_ready(struct ne
+@@ -628,11 +626,12 @@ int netfront_check_queue_ready(struct ne
  }
  EXPORT_SYMBOL(netfront_check_queue_ready);
  
@@ -5751,7 +5873,7 @@ Acked-by: jbeulich@novell.com
  	spin_lock_bh(&np->rx_lock);
  	if (netfront_carrier_ok(np)) {
  		network_alloc_rx_buffers(dev);
-@@ -639,7 +638,7 @@ static int network_open(struct net_devic
+@@ -640,7 +639,7 @@ static int network_open(struct net_devic
  		if (RING_HAS_UNCONSUMED_RESPONSES(&np->rx)){
  			netfront_accelerator_call_stop_napi_irq(np, dev);
  
@@ -5760,7 +5882,7 @@ Acked-by: jbeulich@novell.com
  		}
  	}
  	spin_unlock_bh(&np->rx_lock);
-@@ -673,9 +672,8 @@ static void network_tx_buf_gc(struct net
+@@ -674,9 +673,8 @@ static void network_tx_buf_gc(struct net
  			skb = np->tx_skbs[id];
  			if (unlikely(gnttab_query_foreign_access(
  				np->grant_tx_ref[id]) != 0)) {
@@ -5772,7 +5894,7 @@ Acked-by: jbeulich@novell.com
  				BUG();
  			}
  			gnttab_end_foreign_access_ref(np->grant_tx_ref[id]);
-@@ -711,7 +709,7 @@ static void rx_refill_timeout(unsigned l
+@@ -712,7 +710,7 @@ static void rx_refill_timeout(unsigned l
  
  	netfront_accelerator_call_stop_napi_irq(np, dev);
  
@@ -5781,7 +5903,16 @@ Acked-by: jbeulich@novell.com
  }
  
  static void network_alloc_rx_buffers(struct net_device *dev)
-@@ -962,8 +960,7 @@ static int network_start_xmit(struct sk_
+@@ -966,15 +964,14 @@ static int network_start_xmit(struct sk_
+ 	 * user about misconfiguration.
+ 	 */
+ 	if (unlikely(skb->len > XEN_NETIF_MAX_TX_SIZE)) {
+-		printk(KERN_ALERT "xennet: length %u too big for interface\n",
+-		       skb->len);
++		pr_alert("xennet: length %u too big for interface\n",
++			 skb->len);
+ 		goto drop;
+ 	}
  
  	frags += PFN_UP(offset + len);
  	if (unlikely(frags > MAX_SKB_FRAGS + 1)) {
@@ -5791,7 +5922,7 @@ Acked-by: jbeulich@novell.com
  		dump_stack();
  		goto drop;
  	}
-@@ -1066,7 +1063,7 @@ static irqreturn_t netif_int(int irq, vo
+@@ -1077,7 +1074,7 @@ static irqreturn_t netif_int(int irq, vo
  		if (RING_HAS_UNCONSUMED_RESPONSES(&np->rx)) {
  			netfront_accelerator_call_stop_napi_irq(np, dev);
  
@@ -5800,7 +5931,7 @@ Acked-by: jbeulich@novell.com
  			dev->last_rx = jiffies;
  		}
  	}
-@@ -1319,15 +1316,16 @@ static int xennet_set_skb_gso(struct sk_
+@@ -1330,15 +1327,16 @@ static int xennet_set_skb_gso(struct sk_
  #endif
  }
  
@@ -5820,7 +5951,7 @@ Acked-by: jbeulich@novell.com
  	struct sk_buff_head rxq;
  	struct sk_buff_head errq;
  	struct sk_buff_head tmpq;
-@@ -1347,8 +1345,6 @@ static int netif_poll(struct net_device 
+@@ -1358,8 +1356,6 @@ static int netif_poll(struct net_device 
  	skb_queue_head_init(&errq);
  	skb_queue_head_init(&tmpq);
  
@@ -5829,7 +5960,7 @@ Acked-by: jbeulich@novell.com
  	rp = np->rx.sring->rsp_prod;
  	rmb(); /* Ensure we see queued responses up to 'rp'. */
  
-@@ -1507,9 +1503,6 @@ err:	
+@@ -1518,9 +1514,6 @@ err:	
  			accel_more_to_do = 0;
  	}
  
@@ -5839,7 +5970,7 @@ Acked-by: jbeulich@novell.com
  	if (work_done < budget) {
  		local_irq_save(flags);
  
-@@ -1526,14 +1519,14 @@ err:	
+@@ -1537,14 +1530,14 @@ err:	
  		}
  
  		if (!more_to_do && !accel_more_to_do)
@@ -5856,7 +5987,7 @@ Acked-by: jbeulich@novell.com
  }
  
  static void netif_release_tx_bufs(struct netfront_info *np)
-@@ -1676,6 +1669,7 @@ static int network_close(struct net_devi
+@@ -1687,6 +1680,7 @@ static int network_close(struct net_devi
  {
  	struct netfront_info *np = netdev_priv(dev);
  	netif_stop_queue(np->netdev);
@@ -5864,7 +5995,7 @@ Acked-by: jbeulich@novell.com
  	return 0;
  }
  
-@@ -1777,9 +1771,13 @@ static const struct xennet_stat {
+@@ -1789,9 +1783,13 @@ static const struct xennet_stat {
  	},
  };
  
@@ -5880,7 +6011,7 @@ Acked-by: jbeulich@novell.com
  }
  
  static void xennet_get_ethtool_stats(struct net_device *dev,
-@@ -1931,7 +1929,7 @@ static struct ethtool_ops network_ethtoo
+@@ -1943,7 +1941,7 @@ static struct ethtool_ops network_ethtoo
  #endif
  	.get_link = ethtool_op_get_link,
  
@@ -5889,7 +6020,7 @@ Acked-by: jbeulich@novell.com
  	.get_ethtool_stats = xennet_get_ethtool_stats,
  	.get_strings = xennet_get_strings,
  };
-@@ -2081,8 +2079,7 @@ static struct net_device * __devinit cre
+@@ -2093,8 +2091,7 @@ static struct net_device * __devinit cre
  
  	netdev = alloc_etherdev(sizeof(struct netfront_info));
  	if (!netdev) {
@@ -5899,7 +6030,7 @@ Acked-by: jbeulich@novell.com
  		return ERR_PTR(-ENOMEM);
  	}
  
-@@ -2117,14 +2114,14 @@ static struct net_device * __devinit cre
+@@ -2129,14 +2126,14 @@ static struct net_device * __devinit cre
  	/* A grant for every tx ring slot */
  	if (gnttab_alloc_grant_references(TX_MAX_TARGET,
  					  &np->gref_tx_head) < 0) {
@@ -5916,7 +6047,7 @@ Acked-by: jbeulich@novell.com
  		err = -ENOMEM;
  		goto exit_free_tx;
  	}
-@@ -2133,16 +2130,14 @@ static struct net_device * __devinit cre
+@@ -2145,16 +2142,14 @@ static struct net_device * __devinit cre
  	netdev->hard_start_xmit = network_start_xmit;
  	netdev->stop            = network_close;
  	netdev->get_stats       = network_get_stats;
@@ -5933,7 +6064,7 @@ Acked-by: jbeulich@novell.com
 -	SET_MODULE_OWNER(netdev);
  	SET_NETDEV_DEV(netdev, &dev->dev);
  
- 	np->netdev = netdev;
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26)
 --- 12.3.orig/drivers/xen/netfront/netfront.h	2012-06-06 13:49:51.000000000 +0200
 +++ 12.3/drivers/xen/netfront/netfront.h	2012-06-06 13:55:57.000000000 +0200
 @@ -156,6 +156,8 @@ struct netfront_info {
@@ -5945,7 +6076,7 @@ Acked-by: jbeulich@novell.com
  	unsigned int irq;
  	unsigned int copying_receiver;
  	unsigned int carrier;
---- 12.3.orig/drivers/xen/xen-pciback/slot.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/xen-pciback/slot.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/xen-pciback/slot.c	2011-01-31 17:56:27.000000000 +0100
 @@ -64,9 +64,9 @@ int pciback_add_pci_dev(struct pciback_d
  	for (bus = 0; bus < PCI_BUS_NBR; bus++)
@@ -5960,7 +6091,7 @@ Acked-by: jbeulich@novell.com
  				slot_dev->slots[bus][slot] = dev;
  				goto unlock;
  			}
---- 12.3.orig/drivers/xen/pcifront/Makefile	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/pcifront/Makefile	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/pcifront/Makefile	2011-01-31 17:56:27.000000000 +0100
 @@ -2,6 +2,4 @@ obj-y += pcifront.o
  
@@ -6076,9 +6207,9 @@ Acked-by: jbeulich@novell.com
  		goto fail;
  	}
  
---- 12.3.orig/drivers/xen/scsiback/interface.c	2011-04-11 14:52:22.000000000 +0200
-+++ 12.3/drivers/xen/scsiback/interface.c	2011-04-11 15:00:59.000000000 +0200
-@@ -68,7 +68,7 @@ int scsiback_init_sring(struct vscsibk_i
+--- 12.3.orig/drivers/xen/scsiback/interface.c	2013-06-24 16:36:02.000000000 +0200
++++ 12.3/drivers/xen/scsiback/interface.c	2013-06-24 16:37:47.000000000 +0200
+@@ -69,7 +69,7 @@ int scsiback_init_sring(struct vscsibk_i
  	int err;
  
  	if (info->irq) {
@@ -6087,7 +6218,7 @@ Acked-by: jbeulich@novell.com
  		return -1;
  	}
  
-@@ -128,7 +128,7 @@ int __init scsiback_interface_init(void)
+@@ -130,7 +130,7 @@ int __init scsiback_interface_init(void)
  	scsiback_cachep = kmem_cache_create("vscsiif_cache",
  		sizeof(struct vscsibk_info), 0, 0, NULL);
  	if (!scsiback_cachep) {
@@ -6097,7 +6228,7 @@ Acked-by: jbeulich@novell.com
  	}
  	
 --- 12.3.orig/drivers/xen/scsiback/scsiback.c	2013-01-25 14:06:09.000000000 +0100
-+++ 12.3/drivers/xen/scsiback/scsiback.c	2013-01-28 15:55:41.000000000 +0100
++++ 12.3/drivers/xen/scsiback/scsiback.c	2013-06-24 16:38:04.000000000 +0200
 @@ -194,14 +194,10 @@ static void scsiback_print_status(char *
  {
  	struct scsi_device *sdev = pending_req->sdev;
@@ -6255,7 +6386,22 @@ Acked-by: jbeulich@novell.com
  			return;
  		}
  	}
-@@ -614,7 +600,7 @@ static int _scsiback_do_cmd_fn(struct vs
+@@ -589,10 +575,10 @@ static int _scsiback_do_cmd_fn(struct vs
+ 
+ 	if (RING_REQUEST_PROD_OVERFLOW(ring, rp)) {
+ 		rc = ring->rsp_prod_pvt;
+-		printk(KERN_WARNING "scsiback:"
+-		       " Dom%d provided bogus ring requests (%#x - %#x = %u)."
+-		       " Halting ring processing\n",
+-		       info->domid, rp, rc, rp - rc);
++		pr_warning("scsiback:"
++			   " Dom%d provided bogus ring requests (%#x - %#x = %u)."
++			   " Halting ring processing\n",
++			   info->domid, rp, rc, rp - rc);
+ 		return -EACCES;
+ 	}
+ 
+@@ -623,7 +609,7 @@ static int _scsiback_do_cmd_fn(struct vs
  			break;
  		default:
  			if(!err && printk_ratelimit())
@@ -6264,7 +6410,7 @@ Acked-by: jbeulich@novell.com
  			scsiback_do_resp_with_sense(NULL, DRIVER_ERROR << 24,
  						    0, pending_req);
  			break;
-@@ -717,7 +703,7 @@ out_of_memory:
+@@ -736,7 +722,7 @@ out_of_memory:
  	kfree(pending_reqs);
  	kfree(pending_grant_handles);
  	free_empty_pages_and_pagevec(pending_pages, mmap_pages);
@@ -6273,7 +6419,7 @@ Acked-by: jbeulich@novell.com
  	return -ENOMEM;
  }
  
---- 12.3.orig/drivers/xen/scsiback/translate.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/scsiback/translate.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/scsiback/translate.c	2011-01-31 17:56:27.000000000 +0100
 @@ -62,8 +62,8 @@ int scsiback_add_translation_entry(struc
  		if ((entry->v.chn == v->chn) &&
@@ -6295,7 +6441,7 @@ Acked-by: jbeulich@novell.com
  		err = -ENOMEM;
  		goto out;
  	}
---- 12.3.orig/drivers/xen/scsiback/xenbus.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/scsiback/xenbus.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/scsiback/xenbus.c	2011-06-30 16:32:56.000000000 +0200
 @@ -101,14 +101,13 @@ struct scsi_device *scsiback_get_scsi_de
  
@@ -6473,7 +6619,7 @@ Acked-by: jbeulich@novell.com
  
  		spin_lock_irqsave(&fwd_set->fwd_lock, flags);
  		/*
---- 12.3.orig/drivers/xen/sfc_netback/accel_msg.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/sfc_netback/accel_msg.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/sfc_netback/accel_msg.c	2011-01-31 17:56:27.000000000 +0100
 @@ -57,11 +57,11 @@ static void netback_accel_msg_tx_localma
  {
@@ -6599,7 +6745,7 @@ Acked-by: jbeulich@novell.com
  
  		if (ip->protocol == IPPROTO_TCP) {
  			struct tcphdr *tcp = (struct tcphdr *)
---- 12.3.orig/drivers/xen/sfc_netutil/accel_msg_iface.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/sfc_netutil/accel_msg_iface.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/sfc_netutil/accel_msg_iface.c	2011-01-31 17:56:27.000000000 +0100
 @@ -36,7 +36,7 @@
  #else
@@ -6610,7 +6756,7 @@ Acked-by: jbeulich@novell.com
  		       __FUNCTION__, _p);				\
  		return _errval;						\
  	}
---- 12.3.orig/drivers/xen/sfc_netutil/accel_util.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/sfc_netutil/accel_util.h	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/sfc_netutil/accel_util.h	2011-01-31 17:56:27.000000000 +0100
 @@ -63,9 +63,6 @@
  			DPRINTK("%s at %s:%d\n", #exp, __FILE__, __LINE__); \
@@ -6655,7 +6801,7 @@ Acked-by: jbeulich@novell.com
  	return 0;
  }
 --- 12.3.orig/drivers/xen/usbback/usbback.c	2011-04-11 14:30:35.000000000 +0200
-+++ 12.3/drivers/xen/usbback/usbback.c	2013-01-28 15:55:45.000000000 +0100
++++ 12.3/drivers/xen/usbback/usbback.c	2013-06-24 16:37:44.000000000 +0200
 @@ -88,6 +88,8 @@ typedef struct {
  static pending_req_t *pending_reqs;
  static struct list_head pending_free;
@@ -6774,7 +6920,21 @@ Acked-by: jbeulich@novell.com
  		ret = -ESHUTDOWN;
  		goto fail_flush_area;
  	}
-@@ -985,8 +1019,7 @@ static int usbbk_start_submit_urb(usbif_
+@@ -984,18 +1018,17 @@ static int usbbk_start_submit_urb(usbif_
+ 
+ 	if (RING_REQUEST_PROD_OVERFLOW(urb_ring, rp)) {
+ 		rc = urb_ring->rsp_prod_pvt;
+-		printk(KERN_WARNING "usbback:"
+-		       " Dom%d provided bogus ring requests (%#x - %#x = %u)."
+-		       " Halting ring processing on dev=%#x\n",
+-		       usbif->domid, rp, rc, rp - rc, usbif->handle);
++		pr_warning("usbback:"
++			   " Dom%d provided bogus ring requests (%#x - %#x = %u)."
++			   " Halting ring processing on dev=%#x\n",
++			   usbif->domid, rp, rc, rp - rc, usbif->handle);
+ 		return -EACCES;
+ 	}
+ 
  	while (rc != rp) {
  		if (RING_REQUEST_CONS_OVERFLOW(urb_ring, rc)) {
  			if(printk_ratelimit())
@@ -6784,10 +6944,10 @@ Acked-by: jbeulich@novell.com
  			break;
  		}
  
-@@ -1057,8 +1090,11 @@ int usbbk_schedule(void *arg)
- 
- 		if (usbbk_start_submit_urb(usbif))
- 			usbif->waiting_reqs = 1;
+@@ -1076,8 +1109,11 @@ int usbbk_schedule(void *arg)
+ 		default:
+ 			BUG();
+ 		}
 +
 +		usbbk_free_urbs();
  	}
@@ -6816,7 +6976,7 @@ Acked-by: jbeulich@novell.com
  		goto out;
  	}
  
---- 12.3.orig/drivers/xen/usbback/xenbus.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/usbback/xenbus.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/usbback/xenbus.c	2011-06-30 16:33:08.000000000 +0200
 @@ -240,9 +240,9 @@ static int connect_rings(usbif_t *usbif)
  		return err;
@@ -6865,7 +7025,7 @@ Acked-by: jbeulich@novell.com
  }
  
  static inline void remove_debug_file(struct usbfront_info *info)
---- 12.3.orig/drivers/xen/usbfront/usbfront-hcd.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/drivers/xen/usbfront/usbfront-hcd.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/drivers/xen/usbfront/usbfront-hcd.c	2011-01-31 17:56:27.000000000 +0100
 @@ -114,7 +114,6 @@ static void xenhcd_stop(struct usb_hcd *
   * non-error returns are promise to giveback the urb later
@@ -7411,7 +7571,7 @@ Acked-by: jbeulich@novell.com
  		return max_cstate;
  }
  
---- 12.3.orig/arch/x86/include/mach-xen/asm/agp.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/include/mach-xen/asm/agp.h	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/include/mach-xen/asm/agp.h	2011-01-31 17:56:27.000000000 +0100
 @@ -1,20 +1,22 @@
 -#ifndef AGP_H
@@ -9659,7 +9819,7 @@ Acked-by: jbeulich@novell.com
 +} while (0)
 +
 +#endif
---- 12.3.orig/arch/x86/include/asm/mmu.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/arch/x86/include/asm/mmu.h	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/arch/x86/include/asm/mmu.h	2011-06-30 16:30:20.000000000 +0200
 @@ -16,6 +16,9 @@ typedef struct {
  	/* True if mm supports a task running in 32 bit compatibility mode. */
@@ -9700,7 +9860,7 @@ Acked-by: jbeulich@novell.com
  /* add a backtrace entry, to be called from the ->backtrace callback */
  void oprofile_add_trace(unsigned long eip);
  
---- 12.3.orig/include/uapi/linux/sysctl.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/include/uapi/linux/sysctl.h	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/include/uapi/linux/sysctl.h	2011-01-31 17:56:27.000000000 +0100
 @@ -59,6 +59,7 @@ enum
  	CTL_BUS=8,		/* Busses */
@@ -9710,7 +9870,7 @@ Acked-by: jbeulich@novell.com
  	CTL_ARLAN=254,		/* arlan wireless driver */
  	CTL_S390DBF=5677,	/* s390 debug */
  	CTL_SUNRPC=7249,	/* sunrpc debug */
---- 12.3.orig/include/xen/cpu_hotplug.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/include/xen/cpu_hotplug.h	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/include/xen/cpu_hotplug.h	2011-01-31 17:56:27.000000000 +0100
 @@ -25,8 +25,8 @@ void cpu_bringup(void);
  static inline int smp_suspend(void)
@@ -9723,7 +9883,7 @@ Acked-by: jbeulich@novell.com
  		return -EOPNOTSUPP;
  	}
  	return 0;
---- 12.3.orig/include/xen/gnttab.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/include/xen/gnttab.h	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/include/xen/gnttab.h	2012-03-12 13:39:32.000000000 +0100
 @@ -174,11 +174,11 @@ gnttab_set_replace_op(struct gnttab_unma
  		BUG_ON(__ret);							\
@@ -9776,7 +9936,7 @@ Acked-by: jbeulich@novell.com
  			       "TCP/UDP packet, dropping a protocol"
  			       " %d packet\n", iph->protocol);
  		goto out;
---- 12.3.orig/include/xen/pcifront.h	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/include/xen/pcifront.h	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/include/xen/pcifront.h	2012-04-04 10:19:31.000000000 +0200
 @@ -12,13 +12,11 @@
  
@@ -9890,7 +10050,7 @@ Acked-by: jbeulich@novell.com
  #endif
  	VMCOREINFO_SYMBOL(_stext);
  	VMCOREINFO_SYMBOL(vmlist);
---- 12.3.orig/kernel/sysctl_binary.c	2013-04-16 14:02:58.000000000 +0200
+--- 12.3.orig/kernel/sysctl_binary.c	2014-06-23 11:57:15.000000000 +0200
 +++ 12.3/kernel/sysctl_binary.c	2011-01-31 17:56:27.000000000 +0100
 @@ -873,6 +873,14 @@ static const struct bin_table bin_bus_ta
  };

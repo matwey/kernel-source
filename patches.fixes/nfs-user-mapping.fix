@@ -1,0 +1,33 @@
+From: NeilBrown <neilb@suse.de>
+Subject: Allow NFSv4 username mapping to work properly
+Patch-mainline: no
+References: bnc#838024
+
+nfs4 idmap uses the security/keys infrastructure to manage
+username<->uid mappings and treats it like a cache.
+But it doesn't work like a cache and when it gets full it returns
+an error.  This is bad.
+
+So make the default size bigger.  This is big enough that a different
+limit is hit first - and that limit does cause old entries to be flushed.
+So it is a hack, but it appears to be a sufficient fix.
+
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+---
+ security/keys/key.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- linux-3.11-openSUSE-13.1.orig/security/keys/key.c
++++ linux-3.11-openSUSE-13.1/security/keys/key.c
+@@ -27,8 +27,8 @@ DEFINE_SPINLOCK(key_serial_lock);
+ struct rb_root	key_user_tree; /* tree of quota records indexed by UID */
+ DEFINE_SPINLOCK(key_user_lock);
+ 
+-unsigned int key_quota_root_maxkeys = 200;	/* root's key count quota */
+-unsigned int key_quota_root_maxbytes = 20000;	/* root's key space quota */
++unsigned int key_quota_root_maxkeys = 1024;	/* root's key count quota */
++unsigned int key_quota_root_maxbytes = 102400;	/* root's key space quota */
+ unsigned int key_quota_maxkeys = 200;		/* general key count quota */
+ unsigned int key_quota_maxbytes = 20000;	/* general key space quota */
+ 

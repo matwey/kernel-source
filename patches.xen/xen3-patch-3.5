@@ -62,7 +62,7 @@ Acked-by: jbeulich@suse.com
  	orl     $TS_COMPAT,TI_status+THREAD_INFO(%rsp,RIP-ARGOFFSET)
  	testl   $_TIF_WORK_SYSCALL_ENTRY,TI_flags+THREAD_INFO(%rsp,RIP-ARGOFFSET)
  	jnz   cstar_tracesys
---- 12.3.orig/arch/x86/include/asm/io_apic.h	2013-01-25 13:57:38.000000000 +0100
+--- 12.3.orig/arch/x86/include/asm/io_apic.h	2014-06-23 11:57:14.000000000 +0200
 +++ 12.3/arch/x86/include/asm/io_apic.h	2012-06-14 12:07:45.000000000 +0200
 @@ -175,6 +175,7 @@ extern void mp_save_irq(struct mpc_intsr
  
@@ -2325,8 +2325,8 @@ Acked-by: jbeulich@suse.com
  }
  
  __setup("nonmi_ipi", nonmi_ipi_setup);
---- 12.3.orig/arch/x86/kernel/traps-xen.c	2012-07-05 12:03:40.000000000 +0200
-+++ 12.3/arch/x86/kernel/traps-xen.c	2012-07-05 12:26:01.000000000 +0200
+--- 12.3.orig/arch/x86/kernel/traps-xen.c	2013-11-27 11:32:42.000000000 +0100
++++ 12.3/arch/x86/kernel/traps-xen.c	2013-11-27 11:33:15.000000000 +0100
 @@ -37,10 +37,6 @@
  #include <linux/eisa.h>
  #endif
@@ -2372,8 +2372,8 @@ Acked-by: jbeulich@suse.com
 -	percpu_and(xen_x86_cr0, ~X86_CR0_TS);
 +	__this_cpu_and(xen_x86_cr0, ~X86_CR0_TS);
  	if (!tsk_used_math(tsk)) {
+ 		stts();
  		local_irq_enable();
- 		/*
 --- 12.3.orig/arch/x86/kernel/vsyscall_64-xen.c	2012-04-20 15:23:58.000000000 +0200
 +++ 12.3/arch/x86/kernel/vsyscall_64-xen.c	2012-07-25 09:34:59.000000000 +0200
 @@ -141,6 +141,19 @@ static int addr_to_vsyscall_nr(unsigned 
@@ -2805,6 +2805,17 @@ Acked-by: jbeulich@suse.com
  				cattr_name(flags));
  			return -EINVAL;
  		}
+--- 12.3.orig/drivers/gpu/drm/i915/i915_drv.c	2013-08-08 14:16:49.000000000 +0200
++++ 12.3/drivers/gpu/drm/i915/i915_drv.c	2013-08-09 15:37:09.000000000 +0200
+@@ -451,7 +451,7 @@ bool i915_semaphore_is_enabled(struct dr
+ 	if (i915_semaphores >= 0)
+ 		return i915_semaphores;
+ 
+-#ifdef CONFIG_INTEL_IOMMU
++#if defined(CONFIG_INTEL_IOMMU) || defined(CONFIG_XEN)
+ 	/* Enable semaphores on SNB when IO remapping is off */
+ 	if (INTEL_INFO(dev)->gen == 6 && intel_iommu_gfx_mapped)
+ 		return false;
 --- 12.3.orig/drivers/hwmon/coretemp-xen.c	2012-05-08 11:18:36.000000000 +0200
 +++ 12.3/drivers/hwmon/coretemp-xen.c	2012-07-05 12:46:12.000000000 +0200
 @@ -199,6 +199,24 @@ static ssize_t show_temp(struct device *
@@ -3067,7 +3078,7 @@ Acked-by: jbeulich@suse.com
  	if (num_online_cpus() == 1)
  		alternatives_smp_switch(1);
 --- 12.3.orig/drivers/xen/core/spinlock.c	2012-07-26 09:42:00.000000000 +0200
-+++ 12.3/drivers/xen/core/spinlock.c	2012-07-26 14:14:12.000000000 +0200
++++ 12.3/drivers/xen/core/spinlock.c	2014-03-11 10:30:27.000000000 +0100
 @@ -86,13 +86,13 @@ void __cpuinit spinlock_resume(void)
  
  static inline void sequence(unsigned int bias)
@@ -3091,7 +3102,7 @@ Acked-by: jbeulich@suse.com
  {
 -	token.tail = spin_adjust(percpu_read(_spinning), lock, token.tail);
 +	token.tail = spin_adjust(__this_cpu_read(_spinning), lock, token.tail);
- 	token.head = ACCESS_ONCE(lock->tickets.head);
+ 	token.head = lock->tickets.head;
  	return token;
  }
 @@ -157,10 +157,10 @@ static unsigned int ticket_get(arch_spin
@@ -3125,7 +3136,16 @@ Acked-by: jbeulich@suse.com
  
  	/*
  	 * Make sure all xen_spin_kick() instances which may still have seen
-@@ -233,13 +233,13 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -221,7 +221,7 @@ void xen_spin_irq_exit(void)
+ 			continue;
+ 		spinning->ticket = ticket_get(lock, spinning->prev);
+ 		if (lock->tickets.head == spinning->ticket)
+-			set_evtchn(percpu_read(poll_evtchn));
++			set_evtchn(__this_cpu_read(poll_evtchn));
+ 	}
+ }
+ #endif
+@@ -235,13 +235,13 @@ bool xen_spin_wait(arch_spinlock_t *lock
  
  	/* If kicker interrupt not initialized yet, just spin. */
  	if (unlikely(!cpu_online(raw_smp_processor_id()))
@@ -3141,7 +3161,7 @@ Acked-by: jbeulich@suse.com
  #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
  	spinning.irq_count = UINT_MAX;
  	if (upcall_mask > flags) {
-@@ -255,10 +255,10 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -257,10 +257,10 @@ bool xen_spin_wait(arch_spinlock_t *lock
  	arch_local_irq_disable();
  #endif
  	smp_wmb();
@@ -3154,7 +3174,7 @@ Acked-by: jbeulich@suse.com
  
  		/*
  		 * Check again to make sure it didn't become free while
-@@ -271,19 +271,19 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -273,19 +273,19 @@ bool xen_spin_wait(arch_spinlock_t *lock
  			 * without rechecking the lock.
  			 */
  			if (spinning.prev)
@@ -3177,7 +3197,7 @@ Acked-by: jbeulich@suse.com
  		    HYPERVISOR_poll_no_timeout(&__get_cpu_var(poll_evtchn), 1))
  			BUG();
  
-@@ -293,7 +293,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -295,7 +295,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
  		spinning.irq_count = UINT_MAX;
  #endif
  
@@ -3186,7 +3206,7 @@ Acked-by: jbeulich@suse.com
  			inc_irq_stat(irq_lock_count);
  			break;
  		}
-@@ -305,7 +305,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
+@@ -307,7 +307,7 @@ bool xen_spin_wait(arch_spinlock_t *lock
  	 */
  
  	/* announce we're done */
@@ -3195,6 +3215,24 @@ Acked-by: jbeulich@suse.com
  	if (!CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING)
  		arch_local_irq_disable();
  	sequence(SEQ_REMOVE_BIAS);
+@@ -341,7 +341,7 @@ void xen_spin_kick(const arch_spinlock_t
+ 	if (unlikely(!cpu_online(local)))
+ 		stop = start = cpumask_cycle(local, cpu_online_mask);
+ #if CONFIG_XEN_SPINLOCK_ACQUIRE_NESTING
+-	else if (percpu_read(_spinning))
++	else if (__this_cpu_read(_spinning))
+ 		start = local;
+ #endif
+ 	else {
+@@ -357,7 +357,7 @@ void xen_spin_kick(const arch_spinlock_t
+ 
+ 		flags = arch_local_irq_save();
+ 		if (cpu == local)
+-			spinning = percpu_read(_spinning);
++			spinning = __this_cpu_read(_spinning);
+ 		else for (;;) {
+ 			unsigned int rm_idx = per_cpu(rm_seq.idx, cpu);
+ 
 --- 12.3.orig/drivers/xen/netback/loopback.c	2012-06-15 14:49:40.000000000 +0200
 +++ 12.3/drivers/xen/netback/loopback.c	2012-06-15 14:44:40.000000000 +0200
 @@ -46,6 +46,7 @@

@@ -18,12 +18,12 @@ to push up the limit where the type of notify_list needs to become
  	netif->irq = err;
  	disable_irq(netif->irq);
  
---- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:21:07.000000000 +0100
-+++ 12.3/drivers/xen/netback/netback.c	2012-11-29 14:27:13.000000000 +0100
-@@ -645,8 +645,12 @@ static void net_rx_action(unsigned long 
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-07-05 10:13:15.000000000 +0200
++++ 12.3/drivers/xen/netback/netback.c	2013-08-20 13:57:15.000000000 +0200
+@@ -701,8 +701,12 @@ static void net_rx_action(unsigned long 
  	static mmu_update_t rx_mmu[NET_RX_RING_SIZE];
  	static gnttab_transfer_t grant_trans_op[NET_RX_RING_SIZE];
- 	static gnttab_copy_t grant_copy_op[NET_RX_RING_SIZE];
+ 	static gnttab_copy_t grant_copy_op[2 * NET_RX_RING_SIZE];
 -	static unsigned char rx_notify[NR_IRQS];
 +	static DECLARE_BITMAP(rx_notify, NR_DYNIRQS);
 +#if NR_DYNIRQS <= 0x10000
@@ -34,7 +34,7 @@ to push up the limit where the type of notify_list needs to become
  	static struct netbk_rx_meta meta[NET_RX_RING_SIZE];
  
  	struct netrx_pending_operations npo = {
-@@ -794,11 +798,9 @@ static void net_rx_action(unsigned long 
+@@ -853,11 +857,9 @@ static void net_rx_action(unsigned long 
  						    nr_frags);
  
  		RING_PUSH_RESPONSES_AND_CHECK_NOTIFY(&netif->rx, ret);
@@ -48,7 +48,7 @@ to push up the limit where the type of notify_list needs to become
  
  		if (netif_queue_stopped(netif->dev) &&
  		    netif_schedulable(netif) &&
-@@ -813,8 +815,8 @@ static void net_rx_action(unsigned long 
+@@ -872,8 +874,8 @@ static void net_rx_action(unsigned long 
  
  	while (notify_nr != 0) {
  		irq = notify_list[--notify_nr];

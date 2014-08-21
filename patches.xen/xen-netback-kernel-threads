@@ -61,29 +61,20 @@ Acked-by: jbeulich@novell.com
  
  	new_page->mapping = page->mapping;
  	new_page->index = page->index;
---- 12.3.orig/drivers/xen/netback/common.h	2013-02-18 12:22:17.000000000 +0100
-+++ 12.3/drivers/xen/netback/common.h	2013-02-18 12:22:28.000000000 +0100
-@@ -237,8 +237,16 @@ struct netbk_tx_pending_inuse {
- #define MAX_MFN_ALLOC 64
+--- 12.3.orig/drivers/xen/netback/common.h	2013-07-05 10:23:09.000000000 +0200
++++ 12.3/drivers/xen/netback/common.h	2013-07-05 10:23:18.000000000 +0200
+@@ -265,6 +265,9 @@ struct xen_netbk {
+ 		netif_tx_request_t slots[XEN_NETIF_NR_SLOTS_MIN];
+ 	} tx;
  
- struct xen_netbk {
--	struct tasklet_struct net_tx_tasklet;
--	struct tasklet_struct net_rx_tasklet;
-+	union {
-+		struct {
-+			struct tasklet_struct net_tx_tasklet;
-+			struct tasklet_struct net_rx_tasklet;
-+		};
-+		struct {
-+			wait_queue_head_t netbk_action_wq;
-+			struct task_struct *task;
-+		};
-+	};
- 
- 	struct sk_buff_head rx_queue;
- 	struct sk_buff_head tx_queue;
---- 12.3.orig/drivers/xen/netback/netback.c	2013-02-18 12:22:17.000000000 +0100
-+++ 12.3/drivers/xen/netback/netback.c	2013-02-18 12:22:27.000000000 +0100
++	wait_queue_head_t action_wq;
++	struct task_struct *task;
++
+ 	struct xen_netbk_rx {
+ 		struct sk_buff_head queue;
+ 		struct tasklet_struct tasklet;
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-08-20 13:57:26.000000000 +0200
++++ 12.3/drivers/xen/netback/netback.c	2013-08-20 13:57:28.000000000 +0200
 @@ -36,6 +36,7 @@
  
  #include "common.h"
@@ -101,7 +92,7 @@ Acked-by: jbeulich@novell.com
  
  #define GET_GROUP_INDEX(netif) ((netif)->group)
  
-@@ -153,7 +156,11 @@ static bool MODPARM_permute_returns;
+@@ -170,7 +173,11 @@ static bool MODPARM_permute_returns;
  module_param_named(permute_returns, MODPARM_permute_returns, bool, S_IRUSR|S_IWUSR);
  MODULE_PARM_DESC(permute_returns, "Randomly permute the order in which TX responses are sent to the frontend");
  module_param_named(groups, netbk_nr_groups, uint, 0);
@@ -114,72 +105,72 @@ Acked-by: jbeulich@novell.com
  
  int netbk_copy_skb_mode;
  
-@@ -184,6 +191,22 @@ static int check_mfn(struct xen_netbk *n
+@@ -201,6 +208,22 @@ static int check_mfn(struct xen_netbk_rx
  	return netbk->alloc_index >= nr ? 0 : -ENOMEM;
  }
  
-+static void netbk_rx_schedule(struct xen_netbk *netbk)
++static void netbk_rx_schedule(struct xen_netbk_rx *netbk)
 +{
 +	if (use_kthreads)
-+		wake_up(&netbk->netbk_action_wq);
++		wake_up(&container_of(netbk, struct xen_netbk, rx)->action_wq);
 +	else
-+		tasklet_schedule(&netbk->net_rx_tasklet);
++		tasklet_schedule(&netbk->tasklet);
 +}
 +
 +static void netbk_tx_schedule(struct xen_netbk *netbk)
 +{
 +	if (use_kthreads)
-+		wake_up(&netbk->netbk_action_wq);
++		wake_up(&netbk->action_wq);
 +	else
-+		tasklet_schedule(&netbk->net_tx_tasklet);
++		tasklet_schedule(&netbk->tx.tasklet);
 +}
 +
  static inline void maybe_schedule_tx_action(unsigned int group)
  {
  	struct xen_netbk *netbk = &xen_netbk[group];
-@@ -191,7 +214,7 @@ static inline void maybe_schedule_tx_act
+@@ -208,7 +231,7 @@ static inline void maybe_schedule_tx_act
  	smp_mb();
  	if ((nr_pending_reqs(netbk) < (MAX_PENDING_REQS/2)) &&
- 	    !list_empty(&netbk->schedule_list))
--		tasklet_schedule(&netbk->net_tx_tasklet);
+ 	    !list_empty(&netbk->tx.schedule_list))
+-		tasklet_schedule(&netbk->tx.tasklet);
 +		netbk_tx_schedule(netbk);
  }
  
  static struct sk_buff *netbk_copy_skb(struct sk_buff *skb)
-@@ -371,7 +394,7 @@ int netif_be_start_xmit(struct sk_buff *
+@@ -393,7 +416,7 @@ int netif_be_start_xmit(struct sk_buff *
  
- 	netbk = &xen_netbk[group];
- 	skb_queue_tail(&netbk->rx_queue, skb);
--	tasklet_schedule(&netbk->net_rx_tasklet);
+ 	netbk = &xen_netbk[group].rx;
+ 	skb_queue_tail(&netbk->queue, skb);
+-	tasklet_schedule(&netbk->tasklet);
 +	netbk_rx_schedule(netbk);
  
  	return NETDEV_TX_OK;
  
-@@ -824,7 +847,7 @@ static void net_rx_action(unsigned long 
+@@ -873,7 +896,7 @@ static void net_rx_action(unsigned long 
  	/* More work to do? */
- 	if (!skb_queue_empty(&netbk->rx_queue) &&
- 	    !timer_pending(&netbk->net_timer))
--		tasklet_schedule(&netbk->net_rx_tasklet);
+ 	if (!skb_queue_empty(&netbk->queue) &&
+ 	    !timer_pending(&netbk->timer))
+-		tasklet_schedule(&netbk->tasklet);
 +		netbk_rx_schedule(netbk);
  #if 0
  	else
  		xen_network_done_notify();
-@@ -833,12 +856,12 @@ static void net_rx_action(unsigned long 
+@@ -882,12 +905,12 @@ static void net_rx_action(unsigned long 
  
  static void net_alarm(unsigned long group)
  {
--	tasklet_schedule(&xen_netbk[group].net_rx_tasklet);
-+	netbk_rx_schedule(&xen_netbk[group]);
+-	tasklet_schedule(&xen_netbk[group].rx.tasklet);
++	netbk_rx_schedule(&xen_netbk[group].rx);
  }
  
  static void netbk_tx_pending_timeout(unsigned long group)
  {
--	tasklet_schedule(&xen_netbk[group].net_tx_tasklet);
+-	tasklet_schedule(&xen_netbk[group].tx.tasklet);
 +	netbk_tx_schedule(&xen_netbk[group]);
  }
  
  static int __on_net_schedule_list(netif_t *netif)
-@@ -1608,7 +1631,10 @@ static void net_tx_action(unsigned long 
+@@ -1772,7 +1795,10 @@ static void net_tx_action(unsigned long 
  		dev->stats.rx_bytes += skb->len;
  		dev->stats.rx_packets++;
  
@@ -191,35 +182,35 @@ Acked-by: jbeulich@novell.com
  	}
  
   out:
-@@ -1633,7 +1659,7 @@ static void netif_idx_release(struct xen
- 	netbk->dealloc_prod++;
- 	spin_unlock_irqrestore(&netbk->release_lock, flags);
+@@ -1797,7 +1823,7 @@ static void netif_idx_release(struct xen
+ 	netbk->tx.dealloc_prod++;
+ 	spin_unlock_irqrestore(&netbk->tx.release_lock, flags);
  
--	tasklet_schedule(&netbk->net_tx_tasklet);
+-	tasklet_schedule(&netbk->tx.tasklet);
 +	netbk_tx_schedule(netbk);
  }
  
  static void netif_page_release(struct page *page, unsigned int order)
-@@ -1772,6 +1798,50 @@ static struct irqaction netif_be_dbg_act
+@@ -1935,6 +1961,50 @@ static struct irqaction netif_be_dbg_act
  };
  #endif
  
 +static inline int rx_work_todo(struct xen_netbk *netbk)
 +{
-+	return !skb_queue_empty(&netbk->rx_queue);
++	return !skb_queue_empty(&netbk->rx.queue);
 +}
 +
 +static inline int tx_work_todo(struct xen_netbk *netbk)
 +{
-+	if (netbk->dealloc_cons != netbk->dealloc_prod)
++	if (netbk->tx.dealloc_cons != netbk->tx.dealloc_prod)
 +		return 1;
 +
 +	if (netbk_copy_skb_mode == NETBK_DELAYED_COPY_SKB &&
-+	    !list_empty(&netbk->pending_inuse_head))
++	    !list_empty(&netbk->tx.pending_inuse_head))
 +		return 1;
 +
-+	if (nr_pending_reqs(netbk) + MAX_SKB_FRAGS < MAX_PENDING_REQS &&
-+	    !list_empty(&netbk->schedule_list))
++	if (nr_pending_reqs(netbk) + XEN_NETIF_NR_SLOTS_MIN < MAX_PENDING_REQS
++	    && !list_empty(&netbk->tx.schedule_list))
 +		return 1;
 +
 +	return 0;
@@ -231,7 +222,7 @@ Acked-by: jbeulich@novell.com
 +	struct xen_netbk *netbk = &xen_netbk[group];
 +
 +	while (!kthread_should_stop()) {
-+		wait_event_interruptible(netbk->netbk_action_wq,
++		wait_event_interruptible(netbk->action_wq,
 +					 rx_work_todo(netbk) ||
 +					 tx_work_todo(netbk) ||
 +					 kthread_should_stop());
@@ -251,23 +242,23 @@ Acked-by: jbeulich@novell.com
  static int __init netback_init(void)
  {
  	unsigned int i, group;
-@@ -1802,9 +1872,6 @@ static int __init netback_init(void)
+@@ -1972,9 +2042,6 @@ static int __init netback_init(void)
  	for (group = 0; group < netbk_nr_groups; group++) {
  		struct xen_netbk *netbk = &xen_netbk[group];
  
--		tasklet_init(&netbk->net_tx_tasklet, net_tx_action, group);
--		tasklet_init(&netbk->net_rx_tasklet, net_rx_action, group);
+-		tasklet_init(&netbk->tx.tasklet, net_tx_action, group);
+-		tasklet_init(&netbk->rx.tasklet, net_rx_action, group);
 -
- 		skb_queue_head_init(&netbk->rx_queue);
- 		skb_queue_head_init(&netbk->tx_queue);
+ 		skb_queue_head_init(&netbk->rx.queue);
+ 		skb_queue_head_init(&netbk->tx.queue);
  
-@@ -1840,6 +1907,26 @@ static int __init netback_init(void)
- 			netbk->pending_ring[i] = i;
- 			INIT_LIST_HEAD(&netbk->pending_inuse[i].list);
+@@ -2010,6 +2077,26 @@ static int __init netback_init(void)
+ 			netbk->tx.pending_ring[i] = i;
+ 			INIT_LIST_HEAD(&netbk->tx.pending_inuse[i].list);
  		}
 +
 +		if (use_kthreads) {
-+			init_waitqueue_head(&netbk->netbk_action_wq);
++			init_waitqueue_head(&netbk->action_wq);
 +			netbk->task = kthread_create(netbk_action_thread,
 +						     (void *)(long)group,
 +						     "netback/%u", group);
@@ -282,13 +273,13 @@ Acked-by: jbeulich@novell.com
 +					     group % num_online_cpus());
 +			wake_up_process(netbk->task);
 +		} else {
-+			tasklet_init(&netbk->net_tx_tasklet, net_tx_action, group);
-+			tasklet_init(&netbk->net_rx_tasklet, net_rx_action, group);
++			tasklet_init(&netbk->tx.tasklet, net_tx_action, group);
++			tasklet_init(&netbk->rx.tasklet, net_rx_action, group);
 +		}
  	}
  
  	netbk_copy_skb_mode = NETBK_DONT_COPY_SKB;
-@@ -1864,12 +1951,15 @@ static int __init netback_init(void)
+@@ -2034,12 +2121,15 @@ static int __init netback_init(void)
  	return 0;
  
  failed_init:
@@ -296,13 +287,13 @@ Acked-by: jbeulich@novell.com
 +	do {
  		struct xen_netbk *netbk = &xen_netbk[group];
  
--		free_empty_pages_and_pagevec(netbk->mmap_pages,
+-		free_empty_pages_and_pagevec(netbk->tx.mmap_pages,
 -					     MAX_PENDING_REQS);
 -	}
 +		if (use_kthreads && netbk->task && !IS_ERR(netbk->task))
 +			kthread_stop(netbk->task);
-+		if (netbk->mmap_pages)
-+			free_empty_pages_and_pagevec(netbk->mmap_pages,
++		if (netbk->tx.mmap_pages)
++			free_empty_pages_and_pagevec(netbk->tx.mmap_pages,
 +						     MAX_PENDING_REQS);
 +	} while (group--);
  	vfree(xen_netbk);

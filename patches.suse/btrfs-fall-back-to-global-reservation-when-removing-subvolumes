@@ -18,8 +18,8 @@ Signed-off-by: Jeff Mahoney <jeffm@suse.com>
  fs/btrfs/ioctl.c       |    7 ++++---
  3 files changed, 12 insertions(+), 5 deletions(-)
 
---- a/fs/btrfs/ctree.h	2013-07-12 10:56:15.256739023 -0400
-+++ b/fs/btrfs/ctree.h	2013-07-12 11:53:15.113166027 -0400
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
 @@ -3175,7 +3175,7 @@ void btrfs_orphan_release_metadata(struc
  int btrfs_subvolume_reserve_metadata(struct btrfs_root *root,
  				     struct btrfs_block_rsv *rsv,
@@ -29,8 +29,8 @@ Signed-off-by: Jeff Mahoney <jeffm@suse.com>
  void btrfs_subvolume_release_metadata(struct btrfs_root *root,
  				      struct btrfs_block_rsv *rsv,
  				      u64 qgroup_reserved);
---- a/fs/btrfs/extent-tree.c	2013-07-12 10:56:15.000738361 -0400
-+++ b/fs/btrfs/extent-tree.c	2013-07-12 11:53:15.189166274 -0400
+--- a/fs/btrfs/extent-tree.c
++++ b/fs/btrfs/extent-tree.c
 @@ -4746,10 +4746,12 @@ void btrfs_orphan_release_metadata(struc
  int btrfs_subvolume_reserve_metadata(struct btrfs_root *root,
  				     struct btrfs_block_rsv *rsv,
@@ -56,9 +56,9 @@ Signed-off-by: Jeff Mahoney <jeffm@suse.com>
  	if (ret) {
  		if (*qgroup_reserved)
  			btrfs_qgroup_free(root, *qgroup_reserved);
---- a/fs/btrfs/ioctl.c	2013-07-12 10:56:15.232738961 -0400
-+++ b/fs/btrfs/ioctl.c	2013-07-12 11:53:15.213166352 -0400
-@@ -397,7 +397,7 @@ static noinline int create_subvol(struct
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -396,7 +396,7 @@ static noinline int create_subvol(struct
  	 * of create_snapshot().
  	 */
  	ret = btrfs_subvolume_reserve_metadata(root, &block_rsv,
@@ -67,7 +67,7 @@ Signed-off-by: Jeff Mahoney <jeffm@suse.com>
  	if (ret)
  		return ret;
  
-@@ -583,7 +583,8 @@ static int create_snapshot(struct btrfs_
+@@ -576,7 +576,8 @@ static int create_snapshot(struct btrfs_
  	 */
  	ret = btrfs_subvolume_reserve_metadata(BTRFS_I(dir)->root,
  					&pending_snapshot->block_rsv, 7,
@@ -77,7 +77,7 @@ Signed-off-by: Jeff Mahoney <jeffm@suse.com>
  	if (ret)
  		goto out;
  
-@@ -2181,7 +2182,7 @@ static noinline int btrfs_ioctl_snap_des
+@@ -2174,7 +2175,7 @@ static noinline int btrfs_ioctl_snap_des
  	 * ref/backref.
  	 */
  	err = btrfs_subvolume_reserve_metadata(root, &block_rsv,

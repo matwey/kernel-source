@@ -5,8 +5,8 @@ Patch-mainline: obsolete
 This also yields a small fairness improvement since now notifications
 get sent in the order requests came in rather than in the inverse one.
 
---- head.orig/drivers/xen/core/evtchn.c	2012-10-04 13:48:39.000000000 +0200
-+++ head/drivers/xen/core/evtchn.c	2012-10-04 13:50:33.000000000 +0200
+--- 12.3.orig/drivers/xen/core/evtchn.c	2013-04-16 14:11:39.000000000 +0200
++++ 12.3/drivers/xen/core/evtchn.c	2012-10-04 13:50:33.000000000 +0200
 @@ -34,6 +34,7 @@
  #include <linux/slab.h>
  #include <linux/irq.h>
@@ -43,9 +43,9 @@ get sent in the order requests came in rather than in the inverse one.
  int irq_to_evtchn_port(int irq)
  {
  	const struct irq_cfg *cfg = irq_cfg(irq);
---- head.orig/drivers/xen/netback/netback.c	2012-11-29 14:27:13.000000000 +0100
-+++ head/drivers/xen/netback/netback.c	2012-11-29 14:27:27.000000000 +0100
-@@ -813,10 +813,20 @@ static void net_rx_action(unsigned long 
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-08-20 13:57:15.000000000 +0200
++++ 12.3/drivers/xen/netback/netback.c	2013-08-20 13:57:20.000000000 +0200
+@@ -872,10 +872,20 @@ static void net_rx_action(unsigned long 
  		npo.meta_cons += nr_frags + 1;
  	}
  
@@ -68,8 +68,8 @@ get sent in the order requests came in rather than in the inverse one.
  	}
  
  	/* More work to do? */
---- head.orig/include/xen/evtchn.h	2012-02-10 11:32:59.000000000 +0100
-+++ head/include/xen/evtchn.h	2012-02-10 13:35:11.000000000 +0100
+--- 12.3.orig/include/xen/evtchn.h	2012-02-10 11:32:59.000000000 +0100
++++ 12.3/include/xen/evtchn.h	2012-02-10 13:35:11.000000000 +0100
 @@ -188,6 +188,18 @@ static inline void notify_remote_via_evt
  	VOID(HYPERVISOR_event_channel_op(EVTCHNOP_send, &send));
  }

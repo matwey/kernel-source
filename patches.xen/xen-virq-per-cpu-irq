@@ -553,9 +553,9 @@ Patch-mainline: n/a
  	xen_spinlock_cleanup(cpu);
  }
  
---- 12.3.orig/drivers/xen/netback/netback.c	2012-11-29 14:10:18.000000000 +0100
-+++ 12.3/drivers/xen/netback/netback.c	2013-02-18 12:20:58.000000000 +0100
-@@ -1713,6 +1713,12 @@ static irqreturn_t netif_be_dbg(int irq,
+--- 12.3.orig/drivers/xen/netback/netback.c	2013-08-20 13:06:13.000000000 +0200
++++ 12.3/drivers/xen/netback/netback.c	2013-08-20 13:56:57.000000000 +0200
+@@ -1891,6 +1891,12 @@ static irqreturn_t netif_be_dbg(int irq,
  
  	return IRQ_HANDLED;
  }
@@ -568,7 +568,7 @@ Patch-mainline: n/a
  #endif
  
  static int __init netback_init(void)
-@@ -1772,12 +1778,9 @@ static int __init netback_init(void)
+@@ -1957,12 +1963,9 @@ static int __init netback_init(void)
  	netif_xenbus_init();
  
  #ifdef NETBE_DEBUG_INTERRUPT

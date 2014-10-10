@@ -1,0 +1,45 @@
+From: Chris Mason <clm@fb.com>
+Date: Tue, 26 Aug 2014 13:55:54 -0700
+Patch-mainline: 3.17
+Git-commit: e9512d72e8e61c750c90efacd720abe3c4569822
+Subject: [PATCH] Btrfs: fix autodefrag with compression
+
+The autodefrag code skips defrag when two extents are adjacent.  But one
+big advantage for autodefrag is cutting down on the number of small
+extents, even when they are adjacent.  This commit changes it to defrag
+all small extents.
+
+Signed-off-by: Chris Mason <clm@fb.com>
+Signed-off-by: David Sterba <dsterba@suse.cz>
+---
+ fs/btrfs/ioctl.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+index fce6fd0e3f50..a018ea484d39 100644
+--- a/fs/btrfs/ioctl.c
++++ b/fs/btrfs/ioctl.c
+@@ -1019,8 +1019,10 @@ static bool defrag_check_next_extent(struct inode *inode, struct extent_map *em)
+ 		return false;
+ 
+ 	next = defrag_lookup_extent(inode, em->start + em->len);
+-	if (!next || next->block_start >= EXTENT_MAP_LAST_BYTE ||
+-	    (em->block_start + em->block_len == next->block_start))
++	if (!next || next->block_start >= EXTENT_MAP_LAST_BYTE)
++		ret = false;
++	else if ((em->block_start + em->block_len == next->block_start) &&
++		 (em->block_len > 128 * 1024 && next->block_len > 128 * 1024))
+ 		ret = false;
+ 
+ 	free_extent_map(next);
+@@ -1055,7 +1057,6 @@ static int should_defrag_range(struct inode *inode, u64 start, int thresh,
+ 	}
+ 
+ 	next_mergeable = defrag_check_next_extent(inode, em);
+-
+ 	/*
+ 	 * we hit a real extent, if it is big or the next extent is not a
+ 	 * real extent, don't bother defragging it
+-- 
+2.1.1
+

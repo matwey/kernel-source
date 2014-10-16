@@ -4,9 +4,9 @@ Patch-mainline: n/a
 
 Inspired by a functionally similar pv-ops patch from Mats Petersson.
 
---- head.orig/arch/x86/include/mach-xen/asm/pgtable.h	2014-06-27 10:54:54.000000000 +0200
-+++ head/arch/x86/include/mach-xen/asm/pgtable.h	2014-01-07 17:31:28.000000000 +0100
-@@ -1002,6 +1002,14 @@ int direct_remap_pfn_range(struct vm_are
+--- 13.2.orig/arch/x86/include/mach-xen/asm/pgtable.h	2014-10-16 12:53:31.000000000 +0200
++++ 13.2/arch/x86/include/mach-xen/asm/pgtable.h	2014-01-07 17:31:28.000000000 +0100
+@@ -1007,6 +1007,14 @@ int direct_remap_pfn_range(struct vm_are
                             unsigned long size,
                             pgprot_t,
                             domid_t);
@@ -21,8 +21,8 @@ Inspired by a functionally similar pv-ops patch from Mats Petersson.
  int direct_kernel_remap_pfn_range(unsigned long address,
  				  unsigned long mfn,
  				  unsigned long size,
---- head.orig/arch/x86/mm/ioremap-xen.c	2014-06-27 10:54:54.000000000 +0200
-+++ head/arch/x86/mm/ioremap-xen.c	2013-01-25 11:05:01.000000000 +0100
+--- 13.2.orig/arch/x86/mm/ioremap-xen.c	2014-06-27 10:54:54.000000000 +0200
++++ 13.2/arch/x86/mm/ioremap-xen.c	2013-01-25 11:05:01.000000000 +0100
 @@ -44,60 +44,79 @@ static int direct_remap_area_pte_fn(pte_
  static int __direct_remap_pfn_range(struct mm_struct *mm,
  				    unsigned long address,
@@ -199,8 +199,8 @@ Inspired by a functionally similar pv-ops patch from Mats Petersson.
  		goto err_free_area;
  
  	ret_addr = (void __iomem *) (vaddr + offset);
---- head.orig/drivers/xen/privcmd/privcmd.c	2014-07-02 12:23:13.000000000 +0200
-+++ head/drivers/xen/privcmd/privcmd.c	2014-05-02 16:23:14.000000000 +0200
+--- 13.2.orig/drivers/xen/privcmd/privcmd.c	2014-07-02 12:23:13.000000000 +0200
++++ 13.2/drivers/xen/privcmd/privcmd.c	2014-05-02 16:23:14.000000000 +0200
 @@ -56,13 +56,36 @@ static inline int enforce_singleshot_map
  	privcmd_enforce_singleshot_mapping(vma)
  #endif

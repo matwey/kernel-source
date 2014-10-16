@@ -1,0 +1,20 @@
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: Linux 3.16.5
+Patch-mainline: 3.16.5
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Automatically created from "patches.kernel.org/patch-3.16.4-5" by xen-port-patches.py
+
+--- 13.2.orig/arch/x86/include/mach-xen/asm/vga.h	2012-06-14 11:23:26.000000000 +0200
++++ 13.2/arch/x86/include/mach-xen/asm/vga.h	2014-10-16 13:20:39.000000000 +0200
+@@ -17,10 +17,4 @@
+ #define vga_readb(x) (*(x))
+ #define vga_writeb(x, y) (*(y) = (x))
+ 
+-#ifdef CONFIG_FB_EFI
+-#define __ARCH_HAS_VGA_DEFAULT_DEVICE
+-extern struct pci_dev *vga_default_device(void);
+-extern void vga_set_default_device(struct pci_dev *pdev);
+-#endif
+-
+ #endif /* _ASM_X86_VGA_H */

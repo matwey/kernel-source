@@ -4,8 +4,8 @@ Patch-mainline: obsolete
 
 $subject says it all.
 
---- head.orig/arch/x86/kernel/setup-xen.c	2014-05-02 14:05:40.000000000 +0200
-+++ head/arch/x86/kernel/setup-xen.c	2013-12-11 11:21:12.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/setup-xen.c	2014-06-27 10:54:54.000000000 +0200
++++ 13.2/arch/x86/kernel/setup-xen.c	2013-12-11 11:21:12.000000000 +0100
 @@ -938,15 +938,17 @@ void __init setup_arch(char **cmdline_p)
  	unsigned long p2m_pages;
  	struct physdev_set_iopl set_iopl;
@@ -30,3 +30,48 @@ $subject says it all.
  
  	set_iopl.iopl = 1;
  	WARN_ON(HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl));
+--- 13.2.orig/include/linux/kexec.h	2014-10-16 13:31:30.000000000 +0200
++++ 13.2/include/linux/kexec.h	2014-08-28 14:13:37.000000000 +0200
+@@ -2,6 +2,10 @@
+ #define LINUX_KEXEC_H
+ 
+ #include <uapi/linux/kexec.h>
++#ifdef CONFIG_XEN
++#include <asm/hypervisor.h>
++#include <xen/interface/kexec.h>
++#endif
+ 
+ #ifdef CONFIG_KEXEC
+ #include <linux/list.h>
+@@ -229,7 +233,15 @@ void crash_free_reserved_phys_range(unsi
+ #else /* !CONFIG_KEXEC */
+ struct pt_regs;
+ struct task_struct;
+-static inline void crash_kexec(struct pt_regs *regs) { }
++static inline void crash_kexec(struct pt_regs *regs) {
++#ifdef CONFIG_XEN
++	if (is_initial_xendomain()) {
++		xen_kexec_exec_t xke = { .type = KEXEC_TYPE_CRASH };
++
++		VOID(HYPERVISOR_kexec_op(KEXEC_CMD_kexec, &xke));
++	}
++#endif
++}
+ static inline int kexec_should_crash(struct task_struct *p) { return 0; }
+ #endif /* CONFIG_KEXEC */
+ #endif /* LINUX_KEXEC_H */
+--- 13.2.orig/kernel/kexec.c	2014-10-16 13:31:30.000000000 +0200
++++ 13.2/kernel/kexec.c	2014-08-28 13:34:39.000000000 +0200
+@@ -1141,6 +1141,12 @@ void crash_kexec(struct pt_regs *regs)
+ 			crash_save_vmcoreinfo();
+ 			machine_crash_shutdown(&fixed_regs);
+ 			machine_kexec(kexec_crash_image);
++#ifdef CONFIG_XEN
++		} else if (is_initial_xendomain()) {
++			xen_kexec_exec_t xke = { .type = KEXEC_TYPE_CRASH };
++
++			VOID(HYPERVISOR_kexec_op(KEXEC_CMD_kexec, &xke));
++#endif
+ 		}
+ 		mutex_unlock(&kexec_mutex);
+ 	}

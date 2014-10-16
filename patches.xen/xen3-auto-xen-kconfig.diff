@@ -1,11 +1,11 @@
-From http://xenbits.xen.org/linux-2.6.18-xen.hg (tip 1263:52f54ddbf449)
+From http://xenbits.xen.org/linux-2.6.18-xen.hg (tip 1266:851b8fba77e7)
 Subject: xen3 xen-kconfig
 From: xen-devel@lists.xen.org
 Patch-mainline: n/a
 Acked-by: jbeulich@suse.com
 
---- head.orig/arch/x86/Kconfig	2014-07-29 10:33:36.000000000 +0200
-+++ head/arch/x86/Kconfig	2014-06-26 13:51:07.000000000 +0200
+--- 13.2.orig/arch/x86/Kconfig	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/arch/x86/Kconfig	2014-06-26 13:51:07.000000000 +0200
 @@ -249,7 +249,17 @@ config X86_64_SMP
  
  config X86_HT
@@ -214,7 +214,7 @@ Acked-by: jbeulich@suse.com
  	select UCS2_STRING
  	---help---
  	  This enables the kernel to use EFI runtime services that are
-@@ -1577,6 +1621,7 @@ source kernel/Kconfig.hz
+@@ -1578,6 +1622,7 @@ source kernel/Kconfig.hz
  
  config KEXEC
  	bool "kexec system call"
@@ -222,7 +222,7 @@ Acked-by: jbeulich@suse.com
  	---help---
  	  kexec is a system call that implements the ability to shutdown your
  	  current kernel, and to start another kernel.  It is like a reboot
-@@ -1594,6 +1639,7 @@ config KEXEC
+@@ -1595,6 +1640,7 @@ config KEXEC
  config CRASH_DUMP
  	bool "kernel crash dumps"
  	depends on X86_64 || (X86_32 && HIGHMEM)
@@ -230,7 +230,7 @@ Acked-by: jbeulich@suse.com
  	---help---
  	  Generate crash dump after being started by kexec.
  	  This should be normally only set in special crash dump kernels
-@@ -1810,6 +1856,7 @@ config COMPAT_VDSO
+@@ -1811,6 +1857,7 @@ config COMPAT_VDSO
  	def_bool n
  	prompt "Disable the 32-bit vDSO (needed for glibc 2.3.3)"
  	depends on X86_32 || IA32_EMULATION
@@ -238,7 +238,7 @@ Acked-by: jbeulich@suse.com
  	---help---
  	  Certain buggy versions of glibc will crash if they are
  	  presented with a 32-bit vDSO that is not mapped at the address
-@@ -1897,6 +1944,7 @@ config ARCH_ENABLE_HUGEPAGE_MIGRATION
+@@ -1898,6 +1945,7 @@ config ARCH_ENABLE_HUGEPAGE_MIGRATION
  	depends on X86_64 && HUGETLB_PAGE && MIGRATION
  
  menu "Power management and ACPI options"
@@ -246,7 +246,7 @@ Acked-by: jbeulich@suse.com
  
  config ARCH_HIBERNATION_HEADER
  	def_bool y
-@@ -1914,7 +1962,7 @@ config X86_APM_BOOT
+@@ -1915,7 +1963,7 @@ config X86_APM_BOOT
  
  menuconfig APM
  	tristate "APM (Advanced Power Management) BIOS support"
@@ -255,7 +255,7 @@ Acked-by: jbeulich@suse.com
  	---help---
  	  APM is a BIOS specification for saving power using several different
  	  techniques. This is mostly useful for battery powered laptops with
-@@ -2075,6 +2123,7 @@ choice
+@@ -2076,6 +2124,7 @@ choice
  
  config PCI_GOBIOS
  	bool "BIOS"
@@ -263,7 +263,7 @@ Acked-by: jbeulich@suse.com
  
  config PCI_GOMMCONFIG
  	bool "MMConfig"
-@@ -2086,6 +2135,13 @@ config PCI_GOOLPC
+@@ -2087,6 +2136,13 @@ config PCI_GOOLPC
  	bool "OLPC XO-1"
  	depends on OLPC
  
@@ -277,7 +277,7 @@ Acked-by: jbeulich@suse.com
  config PCI_GOANY
  	bool "Any"
  
-@@ -2093,7 +2149,7 @@ endchoice
+@@ -2094,7 +2150,7 @@ endchoice
  
  config PCI_BIOS
  	def_bool y
@@ -286,7 +286,7 @@ Acked-by: jbeulich@suse.com
  
  # x86-64 doesn't support PCI BIOS access from long mode so always go direct.
  config PCI_DIRECT
-@@ -2134,6 +2190,22 @@ config PCI_CNB20LE_QUIRK
+@@ -2135,6 +2191,22 @@ config PCI_CNB20LE_QUIRK
  
  	  You should say N unless you know you need this.
  
@@ -309,7 +309,7 @@ Acked-by: jbeulich@suse.com
  source "drivers/pci/pcie/Kconfig"
  
  source "drivers/pci/Kconfig"
-@@ -2150,6 +2222,7 @@ if X86_32
+@@ -2151,6 +2223,7 @@ if X86_32
  
  config ISA
  	bool "ISA support"
@@ -317,7 +317,7 @@ Acked-by: jbeulich@suse.com
  	---help---
  	  Find out whether you have ISA slots on your motherboard.  ISA is the
  	  name of a bus system, i.e. the way the CPU talks to the other stuff
-@@ -2408,7 +2481,9 @@ source "net/Kconfig"
+@@ -2409,7 +2482,9 @@ source "net/Kconfig"
  
  source "drivers/Kconfig"
  
@@ -327,15 +327,15 @@ Acked-by: jbeulich@suse.com
  
  source "fs/Kconfig"
  
-@@ -2420,4 +2495,6 @@ source "crypto/Kconfig"
+@@ -2421,4 +2496,6 @@ source "crypto/Kconfig"
  
  source "arch/x86/kvm/Kconfig"
  
 +source "drivers/xen/Kconfig"
 +
  source "lib/Kconfig"
---- head.orig/arch/x86/Kconfig.cpu	2014-06-08 20:19:54.000000000 +0200
-+++ head/arch/x86/Kconfig.cpu	2014-04-30 09:47:28.000000000 +0200
+--- 13.2.orig/arch/x86/Kconfig.cpu	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/arch/x86/Kconfig.cpu	2014-04-30 09:47:28.000000000 +0200
 @@ -319,7 +319,7 @@ config X86_PPRO_FENCE
  
  config X86_F00F_BUG
@@ -353,8 +353,8 @@ Acked-by: jbeulich@suse.com
  
  config X86_CMPXCHG64
  	def_bool y
---- head.orig/arch/x86/Kconfig.debug	2014-06-08 20:19:54.000000000 +0200
-+++ head/arch/x86/Kconfig.debug	2013-12-02 16:21:45.000000000 +0100
+--- 13.2.orig/arch/x86/Kconfig.debug	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/arch/x86/Kconfig.debug	2013-12-02 16:21:45.000000000 +0100
 @@ -131,6 +131,7 @@ config DEBUG_NX_TEST
  config DOUBLEFAULT
  	default y
@@ -363,8 +363,8 @@ Acked-by: jbeulich@suse.com
  	---help---
  	  This option allows trapping of rare doublefault exceptions that
  	  would otherwise cause a system to silently reboot. Disabling this
---- head.orig/drivers/acpi/Kconfig	2014-06-08 20:19:54.000000000 +0200
-+++ head/drivers/acpi/Kconfig	2014-01-07 16:09:06.000000000 +0100
+--- 13.2.orig/drivers/acpi/Kconfig	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/drivers/acpi/Kconfig	2014-01-07 16:09:06.000000000 +0100
 @@ -268,6 +268,7 @@ config ACPI_PCI_SLOT
  config X86_PM_TIMER
  	bool "Power Management Timer Support" if EXPERT
@@ -387,8 +387,8 @@ Acked-by: jbeulich@suse.com
 +	depends on (X86 || IA64) && XEN
 +	default y
  endif	# ACPI
---- head.orig/drivers/char/Kconfig	2014-04-30 09:29:07.000000000 +0200
-+++ head/drivers/char/Kconfig	2013-08-09 11:01:02.000000000 +0200
+--- 13.2.orig/drivers/char/Kconfig	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/drivers/char/Kconfig	2013-08-09 11:01:02.000000000 +0200
 @@ -509,7 +509,7 @@ config MAX_RAW_DEVS
  config HPET
  	bool "HPET - High Precision Event Timer" if (X86 || IA64)
@@ -398,8 +398,8 @@ Acked-by: jbeulich@suse.com
  	help
  	  If you say Y here, you will have a miscdevice named "/dev/hpet/".  Each
  	  open selects one of the timers supported by the HPET.  The timers are
---- head.orig/drivers/char/tpm/Kconfig	2014-06-08 20:19:54.000000000 +0200
-+++ head/drivers/char/tpm/Kconfig	2013-12-02 16:22:32.000000000 +0100
+--- 13.2.orig/drivers/char/tpm/Kconfig	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/drivers/char/tpm/Kconfig	2013-12-02 16:22:32.000000000 +0100
 @@ -122,4 +122,13 @@ config TCG_XEN
  	  To compile this driver as a module, choose M here; the module
  	  will be called xen-tpmfront.
@@ -414,8 +414,8 @@ Acked-by: jbeulich@suse.com
 +	  will be called tpm_xenu.
 +
  endif # TCG_TPM
---- head.orig/drivers/cpufreq/Kconfig	2014-06-26 11:20:12.000000000 +0200
-+++ head/drivers/cpufreq/Kconfig	2011-06-30 15:36:01.000000000 +0200
+--- 13.2.orig/drivers/cpufreq/Kconfig	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/drivers/cpufreq/Kconfig	2011-06-30 15:36:01.000000000 +0200
 @@ -2,6 +2,7 @@ menu "CPU Frequency scaling"
  
  config CPU_FREQ
@@ -424,8 +424,8 @@ Acked-by: jbeulich@suse.com
  	help
  	  CPU Frequency scaling allows you to change the clock speed of 
  	  CPUs on the fly. This is a nice method to save power, because 
---- head.orig/drivers/tty/serial/8250/Kconfig	2014-06-26 11:21:01.000000000 +0200
-+++ head/drivers/tty/serial/8250/Kconfig	2012-02-08 10:28:04.000000000 +0100
+--- 13.2.orig/drivers/tty/serial/8250/Kconfig	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/drivers/tty/serial/8250/Kconfig	2012-02-08 10:28:04.000000000 +0100
 @@ -5,6 +5,7 @@
  
  config SERIAL_8250
@@ -434,8 +434,8 @@ Acked-by: jbeulich@suse.com
  	select SERIAL_CORE
  	---help---
  	  This selects whether you want to include the driver for the standard
---- head.orig/drivers/xen/Kconfig	2014-03-31 05:40:15.000000000 +0200
-+++ head/drivers/xen/Kconfig	2014-02-17 17:54:06.000000000 +0100
+--- 13.2.orig/drivers/xen/Kconfig	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/drivers/xen/Kconfig	2014-02-17 17:54:06.000000000 +0100
 @@ -1,8 +1,389 @@
 +#
 +# This Kconfig describe xen options
@@ -851,9 +851,9 @@ Acked-by: jbeulich@suse.com
  	  If in doubt, say yes.
  
  config XEN_DEV_EVTCHN
---- head.orig/fs/Kconfig	2014-04-30 09:29:06.000000000 +0200
-+++ head/fs/Kconfig	2013-01-30 10:32:38.000000000 +0100
-@@ -157,6 +157,7 @@ config HUGETLBFS
+--- 13.2.orig/fs/Kconfig	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/fs/Kconfig	2013-01-30 10:32:38.000000000 +0100
+@@ -154,6 +154,7 @@ config HUGETLBFS
  	bool "HugeTLB file system support"
  	depends on X86 || IA64 || SPARC64 || (S390 && 64BIT) || \
  		   SYS_SUPPORTS_HUGETLBFS || BROKEN
@@ -861,8 +861,8 @@ Acked-by: jbeulich@suse.com
  	help
  	  hugetlbfs is a filesystem backing for HugeTLB pages, based on
  	  ramfs. For architectures that support it, say Y here and read
---- head.orig/kernel/Kconfig.preempt	2013-09-26 10:46:38.000000000 +0200
-+++ head/kernel/Kconfig.preempt	2012-04-10 15:16:13.000000000 +0200
+--- 13.2.orig/kernel/Kconfig.preempt	2014-10-16 11:41:02.000000000 +0200
++++ 13.2/kernel/Kconfig.preempt	2012-04-10 15:16:13.000000000 +0200
 @@ -36,6 +36,7 @@ config PREEMPT_VOLUNTARY
  
  config PREEMPT

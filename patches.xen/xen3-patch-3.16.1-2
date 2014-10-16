@@ -1,0 +1,42 @@
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: Linux 3.16.2
+Patch-mainline: 3.16.2
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Automatically created from "patches.kernel.org/patch-3.16.1-2" by xen-port-patches.py
+
+--- 13.2.orig/arch/x86/include/mach-xen/asm/pgtable.h	2014-06-27 10:54:54.000000000 +0200
++++ 13.2/arch/x86/include/mach-xen/asm/pgtable.h	2014-10-16 12:53:31.000000000 +0200
+@@ -123,8 +123,13 @@ static inline int pte_exec(pte_t pte)
+ 
+ static inline int pte_special(pte_t pte)
+ {
+-	return (pte_flags(pte) & (_PAGE_PRESENT|_PAGE_SPECIAL)) ==
+-				 (_PAGE_PRESENT|_PAGE_SPECIAL);
++	/*
++	 * See CONFIG_NUMA_BALANCING pte_numa in include/asm-generic/pgtable.h.
++	 * On x86 we have _PAGE_BIT_NUMA == _PAGE_BIT_GLOBAL+1 ==
++	 * __PAGE_BIT_SOFTW1 == _PAGE_BIT_SPECIAL.
++	 */
++	return (pte_flags(pte) & _PAGE_SPECIAL) &&
++		(pte_flags(pte) & (_PAGE_PRESENT|_PAGE_PROTNONE));
+ }
+ 
+ #define pte_mfn(_pte) ((_pte).pte_low & _PAGE_PRESENT ? \
+--- 13.2.orig/arch/x86/kernel/vsyscall_64-xen.c	2014-06-27 10:54:54.000000000 +0200
++++ 13.2/arch/x86/kernel/vsyscall_64-xen.c	2014-10-16 12:53:31.000000000 +0200
+@@ -81,10 +81,10 @@ static void warn_bad_vsyscall(const char
+ 	if (!show_unhandled_signals)
+ 		return;
+ 
+-	pr_notice_ratelimited("%s%s[%d] %s ip:%lx cs:%lx sp:%lx ax:%lx si:%lx di:%lx\n",
+-			      level, current->comm, task_pid_nr(current),
+-			      message, regs->ip, regs->cs,
+-			      regs->sp, regs->ax, regs->si, regs->di);
++	printk_ratelimited("%s%s[%d] %s ip:%lx cs:%lx sp:%lx ax:%lx si:%lx di:%lx\n",
++			   level, current->comm, task_pid_nr(current),
++			   message, regs->ip, regs->cs,
++			   regs->sp, regs->ax, regs->si, regs->di);
+ }
+ 
+ static int addr_to_vsyscall_nr(unsigned long addr)

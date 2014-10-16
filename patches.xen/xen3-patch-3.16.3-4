@@ -1,0 +1,37 @@
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: Linux 3.16.4
+Patch-mainline: 3.16.4
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Automatically created from "patches.kernel.org/patch-3.16.3-4" by xen-port-patches.py
+
+--- 13.2.orig/arch/x86/include/mach-xen/asm/fixmap.h	2014-06-27 10:54:54.000000000 +0200
++++ 13.2/arch/x86/include/mach-xen/asm/fixmap.h	2014-10-16 13:20:35.000000000 +0200
+@@ -115,14 +115,14 @@ enum fixed_addresses {
+ 	__end_of_permanent_fixed_addresses,
+ 
+ 	/*
+-	 * 256 temporary boot-time mappings, used by early_ioremap(),
++	 * 512 temporary boot-time mappings, used by early_ioremap(),
+ 	 * before ioremap() is functional.
+ 	 *
+-	 * If necessary we round it up to the next 256 pages boundary so
++	 * If necessary we round it up to the next 512 pages boundary so
+ 	 * that we can have a single pgd entry and a single pte table:
+ 	 */
+ #define NR_FIX_BTMAPS		64
+-#define FIX_BTMAPS_SLOTS	4
++#define FIX_BTMAPS_SLOTS	8
+ #define TOTAL_FIX_BTMAPS	(NR_FIX_BTMAPS * FIX_BTMAPS_SLOTS)
+ 	FIX_BTMAP_END =
+ 	 (__end_of_permanent_fixed_addresses ^
+--- 13.2.orig/arch/x86/include/mach-xen/asm/pgtable_64.h	2014-06-27 10:54:54.000000000 +0200
++++ 13.2/arch/x86/include/mach-xen/asm/pgtable_64.h	2014-10-16 13:20:35.000000000 +0200
+@@ -27,6 +27,7 @@ extern pud_t level3_ident_pgt[512];
+ extern pmd_t level2_kernel_pgt[512];
+ extern pmd_t level2_fixmap_pgt[512];
+ extern pmd_t level2_ident_pgt[512];
++extern pte_t level1_fixmap_pgt[512];
+ extern pgd_t init_level4_pgt[];
+ 
+ #define swapper_pg_dir init_level4_pgt

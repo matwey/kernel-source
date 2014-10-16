@@ -7,8 +7,8 @@ Patch-mainline: 3.13
 Automatically created from "patch-3.13" by xen-port-patches.py
 Acked-by: jbeulich@suse.com
 
---- head.orig/arch/x86/Kconfig.debug	2013-12-02 17:50:19.000000000 +0100
-+++ head/arch/x86/Kconfig.debug	2013-12-06 15:28:36.000000000 +0100
+--- 13.2.orig/arch/x86/Kconfig.debug	2013-12-02 17:50:19.000000000 +0100
++++ 13.2/arch/x86/Kconfig.debug	2013-12-06 15:28:36.000000000 +0100
 @@ -62,7 +62,7 @@ config EARLY_PRINTK_DBGP
  
  config EARLY_PRINTK_EFI
@@ -18,8 +18,8 @@ Acked-by: jbeulich@suse.com
  	select FONT_SUPPORT
  	---help---
  	  Write kernel log output directly into the EFI framebuffer.
---- head.orig/arch/x86/include/mach-xen/asm/desc.h	2013-12-13 09:40:53.000000000 +0100
-+++ head/arch/x86/include/mach-xen/asm/desc.h	2013-12-13 10:00:17.000000000 +0100
+--- 13.2.orig/arch/x86/include/mach-xen/asm/desc.h	2013-12-13 09:40:53.000000000 +0100
++++ 13.2/arch/x86/include/mach-xen/asm/desc.h	2013-12-13 10:00:17.000000000 +0100
 @@ -352,10 +352,25 @@ static inline void write_trace_idt_entry
  {
  	write_idt_entry(trace_idt_table, entry, gate);
@@ -119,8 +119,8 @@ Acked-by: jbeulich@suse.com
  #endif /* !CONFIG_X86_NO_IDT */
  
  #endif /* _ASM_X86_DESC_H */
---- head.orig/arch/x86/include/mach-xen/asm/fpu-internal.h	2013-08-12 13:00:59.000000000 +0200
-+++ head/arch/x86/include/mach-xen/asm/fpu-internal.h	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/include/mach-xen/asm/fpu-internal.h	2013-08-12 13:00:59.000000000 +0200
++++ 13.2/arch/x86/include/mach-xen/asm/fpu-internal.h	2013-12-06 15:23:26.000000000 +0100
 @@ -31,7 +31,7 @@ static inline fpu_switch_t xen_switch_fp
  	 * or if the past 5 consecutive context-switches used math.
  	 */
@@ -152,8 +152,8 @@ Acked-by: jbeulich@suse.com
  			if (!use_eager_fpu() && fpu_lazy_restore(new, cpu))
  				fpu.preload = 0;
  			else
---- head.orig/arch/x86/include/mach-xen/asm/pci.h	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/include/mach-xen/asm/pci.h	2014-02-13 12:47:14.000000000 +0100
+--- 13.2.orig/arch/x86/include/mach-xen/asm/pci.h	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/include/mach-xen/asm/pci.h	2014-02-13 12:47:14.000000000 +0100
 @@ -15,7 +15,7 @@ struct pci_sysdata {
  	int		domain;		/* PCI domain */
  	int		node;		/* NUMA node */
@@ -163,8 +163,8 @@ Acked-by: jbeulich@suse.com
  #endif
  #if defined(CONFIG_X86_64) && !defined(CONFIG_XEN)
  	void		*iommu;		/* IOMMU private data */
---- head.orig/arch/x86/include/mach-xen/asm/pgtable.h	2013-10-10 17:50:46.000000000 +0200
-+++ head/arch/x86/include/mach-xen/asm/pgtable.h	2014-01-07 16:57:24.000000000 +0100
+--- 13.2.orig/arch/x86/include/mach-xen/asm/pgtable.h	2013-10-10 17:50:46.000000000 +0200
++++ 13.2/arch/x86/include/mach-xen/asm/pgtable.h	2014-01-07 16:57:24.000000000 +0100
 @@ -454,9 +454,16 @@ static inline int pte_present(pte_t a)
  }
  
@@ -184,8 +184,8 @@ Acked-by: jbeulich@suse.com
  }
  
  static inline int pte_hidden(pte_t pte)
---- head.orig/arch/x86/include/mach-xen/asm/processor.h	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/include/mach-xen/asm/processor.h	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/include/mach-xen/asm/processor.h	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/include/mach-xen/asm/processor.h	2013-12-06 15:23:26.000000000 +0100
 @@ -502,6 +502,15 @@ struct thread_struct {
  	unsigned long		iopl;
  	/* Max allowed port in the bitmap, in bytes: */
@@ -202,8 +202,8 @@ Acked-by: jbeulich@suse.com
  };
  
  /*
---- head.orig/arch/x86/kernel/Makefile	2013-12-03 08:36:16.000000000 +0100
-+++ head/arch/x86/kernel/Makefile	2013-12-13 10:00:50.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/Makefile	2013-12-03 08:36:16.000000000 +0100
++++ 13.2/arch/x86/kernel/Makefile	2013-12-13 10:00:50.000000000 +0100
 @@ -122,6 +122,5 @@ ifeq ($(CONFIG_X86_64),y)
  endif
  
@@ -212,8 +212,8 @@ Acked-by: jbeulich@suse.com
 -	tsc%.o vsmp%.o
 +	irqinit.o pci-swiotlb.o reboot.o smpboot.o trampoline%.o tsc%.o vsmp%.o
  disabled-obj-$(CONFIG_XEN_UNPRIVILEGED_GUEST) += probe_roms.o
---- head.orig/arch/x86/kernel/acpi/boot.c	2013-12-03 08:36:20.000000000 +0100
-+++ head/arch/x86/kernel/acpi/boot.c	2013-12-06 15:31:00.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/acpi/boot.c	2013-12-03 08:36:20.000000000 +0100
++++ 13.2/arch/x86/kernel/acpi/boot.c	2013-12-06 15:31:00.000000000 +0100
 @@ -198,7 +198,13 @@ static int __init acpi_parse_madt(struct
   *
   * Returns the logic cpu number which maps to the local apic
@@ -238,8 +238,8 @@ Acked-by: jbeulich@suse.com
  #endif
  
  /* wrapper to silence section mismatch warning */
---- head.orig/arch/x86/kernel/cpu/common-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/kernel/cpu/common-xen.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/cpu/common-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/kernel/cpu/common-xen.c	2013-12-06 15:23:26.000000000 +0100
 @@ -366,7 +366,8 @@ static void filter_cpuid_features(struct
  /* Look up CPU names by table lookup. */
  static const char *table_lookup_model(struct cpuinfo_x86 *c)
@@ -297,8 +297,8 @@ Acked-by: jbeulich@suse.com
  DEFINE_PER_CPU(struct task_struct *, fpu_owner_task);
  
  #ifdef CONFIG_CC_STACKPROTECTOR
---- head.orig/arch/x86/kernel/early_printk-xen.c	2013-05-24 11:49:51.000000000 +0200
-+++ head/arch/x86/kernel/early_printk-xen.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/early_printk-xen.c	2013-05-24 11:49:51.000000000 +0200
++++ 13.2/arch/x86/kernel/early_printk-xen.c	2013-12-06 15:23:26.000000000 +0100
 @@ -13,9 +13,10 @@
  #include <asm/setup.h>
  #include <asm/pci-direct.h>
@@ -321,8 +321,8 @@ Acked-by: jbeulich@suse.com
  #endif
  			early_console_register(&early_vga_console, keep);
  		}
---- head.orig/arch/x86/kernel/entry_32-xen.S	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/kernel/entry_32-xen.S	2014-01-22 14:23:28.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/entry_32-xen.S	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/kernel/entry_32-xen.S	2014-01-22 14:23:28.000000000 +0100
 @@ -366,12 +366,9 @@ END(ret_from_exception)
  #ifdef CONFIG_PREEMPT
  ENTRY(resume_kernel)
@@ -373,8 +373,8 @@ Acked-by: jbeulich@suse.com
  ENTRY(page_fault)
  	RING0_EC_FRAME
  	ASM_CLAC
---- head.orig/arch/x86/kernel/entry_64-xen.S	2014-06-27 08:29:00.000000000 +0200
-+++ head/arch/x86/kernel/entry_64-xen.S	2014-01-22 14:23:28.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/entry_64-xen.S	2014-06-27 08:29:00.000000000 +0200
++++ 13.2/arch/x86/kernel/entry_64-xen.S	2014-01-22 14:23:28.000000000 +0100
 @@ -93,7 +93,7 @@ END(function_hook)
  	MCOUNT_SAVE_FRAME \skip
  
@@ -441,8 +441,8 @@ Acked-by: jbeulich@suse.com
  #ifdef CONFIG_KVM_GUEST
  errorentry async_page_fault do_async_page_fault
  #endif
---- head.orig/arch/x86/kernel/head32-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/kernel/head32-xen.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/head32-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/kernel/head32-xen.c	2013-12-06 15:23:26.000000000 +0100
 @@ -53,8 +53,8 @@ asmlinkage void __init i386_start_kernel
  
  	/* Call the subarch specific early setup function */
@@ -454,8 +454,8 @@ Acked-by: jbeulich@suse.com
  		break;
  	case X86_SUBARCH_CE4100:
  		x86_ce4100_early_setup();
---- head.orig/arch/x86/kernel/head64-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/kernel/head64-xen.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/head64-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/kernel/head64-xen.c	2013-12-06 15:23:26.000000000 +0100
 @@ -180,7 +180,7 @@ asmlinkage void __init x86_64_start_kern
  	clear_bss();
  
@@ -465,8 +465,8 @@ Acked-by: jbeulich@suse.com
  	load_idt((const struct desc_ptr *)&idt_descr);
  
  	copy_bootdata(__va(real_mode_data));
---- head.orig/arch/x86/kernel/process-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/kernel/process-xen.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/process-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/kernel/process-xen.c	2013-12-06 15:23:26.000000000 +0100
 @@ -383,9 +383,9 @@ static void amd_e400_idle(void)
  		 * The switch back from broadcast mode needs to be
  		 * called with interrupts disabled.
@@ -480,8 +480,8 @@ Acked-by: jbeulich@suse.com
  	} else
  		default_idle();
  }
---- head.orig/arch/x86/kernel/process_32-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/kernel/process_32-xen.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/process_32-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/kernel/process_32-xen.c	2013-12-06 15:23:26.000000000 +0100
 @@ -156,7 +156,7 @@ int copy_thread(unsigned long clone_flag
  		childregs->orig_ax = -1;
  		childregs->cs = __KERNEL_CS | get_kernel_rpl();
@@ -515,8 +515,8 @@ Acked-by: jbeulich@suse.com
  	 * Now maybe handle debug registers
  	 */
  	if (unlikely(task_thread_info(prev_p)->flags & _TIF_WORK_CTXSW_PREV ||
---- head.orig/arch/x86/kernel/process_64-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/kernel/process_64-xen.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/process_64-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/kernel/process_64-xen.c	2013-12-06 15:23:26.000000000 +0100
 @@ -66,7 +66,7 @@ void __show_regs(struct pt_regs *regs, i
  	unsigned int ds, cs, es;
  
@@ -550,8 +550,8 @@ Acked-by: jbeulich@suse.com
  	this_cpu_write(kernel_stack,
  		  (unsigned long)task_stack_page(next_p) +
  		  THREAD_SIZE - KERNEL_STACK_OFFSET);
---- head.orig/arch/x86/kernel/setup-xen.c	2013-12-10 10:43:00.000000000 +0100
-+++ head/arch/x86/kernel/setup-xen.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/setup-xen.c	2013-12-10 10:43:00.000000000 +0100
++++ 13.2/arch/x86/kernel/setup-xen.c	2013-12-06 15:23:26.000000000 +0100
 @@ -1115,6 +1115,7 @@ void __init setup_arch(char **cmdline_p)
  
  	if (is_initial_xendomain()) {
@@ -560,7 +560,7 @@ Acked-by: jbeulich@suse.com
  		dmi_set_dump_stack_arch_desc();
  	} else {
  		int ver = HYPERVISOR_xen_version(XENVER_version, NULL);
-@@ -1263,8 +1264,6 @@ void __init setup_arch(char **cmdline_p)
+@@ -1267,8 +1268,6 @@ void __init setup_arch(char **cmdline_p)
  	acpi_initrd_override((void *)initrd_start, initrd_end - initrd_start);
  #endif
  
@@ -569,7 +569,7 @@ Acked-by: jbeulich@suse.com
  	vsmp_init();
  
  	io_delay_init();
-@@ -1284,6 +1283,13 @@ void __init setup_arch(char **cmdline_p)
+@@ -1288,6 +1287,13 @@ void __init setup_arch(char **cmdline_p)
  	early_acpi_boot_init();
  
  	initmem_init();
@@ -584,7 +584,7 @@ Acked-by: jbeulich@suse.com
  
  #ifdef CONFIG_KVM_GUEST
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ head/arch/x86/kernel/tracepoint-xen.c	2013-12-13 10:02:53.000000000 +0100
++++ 13.2/arch/x86/kernel/tracepoint-xen.c	2013-12-13 10:02:53.000000000 +0100
 @@ -0,0 +1,53 @@
 +/*
 + * Code for supporting irq vector tracepoints.
@@ -639,8 +639,8 @@ Acked-by: jbeulich@suse.com
 +	}
 +	mutex_unlock(&trap_table_mutex);
 +}
---- head.orig/arch/x86/kernel/traps-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/kernel/traps-xen.c	2013-12-13 11:05:57.000000000 +0100
+--- 13.2.orig/arch/x86/kernel/traps-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/kernel/traps-xen.c	2013-12-13 11:05:57.000000000 +0100
 @@ -94,7 +94,7 @@ static inline void conditional_sti(struc
  
  static inline void preempt_conditional_sti(struct pt_regs *regs)
@@ -702,8 +702,8 @@ Acked-by: jbeulich@suse.com
  /* Set of traps needed for early debugging. */
  void __init early_trap_init(void)
  {
---- head.orig/arch/x86/mm/fault-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/arch/x86/mm/fault-xen.c	2014-01-22 14:23:28.000000000 +0100
+--- 13.2.orig/arch/x86/mm/fault-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/arch/x86/mm/fault-xen.c	2014-01-22 14:23:28.000000000 +0100
 @@ -20,6 +20,9 @@
  #include <asm/kmemcheck.h>		/* kmemcheck_*(), ...		*/
  #include <asm/fixmap.h>			/* VSYSCALL_START		*/
@@ -856,8 +856,8 @@ Acked-by: jbeulich@suse.com
 +	__do_page_fault(regs, error_code);
 +	exception_exit(prev_state);
 +}
---- head.orig/arch/x86/mm/init-xen.c	2014-02-28 15:08:55.000000000 +0100
-+++ head/arch/x86/mm/init-xen.c	2014-02-28 15:09:14.000000000 +0100
+--- 13.2.orig/arch/x86/mm/init-xen.c	2014-02-28 15:08:55.000000000 +0100
++++ 13.2/arch/x86/mm/init-xen.c	2014-02-28 15:09:14.000000000 +0100
 @@ -53,12 +53,12 @@ __ref void *alloc_low_pages(unsigned int
  	if ((pgt_buf_end + num) > pgt_buf_top || !can_use_brk_pgt) {
  		unsigned long ret;
@@ -1042,8 +1042,8 @@ Acked-by: jbeulich@suse.com
  
  #ifdef CONFIG_X86_64
  	if (max_pfn > max_low_pfn) {
---- head.orig/arch/x86/mm/pgtable-xen.c	2013-12-10 11:40:30.000000000 +0100
-+++ head/arch/x86/mm/pgtable-xen.c	2013-12-10 11:41:00.000000000 +0100
+--- 13.2.orig/arch/x86/mm/pgtable-xen.c	2013-12-10 11:40:30.000000000 +0100
++++ 13.2/arch/x86/mm/pgtable-xen.c	2013-12-10 11:41:00.000000000 +0100
 @@ -38,11 +38,14 @@ pgtable_t pte_alloc_one(struct mm_struct
  	struct page *pte;
  
@@ -1107,8 +1107,8 @@ Acked-by: jbeulich@suse.com
  	/*
  	 * While mm->page_table_lock protects us against insertions and
  	 * removals of higher level page table pages, it doesn't protect
---- head.orig/drivers/acpi/Kconfig	2013-12-02 17:41:49.000000000 +0100
-+++ head/drivers/acpi/Kconfig	2014-01-07 17:00:00.000000000 +0100
+--- 13.2.orig/drivers/acpi/Kconfig	2013-12-02 17:41:49.000000000 +0100
++++ 13.2/drivers/acpi/Kconfig	2014-01-07 17:00:00.000000000 +0100
 @@ -369,7 +369,7 @@ source "drivers/acpi/apei/Kconfig"
  
  config ACPI_EXTLOG
@@ -1118,8 +1118,8 @@ Acked-by: jbeulich@suse.com
  	select UEFI_CPER
  	default n
  	help
---- head.orig/drivers/acpi/acpi_processor.c	2013-08-14 15:26:05.000000000 +0200
-+++ head/drivers/acpi/acpi_processor.c	2013-12-11 10:56:59.000000000 +0100
+--- 13.2.orig/drivers/acpi/acpi_processor.c	2013-08-14 15:26:05.000000000 +0200
++++ 13.2/drivers/acpi/acpi_processor.c	2013-12-11 10:56:59.000000000 +0100
 @@ -283,9 +283,7 @@ static int acpi_processor_get_info(struc
  	 */
  	if (pr->id == -1) {
@@ -1131,8 +1131,8 @@ Acked-by: jbeulich@suse.com
  			return ret;
  	}
  #if defined(CONFIG_SMP) && defined(CONFIG_PROCESSOR_EXTERNAL_CONTROL)
---- head.orig/drivers/acpi/processor_core.c	2014-04-30 11:32:59.000000000 +0200
-+++ head/drivers/acpi/processor_core.c	2013-12-13 09:07:13.000000000 +0100
+--- 13.2.orig/drivers/acpi/processor_core.c	2014-04-30 11:32:59.000000000 +0200
++++ 13.2/drivers/acpi/processor_core.c	2013-12-13 09:07:13.000000000 +0100
 @@ -193,7 +193,7 @@ int acpi_get_apicid(acpi_handle handle, 
  
  int acpi_map_cpuid(int apic_id, u32 acpi_id)
@@ -1142,8 +1142,8 @@ Acked-by: jbeulich@suse.com
  	int i;
  #endif
  
---- head.orig/drivers/hwmon/coretemp-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/drivers/hwmon/coretemp-xen.c	2014-01-22 14:23:28.000000000 +0100
+--- 13.2.orig/drivers/hwmon/coretemp-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/drivers/hwmon/coretemp-xen.c	2014-01-22 14:23:28.000000000 +0100
 @@ -53,7 +53,7 @@ MODULE_PARM_DESC(tjmax, "TjMax value in 
  
  #define BASE_SYSFS_ATTR_NO	2	/* Sysfs Base attr no for coretemp */
@@ -1153,8 +1153,8 @@ Acked-by: jbeulich@suse.com
  #define MAX_CORE_ATTRS		4	/* Maximum no of basic attrs */
  #define TOTAL_ATTRS		(MAX_CORE_ATTRS + 1)
  #define MAX_CORE_DATA		(NUM_REAL_CORES + BASE_SYSFS_ATTR_NO)
---- head.orig/drivers/misc/mic/Kconfig	2014-06-08 20:19:54.000000000 +0200
-+++ head/drivers/misc/mic/Kconfig	2014-04-30 11:34:05.000000000 +0200
+--- 13.2.orig/drivers/misc/mic/Kconfig	2014-10-16 11:41:01.000000000 +0200
++++ 13.2/drivers/misc/mic/Kconfig	2014-04-30 11:34:05.000000000 +0200
 @@ -2,7 +2,7 @@ comment "Intel MIC Host Driver"
  
  config INTEL_MIC_HOST
@@ -1173,8 +1173,8 @@ Acked-by: jbeulich@suse.com
  	select VIRTIO
  	help
  	  This enables card driver support for the Intel Many Integrated
---- head.orig/drivers/pci/msi-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/drivers/pci/msi-xen.c	2013-12-11 16:30:51.000000000 +0100
+--- 13.2.orig/drivers/pci/msi-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/drivers/pci/msi-xen.c	2013-12-11 16:30:51.000000000 +0100
 @@ -236,7 +236,7 @@ static u64 find_table_base(struct pci_de
  	unsigned long flags;
  
@@ -1184,7 +1184,7 @@ Acked-by: jbeulich@suse.com
  
  	flags = pci_resource_flags(dev, bar);
  	if (flags & (IORESOURCE_DISABLED | IORESOURCE_UNSET | IORESOURCE_BUSY))
-@@ -645,7 +645,7 @@ static int msix_capability_init(struct p
+@@ -640,7 +640,7 @@ static int msix_capability_init(struct p
   * @nvec: how many MSIs have been requested ?
   * @type: are we checking for MSI or MSI-X ?
   *
@@ -1193,7 +1193,7 @@ Acked-by: jbeulich@suse.com
   * to determine if MSI/-X are supported for the device. If MSI/-X is
   * supported return 0, else return an error code.
   **/
-@@ -703,7 +703,7 @@ int pci_enable_msi_block(struct pci_dev 
+@@ -698,7 +698,7 @@ int pci_enable_msi_block(struct pci_dev 
  	u16 msgctl;
  	struct msi_dev_list *msi_dev_entry = get_msi_dev_pirq_list(dev);
  
@@ -1202,7 +1202,7 @@ Acked-by: jbeulich@suse.com
  		return -EINVAL;
  
  	pci_read_config_word(dev, dev->msi_cap + PCI_MSI_FLAGS, &msgctl);
-@@ -762,7 +762,7 @@ int pci_enable_msi_block_auto(struct pci
+@@ -757,7 +757,7 @@ int pci_enable_msi_block_auto(struct pci
  	int ret, nvec;
  	u16 msgctl;
  
@@ -1211,7 +1211,7 @@ Acked-by: jbeulich@suse.com
  		return -EINVAL;
  
  	pci_read_config_word(dev, dev->msi_cap + PCI_MSI_FLAGS, &msgctl);
-@@ -858,7 +858,7 @@ int pci_enable_msix(struct pci_dev *dev,
+@@ -853,7 +853,7 @@ int pci_enable_msix(struct pci_dev *dev,
  	int i, j, temp;
  	struct msi_dev_list *msi_dev_entry = get_msi_dev_pirq_list(dev);
  
@@ -1220,8 +1220,8 @@ Acked-by: jbeulich@suse.com
  		return -EINVAL;
  
  	if (!is_initial_xendomain()) {
---- head.orig/drivers/xen/netback/common.h	2013-10-29 10:17:45.000000000 +0100
-+++ head/drivers/xen/netback/common.h	2014-01-28 17:45:44.000000000 +0100
+--- 13.2.orig/drivers/xen/netback/common.h	2013-10-29 10:17:45.000000000 +0100
++++ 13.2/drivers/xen/netback/common.h	2014-01-28 17:45:44.000000000 +0100
 @@ -67,7 +67,9 @@ typedef struct netif_st {
  	/* Frontend feature information. */
  	u8 can_sg:1;
@@ -1232,8 +1232,8 @@ Acked-by: jbeulich@suse.com
  
  	/* Internal feature information. */
  	u8 can_queue:1;	/* can queue packets for receiver? */
---- head.orig/drivers/xen/netback/interface.c	2013-02-20 11:37:02.000000000 +0100
-+++ head/drivers/xen/netback/interface.c	2014-01-28 17:46:39.000000000 +0100
+--- 13.2.orig/drivers/xen/netback/interface.c	2013-02-20 11:37:02.000000000 +0100
++++ 13.2/drivers/xen/netback/interface.c	2014-01-28 17:46:39.000000000 +0100
 @@ -108,8 +108,12 @@ static netdev_features_t netbk_fix_featu
  		features &= ~NETIF_F_SG;
  	if (!netif->gso)
@@ -1257,8 +1257,8 @@ Acked-by: jbeulich@suse.com
  	dev->features = dev->hw_features;
  
  	SET_ETHTOOL_OPS(dev, &network_ethtool_ops);
---- head.orig/drivers/xen/netback/netback.c	2013-08-21 09:26:20.000000000 +0200
-+++ head/drivers/xen/netback/netback.c	2014-03-11 10:41:37.000000000 +0100
+--- 13.2.orig/drivers/xen/netback/netback.c	2013-08-21 09:26:20.000000000 +0200
++++ 13.2/drivers/xen/netback/netback.c	2014-03-11 10:41:37.000000000 +0100
 @@ -311,7 +311,7 @@ static struct sk_buff *netbk_copy_skb(st
  
  static inline unsigned int netbk_max_required_rx_slots(const netif_t *netif)
@@ -1308,8 +1308,8 @@ Acked-by: jbeulich@suse.com
  
  	/* Header must be checked, and gso_segs computed. */
  	skb_shinfo(skb)->gso_type |= SKB_GSO_DODGY;
---- head.orig/drivers/xen/netback/xenbus.c	2011-11-18 15:49:36.000000000 +0100
-+++ head/drivers/xen/netback/xenbus.c	2014-01-28 17:46:17.000000000 +0100
+--- 13.2.orig/drivers/xen/netback/xenbus.c	2011-11-18 15:49:36.000000000 +0100
++++ 13.2/drivers/xen/netback/xenbus.c	2014-01-28 17:46:17.000000000 +0100
 @@ -107,6 +107,21 @@ static int netback_probe(struct xenbus_d
  			goto abort_transaction;
  		}
@@ -1354,8 +1354,8 @@ Acked-by: jbeulich@suse.com
  	/* Map the shared frame, irq etc. */
  	err = netif_map(be, tx_ring_ref, rx_ring_ref, evtchn);
  	if (err) {
---- head.orig/drivers/xen/netfront/netfront.c	2014-01-07 16:37:19.000000000 +0100
-+++ head/drivers/xen/netfront/netfront.c	2014-01-07 16:42:29.000000000 +0100
+--- 13.2.orig/drivers/xen/netfront/netfront.c	2014-01-07 16:37:19.000000000 +0100
++++ 13.2/drivers/xen/netfront/netfront.c	2014-01-07 16:42:29.000000000 +0100
 @@ -452,6 +452,17 @@ again:
  		goto abort_transaction;
  	}
@@ -1427,8 +1427,8 @@ Acked-by: jbeulich@suse.com
  
  	/*
           * Assume that all hw features are available for now. This set
---- head.orig/drivers/xen/pci.c	2014-08-06 12:25:25.000000000 +0200
-+++ head/drivers/xen/pci.c	2013-12-06 15:48:05.000000000 +0100
+--- 13.2.orig/drivers/xen/pci.c	2014-08-06 12:25:25.000000000 +0200
++++ 13.2/drivers/xen/pci.c	2013-12-06 15:48:05.000000000 +0100
 @@ -212,7 +212,7 @@ static int __init register_xen_pci_notif
  
  arch_initcall(register_xen_pci_notifier);
@@ -1438,8 +1438,8 @@ Acked-by: jbeulich@suse.com
  static int __init xen_mcfg_late(void)
  {
  	struct pci_mmcfg_region *cfg;
---- head.orig/drivers/xen/xenbus/xenbus_probe.c	2013-08-12 15:14:21.000000000 +0200
-+++ head/drivers/xen/xenbus/xenbus_probe.c	2013-12-10 11:54:50.000000000 +0100
+--- 13.2.orig/drivers/xen/xenbus/xenbus_probe.c	2013-08-12 15:14:21.000000000 +0200
++++ 13.2/drivers/xen/xenbus/xenbus_probe.c	2013-12-10 11:54:50.000000000 +0100
 @@ -473,6 +473,9 @@ static ssize_t nodename_show(struct devi
  {
  	return sprintf(buf, "%s\n", to_xenbus_device(dev)->nodename);
@@ -1507,8 +1507,8 @@ Acked-by: jbeulich@suse.com
  		.dev_attrs = xenbus_dev_attrs,
  #endif
  	},
---- head.orig/drivers/xen/xenbus/xenbus_probe.h	2013-06-04 14:12:33.000000000 +0200
-+++ head/drivers/xen/xenbus/xenbus_probe.h	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/drivers/xen/xenbus/xenbus_probe.h	2013-06-04 14:12:33.000000000 +0200
++++ 13.2/drivers/xen/xenbus/xenbus_probe.h	2013-12-06 15:23:26.000000000 +0100
 @@ -84,7 +84,7 @@ enum xenstore_init {
  	XS_LOCAL,
  };
@@ -1518,8 +1518,8 @@ Acked-by: jbeulich@suse.com
  
  extern int xenbus_match(struct device *_dev, struct device_driver *_drv);
  extern int xenbus_dev_probe(struct device *_dev);
---- head.orig/drivers/xen/xenbus/xenbus_probe_backend.c	2013-08-12 13:55:51.000000000 +0200
-+++ head/drivers/xen/xenbus/xenbus_probe_backend.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/drivers/xen/xenbus/xenbus_probe_backend.c	2013-08-12 13:55:51.000000000 +0200
++++ 13.2/drivers/xen/xenbus/xenbus_probe_backend.c	2013-12-06 15:23:26.000000000 +0100
 @@ -223,7 +223,7 @@ static struct xen_bus_type xenbus_backen
  #ifdef CONFIG_XEN
  		.shutdown	= xenbus_dev_shutdown,
@@ -1529,8 +1529,8 @@ Acked-by: jbeulich@suse.com
  	},
  };
  
---- head.orig/include/xen/interface/io/blkif.h	2014-01-30 10:34:40.000000000 +0100
-+++ head/include/xen/interface/io/blkif.h	2014-01-30 10:36:20.000000000 +0100
+--- 13.2.orig/include/xen/interface/io/blkif.h	2014-01-30 10:34:40.000000000 +0100
++++ 13.2/include/xen/interface/io/blkif.h	2014-01-30 10:36:20.000000000 +0100
 @@ -544,7 +544,7 @@ struct blkif_request {
          struct __attribute__((__packed__)) blkif_request_rw {
              uint8_t        nr_segments;  /* number of segments                  */
@@ -1576,8 +1576,8 @@ Acked-by: jbeulich@suse.com
  		uint32_t      _pad3;     /* make it 64 byte aligned */
  #else
  		uint64_t      _pad3;     /* make it 64 byte aligned */
---- head.orig/include/xen/net-util.h	2013-12-10 18:01:47.000000000 +0100
-+++ head/include/xen/net-util.h	2014-02-12 08:53:44.000000000 +0100
+--- 13.2.orig/include/xen/net-util.h	2013-12-10 18:01:47.000000000 +0100
++++ 13.2/include/xen/net-util.h	2014-02-12 08:53:44.000000000 +0100
 @@ -6,12 +6,191 @@
  #include <linux/tcp.h>
  #include <linux/udp.h>
@@ -1824,8 +1824,8 @@ Acked-by: jbeulich@suse.com
  	return err;
  }
  
---- head.orig/lib/swiotlb-xen.c	2013-09-26 15:33:39.000000000 +0200
-+++ head/lib/swiotlb-xen.c	2013-12-06 15:23:26.000000000 +0100
+--- 13.2.orig/lib/swiotlb-xen.c	2013-09-26 15:33:39.000000000 +0200
++++ 13.2/lib/swiotlb-xen.c	2013-12-06 15:23:26.000000000 +0100
 @@ -35,6 +35,9 @@
  #include <xen/interface/memory.h>
  #include <asm/gnttab_dma.h>

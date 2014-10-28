@@ -1,0 +1,35 @@
+From 9e91c807c8800b22b066cca39d4f10fa1ad4d02b Mon Sep 17 00:00:00 2001
+From: Alexander Graf <agraf@suse.de>
+Date: Mon, 27 Oct 2014 09:41:51 +0100
+Subject: [PATCH 38/38] arm64/mustang: Disable sgenet and xgenet
+Patch-mainline: No
+References: bnc#902632
+
+The SGMII and XGMII ethernet interfaces oops on bootup. Disable them
+for now.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+
+---
+ arch/arm64/boot/dts/apm-mustang.dts | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/apm-mustang.dts b/arch/arm64/boot/dts/apm-mustang.dts
+index 2e25de0..40d2718 100644
+--- a/arch/arm64/boot/dts/apm-mustang.dts
++++ b/arch/arm64/boot/dts/apm-mustang.dts
+@@ -41,6 +41,7 @@
+	status = "ok";
+ };
+
++/*
+ &sgenet0 {
+	status = "ok";
+ };
+@@ -48,3 +49,4 @@
+ &xgenet {
+	status = "ok";
+ };
++*/
+--
+2.1.0

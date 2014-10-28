@@ -1,0 +1,101 @@
+From 0b95d3aa85cd8166efc8ea830ae509c0826859ef Mon Sep 17 00:00:00 2001
+From: Liviu Dudau <Liviu.Dudau@arm.com>
+Date: Mon, 29 Sep 2014 15:29:24 +0100
+Subject: [PATCH 28/38] of/pci: Move of_pci_range_to_resource() to of/address.c
+Git-commit: 83bbde1cc0ec9d156b9271e29ffe0dc89c687feb
+Patch-mainline: v3.18-rc1
+References: bnc#902632
+
+We need to enhance of_pci_range_to_resources() enough that it won't make
+sense for it to be inline anymore.  Move it to drivers/of/address.c, under
+#ifdef CONFIG_PCI.
+
+of_address.h previously implemented of_pci_range_to_resources()
+unconditionally, regardless of any config options.  The implementation in
+address.c is defined only when CONFIG_OF_ADDRESS=y and CONFIG_PCI=y,
+so add a dummy version to avoid build errors when CONFIG_OF or
+CONFIG_OF_ADDRESS is not defined.
+
+[bhelgaas: drop extra detail from changelog, move def under CONFIG_PCI,
+add dummy of_pci_range_to_resource() for build errors (from Arnd)]
+
+Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+
+---
+ drivers/of/address.c       |  9 +++++++++
+ include/linux/of_address.h | 20 +++++++++-----------
+ 2 files changed, 18 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index 48218cb..9fdfcdb 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -295,6 +295,15 @@ struct of_pci_range *of_pci_range_parser_one(struct of_pci_range_parser *parser,
+ }
+ EXPORT_SYMBOL_GPL(of_pci_range_parser_one);
+
++void of_pci_range_to_resource(struct of_pci_range *range,
++			      struct device_node *np, struct resource *res)
++{
++	res->flags = range->flags;
++	res->start = range->cpu_addr;
++	res->end = range->cpu_addr + range->size - 1;
++	res->parent = res->child = res->sibling = NULL;
++	res->name = np->full_name;
++}
+ #endif /* CONFIG_PCI */
+
+ /*
+diff --git a/include/linux/of_address.h b/include/linux/of_address.h
+index 4b7c4de..24f5e32 100644
+--- a/include/linux/of_address.h
++++ b/include/linux/of_address.h
+@@ -23,17 +23,6 @@ struct of_pci_range {
+ #define for_each_of_pci_range(parser, range) \
+	for (; of_pci_range_parser_one(parser, range);)
+
+-static inline void of_pci_range_to_resource(struct of_pci_range *range,
+-					    struct device_node *np,
+-					    struct resource *res)
+-{
+-	res->flags = range->flags;
+-	res->start = range->cpu_addr;
+-	res->end = range->cpu_addr + range->size - 1;
+-	res->parent = res->child = res->sibling = NULL;
+-	res->name = np->full_name;
+-}
+-
+ /* Translate a DMA address from device space to CPU space */
+ extern u64 of_translate_dma_address(struct device_node *dev,
+				    const __be32 *in_addr);
+@@ -134,6 +123,9 @@ extern const __be32 *of_get_pci_address(struct device_node *dev, int bar_no,
+			       u64 *size, unsigned int *flags);
+ extern int of_pci_address_to_resource(struct device_node *dev, int bar,
+				      struct resource *r);
++extern void of_pci_range_to_resource(struct of_pci_range *range,
++				     struct device_node *np,
++				     struct resource *res);
+ #else /* CONFIG_OF_ADDRESS && CONFIG_PCI */
+ static inline int of_pci_address_to_resource(struct device_node *dev, int bar,
+				             struct resource *r)
+@@ -146,6 +138,12 @@ static inline const __be32 *of_get_pci_address(struct device_node *dev,
+ {
+	return NULL;
+ }
++static inline void of_pci_range_to_resource(struct of_pci_range *range,
++					    struct device_node *np,
++					    struct resource *res)
++{
++	return -ENOSYS;
++}
+ #endif /* CONFIG_OF_ADDRESS && CONFIG_PCI */
+
+ #endif /* __OF_ADDRESS_H */
+--
+2.1.0

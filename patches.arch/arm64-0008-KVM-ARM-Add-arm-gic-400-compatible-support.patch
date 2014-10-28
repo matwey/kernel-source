@@ -1,0 +1,33 @@
+From 5c8a2dba556e1664a8b9281d7662e5f794720ad4 Mon Sep 17 00:00:00 2001
+From: Andreas Schwab <schwab@suse.de>
+Date: Thu, 11 Sep 2014 12:02:29 +0200
+Subject: [PATCH 08/38] KVM: ARM: Add "arm,gic-400" compatible support
+Git-commit: 5c8a2dba556e1664a8b9281d7662e5f794720ad4
+Patch-mainline: No
+References: bnc#902632
+
+Some device trees specify their GIC as compatible "arm,gic-400". The code
+supports those just fine, we were only missing the compatible to make it
+work.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+
+---
+ virt/kvm/arm/vgic.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/virt/kvm/arm/vgic.c b/virt/kvm/arm/vgic.c
+index 476d3bf..718e8ca 100644
+--- a/virt/kvm/arm/vgic.c
++++ b/virt/kvm/arm/vgic.c
+@@ -1477,6 +1477,8 @@ int kvm_vgic_hyp_init(void)
+	struct resource vcpu_res;
+
+	vgic_node = of_find_compatible_node(NULL, NULL, "arm,cortex-a15-gic");
++	if (!vgic_node)
++		vgic_node = of_find_compatible_node(NULL, NULL, "arm,gic-400");
+	if (!vgic_node) {
+		kvm_err("error: no compatible vgic node in DT\n");
+		return -ENODEV;
+--
+2.1.0

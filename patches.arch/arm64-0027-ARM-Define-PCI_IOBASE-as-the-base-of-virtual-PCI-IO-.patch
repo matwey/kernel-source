@@ -1,0 +1,39 @@
+From bf1747cd1bec0d05c61f6b209264bbac4726dec2 Mon Sep 17 00:00:00 2001
+From: Liviu Dudau <Liviu.Dudau@arm.com>
+Date: Mon, 29 Sep 2014 15:29:22 +0100
+Subject: [PATCH 27/38] ARM: Define PCI_IOBASE as the base of virtual PCI IO
+ space
+Git-commit: dad13e3c08e7005854271e562eda4ffa5c71bc38
+Patch-mainline: v3.18-rc1
+References: bnc#902632
+
+This is needed for calls into OF code that parses PCI ranges.  It signals
+support for memory mapped PCI I/O accesses that are described by device
+trees.
+
+Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Rob Herring <robh+dt@kernel.org>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+
+---
+ arch/arm/include/asm/io.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/include/asm/io.h b/arch/arm/include/asm/io.h
+index 3d23418..1805674 100644
+--- a/arch/arm/include/asm/io.h
++++ b/arch/arm/include/asm/io.h
+@@ -178,6 +178,7 @@ static inline void __iomem *__typesafe_io(unsigned long addr)
+
+ /* PCI fixed i/o mapping */
+ #define PCI_IO_VIRT_BASE	0xfee00000
++#define PCI_IOBASE		((void __iomem *)PCI_IO_VIRT_BASE)
+
+ #if defined(CONFIG_PCI)
+ void pci_ioremap_set_mem_type(int mem_type);
+--
+2.1.0

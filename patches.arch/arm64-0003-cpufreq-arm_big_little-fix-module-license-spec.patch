@@ -1,0 +1,47 @@
+From 100ee73c5cd8a907ea0b67f7faf966abe2ac11bb Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Date: Thu, 31 Jul 2014 09:36:56 +0200
+Subject: [PATCH 03/38] cpufreq: arm_big_little: fix module license spec
+Mime-version: 1.0
+Content-type: text/plain; charset=UTF-8
+Content-transfer-encoding: 8bit
+Git-commit: 39c8bbaf67b157017929703a5eea7e83525b147c
+Patch-mainline: v3.17-rc1
+References: bnc#902632
+
+Having no license specification in a module taints the kernel during load
+With:
+
+	arm_big_little: module license 'unspecified' taints kernel.
+
+and also the linker doesn't allow it to make use of GPL-exported symbols
+which in this case also results in errors like:
+
+	arm_big_little: Unknown symbol cpufreq_register_driver (err 0)
+
+. The header of the driver specifies a GPL v2 license, so note that
+accordingly. While at it also add a description and an author and fix
+the license in a companion file to explicit v2.
+
+Reported-by: Andreas Schwab <schwab@suse.de>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+
+---
+ drivers/cpufreq/arm_big_little.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 1f4d4e3..ac20a3d 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -30,6 +30,7 @@
+ #include <linux/slab.h>
+ #include <linux/topology.h>
+ #include <linux/types.h>
++#include <linux/module.h>
+ #include <asm/bL_switcher.h>
+
+ #include "arm_big_little.h"
+--
+2.1.0

@@ -1,0 +1,102 @@
+From d7c519b3f27348a66d83b8ed047aac0a5a8c4d69 Mon Sep 17 00:00:00 2001
+From: Alexander Graf <agraf@suse.de>
+Date: Wed, 22 Oct 2014 13:01:55 +0200
+Subject: [PATCH 10/38] KVM: ARM: Hack to enable VGIC mapping on 64k PAGE_SIZE
+ kernels
+Patch-mainline: No
+References: bnc#902633
+
+Originally commit 63afbe7a0ac disabled mapping of unaligned VGIC regions
+on 64k PAGE_SIZE enabled kernels. However, we want to be able to support
+broken hardware, even if it allows guests to crash the hosts.
+
+Hack things up for now to enable the map again. Also add a sanity check
+to make sure that normal user space doesn't blow up hosts unknowingly.
+
+To allow guests to find out where to map the vgic, expose the offset to
+user space via the device api.
+
+Do not use KVM on broken hosts unless you know what you're doing!
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+
+---
+ arch/arm/include/uapi/asm/kvm.h   |  1 +
+ arch/arm64/include/uapi/asm/kvm.h |  1 +
+ virt/kvm/arm/vgic.c               | 16 ++++++++++++++++
+ 3 files changed, 18 insertions(+)
+
+diff --git a/arch/arm/include/uapi/asm/kvm.h b/arch/arm/include/uapi/asm/kvm.h
+index e6ebdd3..e10db8e 100644
+--- a/arch/arm/include/uapi/asm/kvm.h
++++ b/arch/arm/include/uapi/asm/kvm.h
+@@ -79,6 +79,7 @@ struct kvm_regs {
+ /* Supported VGIC address types  */
+ #define KVM_VGIC_V2_ADDR_TYPE_DIST	0
+ #define KVM_VGIC_V2_ADDR_TYPE_CPU	1
++#define KVM_VGIC_V2_PAGE_OFFSET		0xfff2
+
+ #define KVM_VGIC_V2_DIST_SIZE		0x1000
+ #define KVM_VGIC_V2_CPU_SIZE		0x2000
+diff --git a/arch/arm64/include/uapi/asm/kvm.h b/arch/arm64/include/uapi/asm/kvm.h
+index e633ff8..e923288 100644
+--- a/arch/arm64/include/uapi/asm/kvm.h
++++ b/arch/arm64/include/uapi/asm/kvm.h
+@@ -73,6 +73,7 @@ struct kvm_regs {
+ /* Supported VGIC address types  */
+ #define KVM_VGIC_V2_ADDR_TYPE_DIST	0
+ #define KVM_VGIC_V2_ADDR_TYPE_CPU	1
++#define KVM_VGIC_V2_PAGE_OFFSET		0xfff2
+
+ #define KVM_VGIC_V2_DIST_SIZE		0x1000
+ #define KVM_VGIC_V2_CPU_SIZE		0x2000
+diff --git a/virt/kvm/arm/vgic.c b/virt/kvm/arm/vgic.c
+index 718e8ca..dfbd586 100644
+--- a/virt/kvm/arm/vgic.c
++++ b/virt/kvm/arm/vgic.c
+@@ -1534,6 +1534,7 @@ int kvm_vgic_hyp_init(void)
+		goto out_unmap;
+	}
+
++#if 0
+	if (!PAGE_ALIGNED(vcpu_res.start)) {
+		kvm_err("GICV physical address 0x%llx not page aligned\n",
+			(unsigned long long)vcpu_res.start);
+@@ -1548,6 +1549,7 @@ int kvm_vgic_hyp_init(void)
+		ret = -ENXIO;
+		goto out_unmap;
+	}
++#endif
+
+	vgic_vcpu_base = vcpu_res.start;
+
+@@ -1594,6 +1596,13 @@ int kvm_vgic_init(struct kvm *kvm)
+		goto out;
+	}
+
++	if ((kvm->arch.vgic.vgic_cpu_base & ~PAGE_MASK) !=
++	    (vgic_vcpu_base & ~PAGE_MASK)) {
++		kvm_err("Need to align vgic identically in guest and host\n");
++		ret = -ENXIO;
++		goto out;
++	}
++
+	ret = kvm_phys_addr_ioremap(kvm, kvm->arch.vgic.vgic_cpu_base,
+				    vgic_vcpu_base, KVM_VGIC_V2_CPU_SIZE);
+	if (ret) {
+@@ -1729,6 +1738,13 @@ int kvm_vgic_addr(struct kvm *kvm, unsigned long type, u64 *addr, bool write)
+			*addr = vgic->vgic_cpu_base;
+		}
+		break;
++	case KVM_VGIC_V2_PAGE_OFFSET:
++		if (write) {
++			r = -ENODEV;
++		} else {
++			*addr = vgic_vcpu_base & ~PAGE_MASK;
++		}
++		break;
+	default:
+		r = -ENODEV;
+	}
+--
+2.1.0

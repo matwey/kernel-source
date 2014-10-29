@@ -1,0 +1,35 @@
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 28 Aug 2013 22:32:01 +0200
+Subject: HID: check for NULL field when setting values
+Git-commit: be67b68d52fa28b9b721c47bb42068f0c1214855
+Patch-mainline: v3.12-rc1
+References: bnc#835839
+
+Defensively check that the field to be worked on is not NULL.
+
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Cc: stable@kernel.org
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Borislav Petkov <bp@suse.de>
+---
+ drivers/hid/hid-core.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: current/drivers/hid/hid-core.c
+===================================================================
+--- current.orig/drivers/hid/hid-core.c	2014-10-29 18:11:14.644377215 +0100
++++ current/drivers/hid/hid-core.c	2014-10-29 18:13:19.848376994 +0100
+@@ -1196,7 +1196,12 @@ EXPORT_SYMBOL_GPL(hid_output_report);
+ 
+ int hid_set_field(struct hid_field *field, unsigned offset, __s32 value)
+ {
+-	unsigned size = field->report_size;
++	unsigned size;
++
++	if (!field)
++		return -1;
++
++	size = field->report_size;
+ 
+ 	hid_dump_input(field->report->device, field->usage + offset, value);
+ 

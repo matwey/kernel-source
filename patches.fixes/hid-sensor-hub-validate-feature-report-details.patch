@@ -1,0 +1,36 @@
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 28 Aug 2013 22:31:44 +0200
+Subject: HID: sensor-hub: validate feature report details
+Git-commit: 9e8910257397372633e74b333ef891f20c800ee4
+Patch-mainline: v3.12-rc1
+References: bnc#835839
+
+A HID device could send a malicious feature report that would cause the
+sensor-hub HID driver to read past the end of heap allocation, leaking
+kernel memory contents to the caller.
+
+CVE-2013-2898
+
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Cc: stable@kernel.org
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Borislav Petkov <bp@suse.de>
+---
+ drivers/hid/hid-sensor-hub.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: kernel/drivers/hid/hid-sensor-hub.c
+===================================================================
+--- kernel.orig/drivers/hid/hid-sensor-hub.c	2014-05-12 03:29:59.496310925 +0200
++++ kernel/drivers/hid/hid-sensor-hub.c	2014-10-31 18:05:58.616496254 +0100
+@@ -197,7 +197,8 @@ int sensor_hub_set_feature(struct hid_se
+ 
+ 	mutex_lock(&data->mutex);
+ 	report = sensor_hub_report(report_id, hsdev->hdev, HID_FEATURE_REPORT);
+-	if (!report || (field_index >=  report->maxfield)) {
++	if (!report || (field_index >=  report->maxfield) ||
++	    report->field[field_index]->report_count < 1) {
+ 		ret = -EINVAL;
+ 		goto done_proc;
+ 	}

@@ -1,0 +1,28 @@
+From: Hannes Frederic Sowa <hannes@stressinduktion.org>
+Date: Sat, 23 Nov 2013 07:22:33 +0100
+Subject: ipv6: fix leaking uninitialized port number of offender sockaddr
+Git-commit: 1fa4c710b6fe7b0aac9907240291b6fe6aafc3b8
+Patch-mainline: v3.13-rc3
+References: bsc#853040
+
+Offenders don't have port numbers, so set it to 0.
+
+Signed-off-by: Hannes Frederic Sowa <hannes@stressinduktion.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Acked-by: Borislav Petkov <bp@suse.de>
+---
+ net/ipv6/datagram.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/net/ipv6/datagram.c b/net/ipv6/datagram.c
+index d690204a0275..8dfe1f4d3c1a 100644
+--- a/net/ipv6/datagram.c
++++ b/net/ipv6/datagram.c
+@@ -378,6 +378,7 @@ int ipv6_recv_error(struct sock *sk, struct msghdr *msg, int len, int *addr_len)
+ 	if (serr->ee.ee_origin != SO_EE_ORIGIN_LOCAL) {
+ 		sin->sin6_family = AF_INET6;
+ 		sin->sin6_flowinfo = 0;
++		sin->sin6_port = 0;
+ 		if (skb->protocol == htons(ETH_P_IPV6)) {
+ 			sin->sin6_addr = ipv6_hdr(skb)->saddr;
+ 			if (np->rxopt.all)

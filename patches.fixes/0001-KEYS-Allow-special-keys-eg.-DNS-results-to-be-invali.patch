@@ -1,0 +1,99 @@
+From: David Howells <dhowells@redhat.com>
+Date: Thu, 17 Jul 2014 20:45:08 +0100
+Subject: [PATCH] KEYS: Allow special keys (eg. DNS results) to be invalidated
+ by CAP_SYS_ADMIN
+Git-commit: 0c7774abb41bd00d5836d9ba098825a40fa94133
+Patch-mainline: v3.18
+References: bnc#904717
+
+Special kernel keys, such as those used to hold DNS results for AFS, CIFS and
+NFS and those used to hold idmapper results for NFS, used to be
+'invalidateable' with key_revoke().  However, since the default permissions for
+keys were reduced:
+
+	Commit: 96b5c8fea6c0861621051290d705ec2e971963f1
+	KEYS: Reduce initial permissions on keys
+
+it has become impossible to do this.
+
+Add a key flag (KEY_FLAG_ROOT_CAN_INVAL) that will permit a key to be
+invalidated by root.  This should not be used for system keyrings as the
+garbage collector will try and remove any invalidate key.  For system keyrings,
+KEY_FLAG_ROOT_CAN_CLEAR can be used instead.
+
+After this, from userspace, keyctl_invalidate() and "keyctl invalidate" can be
+used by any possessor of CAP_SYS_ADMIN (typically root) to invalidate DNS and
+idmapper keys.  Invalidated keys are immediately garbage collected and will be
+immediately rerequested if needed again.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+Tested-by: Steve Dickson <steved@redhat.com>
+Acked-by: NeilBrown <neilb@suse.de>
+
+---
+ fs/nfs/idmap.c               |    2 ++
+ include/linux/key.h          |    1 +
+ net/dns_resolver/dns_query.c |    1 +
+ security/keys/keyctl.c       |   15 ++++++++++++++-
+ 4 files changed, 18 insertions(+), 1 deletion(-)
+
+--- linux-3.16-openSUSE-13.2.orig/fs/nfs/idmap.c
++++ linux-3.16-openSUSE-13.2/fs/nfs/idmap.c
+@@ -282,6 +282,8 @@ static struct key *nfs_idmap_request_key
+ 						desc, "", 0, idmap);
+ 		mutex_unlock(&idmap->idmap_mutex);
+ 	}
++	if (!IS_ERR(rkey))
++		set_bit(KEY_FLAG_ROOT_CAN_INVAL, &rkey->flags);
+ 
+ 	kfree(desc);
+ 	return rkey;
+--- linux-3.16-openSUSE-13.2.orig/include/linux/key.h
++++ linux-3.16-openSUSE-13.2/include/linux/key.h
+@@ -170,6 +170,7 @@ struct key {
+ #define KEY_FLAG_INVALIDATED	7	/* set if key has been invalidated */
+ #define KEY_FLAG_TRUSTED	8	/* set if key is trusted */
+ #define KEY_FLAG_TRUSTED_ONLY	9	/* set if keyring only accepts links to trusted keys */
++#define KEY_FLAG_ROOT_CAN_INVAL	11	/* set if key can be invalidated by root without permission */
+ 
+ 	/* the key type and key description string
+ 	 * - the desc is used to match a key against search criteria
+--- linux-3.16-openSUSE-13.2.orig/net/dns_resolver/dns_query.c
++++ linux-3.16-openSUSE-13.2/net/dns_resolver/dns_query.c
+@@ -129,6 +129,7 @@ int dns_query(const char *type, const ch
+ 	}
+ 
+ 	down_read(&rkey->sem);
++	set_bit(KEY_FLAG_ROOT_CAN_INVAL, &rkey->flags);
+ 	rkey->perm |= KEY_USR_VIEW;
+ 
+ 	ret = key_validate(rkey);
+--- linux-3.16-openSUSE-13.2.orig/security/keys/keyctl.c
++++ linux-3.16-openSUSE-13.2/security/keys/keyctl.c
+@@ -404,12 +404,25 @@ long keyctl_invalidate_key(key_serial_t
+ 	key_ref = lookup_user_key(id, 0, KEY_NEED_SEARCH);
+ 	if (IS_ERR(key_ref)) {
+ 		ret = PTR_ERR(key_ref);
++
++		/* Root is permitted to invalidate certain special keys */
++		if (capable(CAP_SYS_ADMIN)) {
++			key_ref = lookup_user_key(id, 0, 0);
++			if (IS_ERR(key_ref))
++				goto error;
++			if (test_bit(KEY_FLAG_ROOT_CAN_INVAL,
++				     &key_ref_to_ptr(key_ref)->flags))
++				goto invalidate;
++			goto error_put;
++		}
++
+ 		goto error;
+ 	}
+ 
++invalidate:
+ 	key_invalidate(key_ref_to_ptr(key_ref));
+ 	ret = 0;
+-
++error_put:
+ 	key_ref_put(key_ref);
+ error:
+ 	kleave(" = %ld", ret);

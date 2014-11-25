@@ -1,0 +1,37 @@
+From: Steve Dickson <stevedredhatcom>
+Date: Tue, 2 Sep 2014 13:52:05 +0100
+Subject: [PATCH] KEYS: Increase root_maxkeys and root_maxbytes sizes
+Git-commit: 738c5d190f6540539a04baf36ce21d46b5da04bd
+Patch-mainline: v3.17
+References: bnc#904717
+
+Now that NFS client uses the kernel key ring facility to store the NFSv4
+id/gid mappings, the defaults for root_maxkeys and root_maxbytes need to be
+substantially increased.
+
+These values have been soak tested:
+
+	https://bugzilla.redhat.com/show_bug.cgi?id=1033708#c73
+
+Signed-off-by: Steve Dickson <steved@redhat.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: James Morris <james.l.morris@oracle.com>
+Acked-by: NeilBrown <neilb@suse.de>
+
+---
+ security/keys/key.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- linux-3.16-openSUSE-13.2.orig/security/keys/key.c
++++ linux-3.16-openSUSE-13.2/security/keys/key.c
+@@ -27,8 +27,8 @@ DEFINE_SPINLOCK(key_serial_lock);
+ struct rb_root	key_user_tree; /* tree of quota records indexed by UID */
+ DEFINE_SPINLOCK(key_user_lock);
+ 
+-unsigned int key_quota_root_maxkeys = 200;	/* root's key count quota */
+-unsigned int key_quota_root_maxbytes = 20000;	/* root's key space quota */
++unsigned int key_quota_root_maxkeys = 1000000;	/* root's key count quota */
++unsigned int key_quota_root_maxbytes = 25000000; /* root's key space quota */
+ unsigned int key_quota_maxkeys = 200;		/* general key count quota */
+ unsigned int key_quota_maxbytes = 20000;	/* general key space quota */
+ 

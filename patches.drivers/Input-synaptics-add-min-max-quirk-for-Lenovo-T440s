@@ -1,6 +1,7 @@
 From: Takashi Iwai <tiwai@suse.de>
 Subject: [PATCH] Input: synaptics - add min/max quirk for Lenovo T440s
-Patch-mainline: Submitted
+Git-commit: e4742b1e786ca386e88e6cfb2801e14e15e365cd
+Patch-mainline: 3.18-rc5
 References: bnc#903748
 
 The new Lenovo T440s laptop has a different PnP ID "LEN0039", and it

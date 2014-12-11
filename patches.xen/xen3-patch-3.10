@@ -1121,7 +1121,7 @@ Acked-by: jbeulich@suse.com
  			continue;
  		per_cpu(xen_vcpu, cpu) = &HYPERVISOR_shared_info->vcpu_info[cpu];
  	}
---- 13.1.orig/drivers/gpu/drm/i915/intel_display.c	2013-11-26 11:08:48.000000000 +0100
+--- 13.1.orig/drivers/gpu/drm/i915/intel_display.c	2014-11-18 11:29:24.000000000 +0100
 +++ 13.1/drivers/gpu/drm/i915/intel_display.c	2014-06-23 12:23:13.000000000 +0200
 @@ -1752,7 +1752,7 @@ static void intel_disable_plane(struct d
  
@@ -1144,7 +1144,7 @@ Acked-by: jbeulich@suse.com
  		return -ENODEV;
  	}
  	return 0;
---- 13.1.orig/drivers/net/caif/Kconfig	2014-06-23 14:00:26.000000000 +0200
+--- 13.1.orig/drivers/net/caif/Kconfig	2014-11-18 11:29:24.000000000 +0100
 +++ 13.1/drivers/net/caif/Kconfig	2013-06-05 14:20:37.000000000 +0200
 @@ -43,7 +43,7 @@ config CAIF_HSI
  
@@ -1435,7 +1435,7 @@ Acked-by: jbeulich@suse.com
 +	if (dev->msix_cap)
 +		msix_set_enable(dev, 0);
  }
---- 13.1.orig/drivers/platform/x86/Kconfig	2014-06-23 14:00:26.000000000 +0200
+--- 13.1.orig/drivers/platform/x86/Kconfig	2014-11-18 11:29:24.000000000 +0100
 +++ 13.1/drivers/platform/x86/Kconfig	2013-08-09 15:43:43.000000000 +0200
 @@ -811,7 +811,7 @@ config INTEL_SMARTCONNECT
  
@@ -1446,7 +1446,7 @@ Acked-by: jbeulich@suse.com
  	---help---
  	  This driver provides support for the pvpanic device.  pvpanic is
  	  a paravirtualized device provided by QEMU; it lets a virtual machine
---- 13.1.orig/drivers/scsi/lpfc/lpfc_init.c	2014-06-23 14:00:26.000000000 +0200
+--- 13.1.orig/drivers/scsi/lpfc/lpfc_init.c	2014-11-18 11:29:24.000000000 +0100
 +++ 13.1/drivers/scsi/lpfc/lpfc_init.c	2013-08-09 15:43:33.000000000 +0200
 @@ -8400,9 +8400,6 @@ lpfc_sli4_set_affinity(struct lpfc_hba *
  	int i, idx, saved_chann, used_chann, cpu, phys_id;
@@ -2061,7 +2061,7 @@ Acked-by: jbeulich@suse.com
   */
  static long aio_read_events_ring(struct kioctx *ctx,
  				 struct io_event __user *event, long nr)
-@@ -757,10 +757,12 @@ static long aio_read_events_ring(struct 
+@@ -759,10 +759,12 @@ static long aio_read_events_ring(struct 
  		avail = min_t(long, avail, AIO_EVENTS_PER_PAGE -
  			    ((head + AIO_EVENTS_OFFSET) % AIO_EVENTS_PER_PAGE));
  
@@ -2074,7 +2074,7 @@ Acked-by: jbeulich@suse.com
  
  		pos = head + AIO_EVENTS_OFFSET;
  		page = ctx->ring_pages[pos / AIO_EVENTS_PER_PAGE];
-@@ -819,6 +821,11 @@ static long read_events(struct kioctx *c
+@@ -820,6 +822,11 @@ static long read_events(struct kioctx *c
  	ktime_t until = { .tv64 = KTIME_MAX };
  	long ret = 0;
  
@@ -2086,7 +2086,7 @@ Acked-by: jbeulich@suse.com
  	if (timeout) {
  		struct timespec	ts;
  
-@@ -871,15 +878,14 @@ static unsigned int aio_queue_fd_poll(st
+@@ -872,15 +879,14 @@ static unsigned int aio_queue_fd_poll(st
  	struct kioctx *ioctx = file->private_data;
  
  	if (ioctx) {
@@ -2178,7 +2178,7 @@ Acked-by: jbeulich@suse.com
  
  	err = 0;
  out:
---- 13.1.orig/include/xen/xen_proc.h	2014-06-23 14:00:26.000000000 +0200
+--- 13.1.orig/include/xen/xen_proc.h	2014-11-18 11:29:24.000000000 +0100
 +++ 13.1/include/xen/xen_proc.h	2013-05-27 17:41:43.000000000 +0200
 @@ -4,9 +4,9 @@
  

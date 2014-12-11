@@ -5,7 +5,7 @@ Patch-mainline: 2.6.23
 Automatically created from "patches.kernel.org/patch-2.6.23" by xen-port-patches.py
 Acked-by: jbeulich@novell.com
 
---- 13.1.orig/arch/x86/Kbuild	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/arch/x86/Kbuild	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/arch/x86/Kbuild	2012-06-13 15:13:30.000000000 +0200
 @@ -1,7 +1,7 @@
  obj-$(CONFIG_KVM) += kvm/
@@ -16,7 +16,7 @@ Acked-by: jbeulich@novell.com
  
  # lguest paravirtualization support
  obj-$(CONFIG_LGUEST_GUEST) += lguest/
---- 13.1.orig/arch/x86/kernel/asm-offsets.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/asm-offsets.c	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/arch/x86/kernel/asm-offsets.c	2011-04-13 12:42:43.000000000 +0200
 @@ -17,7 +17,7 @@
  #include <asm/bootparam.h>
@@ -76,7 +76,7 @@ Acked-by: jbeulich@novell.com
  
 --- 13.1.orig/arch/x86/kernel/entry_32.S	2013-08-09 11:52:00.000000000 +0200
 +++ 13.1/arch/x86/kernel/entry_32.S	2013-08-09 12:20:33.000000000 +0200
-@@ -1010,7 +1010,7 @@ END(spurious_interrupt_bug)
+@@ -1011,7 +1011,7 @@ END(spurious_interrupt_bug)
   */
  	.popsection
  
@@ -85,7 +85,7 @@ Acked-by: jbeulich@novell.com
  /* Xen doesn't set %esp to be precisely what the normal sysenter
     entrypoint expects, so fix it up before using the normal path. */
  ENTRY(xen_sysenter_target)
-@@ -1100,7 +1100,7 @@ ENDPROC(xen_failsafe_callback)
+@@ -1101,7 +1101,7 @@ ENDPROC(xen_failsafe_callback)
  BUILD_INTERRUPT3(xen_hvm_callback_vector, HYPERVISOR_CALLBACK_VECTOR,
  		xen_evtchn_do_upcall)
  
@@ -831,7 +831,7 @@ Acked-by: jbeulich@novell.com
  	    (atomic_read(&mm->mm_count) == 1) &&
  	    !mm->context.has_foreign_mappings)
  		mm_unpin(mm);
---- 13.1.orig/arch/x86/xen/Kconfig	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/arch/x86/xen/Kconfig	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/arch/x86/xen/Kconfig	2013-05-23 17:06:53.000000000 +0200
 @@ -2,7 +2,7 @@
  # This Kconfig describes xen options
@@ -842,7 +842,7 @@ Acked-by: jbeulich@novell.com
  	bool "Xen guest support"
  	depends on PARAVIRT
  	select PARAVIRT_CLOCK
---- 13.1.orig/arch/x86/xen/xen-head.S	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/arch/x86/xen/xen-head.S	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/arch/x86/xen/xen-head.S	2012-10-23 14:49:29.000000000 +0200
 @@ -1,7 +1,7 @@
  /* Xen-specific pieces of head.S, intended to be included in the right
@@ -1929,7 +1929,7 @@ Acked-by: jbeulich@novell.com
  		ClearPagePrivate(pg);
  		__free_page(pg);
  	} 
---- 13.1.orig/arch/x86/oprofile/xenoprof.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/arch/x86/oprofile/xenoprof.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/arch/x86/oprofile/xenoprof.c	2011-01-31 17:49:31.000000000 +0100
 @@ -18,9 +18,9 @@
  #include <linux/init.h>
@@ -1942,7 +1942,7 @@ Acked-by: jbeulich@novell.com
  #include <xen/interface/xen.h>
  #include <xen/interface/xenoprof.h>
  #include <xen/xenoprof.h>
---- 13.1.orig/arch/x86/vdso/vdso32/note.S	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/arch/x86/vdso/vdso32/note.S	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/arch/x86/vdso/vdso32/note.S	2011-01-31 17:49:31.000000000 +0100
 @@ -13,7 +13,7 @@ ELFNOTE_START(Linux, 0, "a")
  	.long LINUX_VERSION_CODE
@@ -1977,7 +1977,7 @@ Acked-by: jbeulich@novell.com
  
  # regulators early, since some subsystems rely on them to initialize
  obj-$(CONFIG_REGULATOR)		+= regulator/
---- 13.1.orig/drivers/block/Kconfig	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/block/Kconfig	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/block/Kconfig	2013-03-21 14:17:01.000000000 +0100
 @@ -464,9 +464,9 @@ config XILINX_SYSACE
  	help
@@ -1991,7 +1991,7 @@ Acked-by: jbeulich@novell.com
  	default y
  	select XEN_XENBUS_FRONTEND
  	help
---- 13.1.orig/drivers/block/Makefile	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/block/Makefile	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/block/Makefile	2013-03-21 14:17:06.000000000 +0100
 @@ -34,7 +34,7 @@ obj-$(CONFIG_VIODASD)		+= viodasd.o
  obj-$(CONFIG_BLK_DEV_SX8)	+= sx8.o
@@ -2002,7 +2002,7 @@ Acked-by: jbeulich@novell.com
  obj-$(CONFIG_XEN_BLKDEV_BACKEND)	+= xen-blkback/
  obj-$(CONFIG_BLK_DEV_DRBD)     += drbd/
  obj-$(CONFIG_BLK_DEV_RBD)     += rbd.o
---- 13.1.orig/drivers/tty/hvc/Kconfig	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/tty/hvc/Kconfig	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/tty/hvc/Kconfig	2013-03-21 14:17:16.000000000 +0100
 @@ -61,7 +61,7 @@ config HVC_IUCV
  
@@ -2013,7 +2013,7 @@ Acked-by: jbeulich@novell.com
  	select HVC_DRIVER
  	select HVC_IRQ
  	default y
---- 13.1.orig/drivers/net/Kconfig	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/net/Kconfig	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/net/Kconfig	2013-08-09 12:20:21.000000000 +0200
 @@ -313,9 +313,9 @@ source "drivers/net/wan/Kconfig"
  
@@ -2027,7 +2027,7 @@ Acked-by: jbeulich@novell.com
  	select XEN_XENBUS_FRONTEND
  	default y
  	help
---- 13.1.orig/drivers/net/Makefile	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/net/Makefile	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/net/Makefile	2013-08-09 12:20:23.000000000 +0200
 @@ -58,7 +58,7 @@ obj-$(CONFIG_WIMAX) += wimax/
  obj-$(CONFIG_IEEE802154) += ieee802154/
@@ -2128,7 +2128,7 @@ Acked-by: jbeulich@novell.com
 -					 0, 0, NULL, NULL);
 +					 0, 0, NULL);
  }
---- 13.1.orig/drivers/xen/blkback/xenbus.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/blkback/xenbus.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/blkback/xenbus.c	2012-12-18 11:59:09.000000000 +0100
 @@ -27,8 +27,6 @@
  	pr_debug("blkback/xenbus (%s:%d) " fmt ".\n",	\
@@ -2199,7 +2199,7 @@ Acked-by: jbeulich@novell.com
  {
  	struct blkfront_info *info = NULL;
  	struct request *req;
---- 13.1.orig/drivers/xen/blkfront/block.h	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/blkfront/block.h	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/blkfront/block.h	2012-06-06 13:53:02.000000000 +0200
 @@ -101,7 +101,7 @@ struct blkfront_info
  	struct scatterlist sg[BLKIF_MAX_SEGMENTS_PER_REQUEST];
@@ -2219,7 +2219,7 @@ Acked-by: jbeulich@novell.com
  
  /* Virtual block-device subsystem. */
  /* Note that xlvbd_add doesn't call add_disk for you: you're expected
---- 13.1.orig/drivers/xen/blkfront/vbd.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/blkfront/vbd.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/blkfront/vbd.c	2012-03-12 13:38:18.000000000 +0100
 @@ -357,7 +357,7 @@ static int
  xlvbd_init_blk_queue(struct gendisk *gd, u16 sector_size,
@@ -2258,7 +2258,7 @@ Acked-by: jbeulich@novell.com
 -					 0, 0, NULL, NULL);
 +					 0, 0, NULL);
  }
---- 13.1.orig/drivers/xen/blktap/xenbus.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/blktap/xenbus.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/blktap/xenbus.c	2013-06-20 15:18:12.000000000 +0200
 @@ -50,8 +50,6 @@ struct backend_info
  	int group_added;
@@ -2296,7 +2296,7 @@ Acked-by: jbeulich@novell.com
  	return 0;
  }
  
---- 13.1.orig/drivers/xen/blktap2/blktap.h	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/blktap2/blktap.h	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/blktap2/blktap.h	2012-06-06 13:53:14.000000000 +0200
 @@ -204,6 +204,7 @@ blktap_validate_params(struct blktap *ta
  }
@@ -2306,7 +2306,7 @@ Acked-by: jbeulich@novell.com
  
  int blktap_ring_init(int *);
  int blktap_ring_free(void);
---- 13.1.orig/drivers/xen/blktap2/control.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/blktap2/control.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/blktap2/control.c	2011-01-31 17:49:31.000000000 +0100
 @@ -194,14 +194,20 @@ blktap_control_destroy_device(struct blk
  
@@ -2332,7 +2332,7 @@ Acked-by: jbeulich@novell.com
  static int __init
  blktap_control_init(void)
  {
---- 13.1.orig/drivers/xen/blktap2/device.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/blktap2/device.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/blktap2/device.c	2012-02-16 12:30:32.000000000 +0100
 @@ -811,7 +811,7 @@ static void
  blktap_device_run_queue(struct blktap *tap)
@@ -2426,7 +2426,7 @@ Acked-by: jbeulich@novell.com
  #include <linux/sysrq.h>
  #include <asm/hypervisor.h>
  #include <xen/xenbus.h>
---- 13.1.orig/drivers/xen/core/xen_proc.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/core/xen_proc.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/core/xen_proc.c	2011-04-01 13:07:57.000000000 +0200
 @@ -1,11 +1,15 @@
 -
@@ -2527,7 +2527,7 @@ Acked-by: jbeulich@novell.com
  #include <linux/list.h>
  #include <linux/mutex.h>
  
---- 13.1.orig/drivers/xen/sfc_netutil/accel_util.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/sfc_netutil/accel_util.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/sfc_netutil/accel_util.c	2011-01-31 17:49:31.000000000 +0100
 @@ -28,7 +28,6 @@
  #include <asm/pgtable.h>
@@ -2587,7 +2587,7 @@ Acked-by: jbeulich@novell.com
  	if (!xenhcd_urbp_cachep) {
  		printk(KERN_ERR "usbfront failed to create kmem cache\n");
  		return -ENOMEM;
---- 13.1.orig/drivers/xen/util.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/util.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/util.c	2011-01-31 17:49:31.000000000 +0100
 @@ -1,8 +1,5 @@
 -#include <linux/mm.h>
@@ -2645,7 +2645,7 @@ Acked-by: jbeulich@novell.com
 -}
 -EXPORT_SYMBOL_GPL(free_vm_area);
 -#endif /* CONFIG_X86 */
---- 13.1.orig/drivers/xen/xenbus/xenbus_backend_client.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/xenbus/xenbus_backend_client.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/xenbus/xenbus_backend_client.c	2011-01-31 17:49:31.000000000 +0100
 @@ -32,9 +32,9 @@
  
@@ -3172,7 +3172,7 @@ Acked-by: jbeulich@novell.com
  		xen_store_evtchn, wake_waiting,
  		0, "xenbus", &xb_waitq);
  	if (err <= 0) {
---- 13.1.orig/drivers/xen/xenbus/xenbus_dev.c	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/drivers/xen/xenbus/xenbus_dev.c	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/drivers/xen/xenbus/xenbus_dev.c	2012-02-16 12:30:22.000000000 +0100
 @@ -493,7 +493,13 @@ static const struct file_operations xenb
  #endif
@@ -3640,7 +3640,7 @@ Acked-by: jbeulich@novell.com
  
  #define flush_cache_kmaps()	do { } while (0)
  
---- 13.1.orig/arch/x86/include/mach-xen/asm/maddr_32.h	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/arch/x86/include/mach-xen/asm/maddr_32.h	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/arch/x86/include/mach-xen/asm/maddr_32.h	2011-01-31 17:49:31.000000000 +0100
 @@ -155,6 +155,7 @@ static inline paddr_t pte_machine_to_phy
  
@@ -4185,7 +4185,7 @@ Acked-by: jbeulich@novell.com
  #endif
  
  #define PREEMPT_ACTIVE		0x10000000
---- 13.1.orig/arch/x86/include/asm/xen/interface.h	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/arch/x86/include/asm/xen/interface.h	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/arch/x86/include/asm/xen/interface.h	2013-01-08 11:43:52.000000000 +0100
 @@ -10,17 +10,20 @@
  #define _ASM_X86_XEN_INTERFACE_H
@@ -4239,7 +4239,7 @@ Acked-by: jbeulich@novell.com
  
  /*
   * SEGMENT DESCRIPTOR TABLES
---- 13.1.orig/include/linux/elfnote.h	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/include/linux/elfnote.h	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/include/linux/elfnote.h	2011-01-31 17:49:31.000000000 +0100
 @@ -52,7 +52,7 @@
  4484:.balign 4				;	\
@@ -4280,7 +4280,7 @@ Acked-by: jbeulich@novell.com
  #else
  # define __PG_XEN		(1 << PG_foreign)
  #endif
---- 13.1.orig/include/xen/driver_util.h	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/include/xen/driver_util.h	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/include/xen/driver_util.h	2011-01-31 17:49:31.000000000 +0100
 @@ -1,14 +1,8 @@
 +#ifndef __XEN_DRIVER_UTIL_H__
@@ -4300,7 +4300,7 @@ Acked-by: jbeulich@novell.com
  
 -#endif /* __ASM_XEN_DRIVER_UTIL_H__ */
 +#endif /* __XEN_DRIVER_UTIL_H__ */
---- 13.1.orig/include/xen/features.h	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/include/xen/features.h	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/include/xen/features.h	2011-01-31 17:49:31.000000000 +0100
 @@ -10,6 +10,7 @@
  #define __XEN_FEATURES_H__
@@ -4316,7 +4316,7 @@ Acked-by: jbeulich@novell.com
  
 -#endif /* __ASM_XEN_FEATURES_H__ */
 +#endif /* __XEN_FEATURES_H__ */
---- 13.1.orig/include/xen/interface/arch-x86/xen.h	2014-07-28 14:10:09.000000000 +0200
+--- 13.1.orig/include/xen/interface/arch-x86/xen.h	2014-11-18 11:29:27.000000000 +0100
 +++ 13.1/include/xen/interface/arch-x86/xen.h	2012-12-18 11:59:24.000000000 +0100
 @@ -59,6 +59,9 @@
  #endif

@@ -689,7 +689,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  }
  
  void mtrr_ap_init(void)
---- 13.1.orig/arch/x86/kernel/cpu/bugs.c	2014-06-23 14:00:28.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/cpu/bugs.c	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/arch/x86/kernel/cpu/bugs.c	2013-08-09 12:36:26.000000000 +0200
 @@ -57,10 +57,12 @@ static void __init check_fpu(void)
  
@@ -704,7 +704,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  }
  
  void __init check_bugs(void)
---- 13.1.orig/arch/x86/kernel/cpu/proc.c	2014-06-23 14:00:28.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/cpu/proc.c	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/arch/x86/kernel/cpu/proc.c	2013-08-09 12:36:27.000000000 +0200
 @@ -10,7 +10,7 @@
  static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
@@ -1797,7 +1797,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  		return error;
  	}
  
---- 13.1.orig/arch/x86/kernel/mmconf-fam10h_64.c	2014-06-23 14:00:28.000000000 +0200
+--- 13.1.orig/arch/x86/kernel/mmconf-fam10h_64.c	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/arch/x86/kernel/mmconf-fam10h_64.c	2011-01-31 18:07:35.000000000 +0100
 @@ -205,12 +205,20 @@ void fam10h_check_enable_mmcfg(void)
  		return;
@@ -10868,7 +10868,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  		arch_fix_phys_package_id(pr->id, object.integer.value);
  
  	return 0;
---- 13.1.orig/drivers/firmware/Kconfig	2014-06-23 14:00:28.000000000 +0200
+--- 13.1.orig/drivers/firmware/Kconfig	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/drivers/firmware/Kconfig	2013-06-05 13:51:23.000000000 +0200
 @@ -19,7 +19,7 @@ config EDD
  
@@ -10932,7 +10932,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  EXPORT_SYMBOL(pci_disable_msix);
  
  /**
---- 13.1.orig/drivers/video/Kconfig	2014-06-23 14:00:28.000000000 +0200
+--- 13.1.orig/drivers/video/Kconfig	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/drivers/video/Kconfig	2013-08-09 12:36:00.000000000 +0200
 @@ -2264,7 +2264,7 @@ config FB_VIRTUAL
  
@@ -11980,7 +11980,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  };
  
  static int xenfb_mmap(struct fb_info *fb_info, struct vm_area_struct *vma)
---- 13.1.orig/drivers/xen/features.c	2014-06-23 14:00:28.000000000 +0200
+--- 13.1.orig/drivers/xen/features.c	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/drivers/xen/features.c	2011-01-31 18:07:35.000000000 +0100
 @@ -9,14 +9,21 @@
  #include <linux/cache.h>
@@ -12159,7 +12159,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  	device_unregister(&xendev->dev);
 --- 13.1.orig/fs/aio.c	2013-08-09 12:19:01.000000000 +0200
 +++ 13.1/fs/aio.c	2013-08-09 12:35:41.000000000 +0200
-@@ -444,6 +444,7 @@ static void kill_ioctx(struct kioctx *ct
+@@ -443,6 +443,7 @@ static void kill_ioctx(struct kioctx *ct
  #ifdef CONFIG_EPOLL
  		/* forget the poll file, but it's up to the user to close it */
  		if (ctx->file) {
@@ -12167,7 +12167,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  			ctx->file->private_data = 0;
  			ctx->file = 0;
  		}
-@@ -860,6 +861,7 @@ static int aio_queue_fd_close(struct ino
+@@ -861,6 +862,7 @@ static int aio_queue_fd_close(struct ino
  		spin_lock_irq(&ioctx->ctx_lock);
  		ioctx->file = 0;
  		spin_unlock_irq(&ioctx->ctx_lock);
@@ -12175,7 +12175,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  	}
  	return 0;
  }
-@@ -895,16 +897,17 @@ static const struct file_operations aioq
+@@ -896,16 +898,17 @@ static const struct file_operations aioq
  
  static int make_aio_fd(struct kioctx *ioctx)
  {
@@ -15752,7 +15752,7 @@ Automatically created from "patches.kernel.org/patch-2.6.26" by xen-port-patches
  	struct mm_struct *active_mm;
  	int state;
  	char __cacheline_padding[L1_CACHE_BYTES-8];
---- 13.1.orig/arch/x86/include/mach-xen/asm/vga.h	2014-06-23 14:00:28.000000000 +0200
+--- 13.1.orig/arch/x86/include/mach-xen/asm/vga.h	2014-11-18 11:29:25.000000000 +0100
 +++ 13.1/arch/x86/include/mach-xen/asm/vga.h	2011-01-31 18:07:35.000000000 +0100
 @@ -12,9 +12,9 @@
   *	access the videoram directly without any black magic.

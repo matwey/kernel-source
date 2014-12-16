@@ -10,11 +10,11 @@ Signed-off-by: Jeff Mahoney <jeffm@suse.com>
  arch/x86/include/asm/dwarf2.h |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/dwarf2.h b/arch/x86/include/asm/dwarf2.h
-index f6f1598..8c4ae73 100644
---- a/arch/x86/include/asm/dwarf2.h
-+++ b/arch/x86/include/asm/dwarf2.h
-@@ -53,7 +53,7 @@
+Index: current/arch/x86/include/asm/dwarf2.h
+===================================================================
+--- current.orig/arch/x86/include/asm/dwarf2.h
++++ current/arch/x86/include/asm/dwarf2.h
+@@ -54,7 +54,7 @@
   * Due to the structure of pre-exisiting code, don't use assembler line
   * comment character # to ignore the arguments. Instead, use a dummy macro.
   */
@@ -23,4 +23,3 @@ index f6f1598..8c4ae73 100644
  .endm
  
  #define CFI_STARTPROC		cfi_ignore
-

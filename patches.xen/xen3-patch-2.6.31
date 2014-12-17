@@ -2877,19 +2877,23 @@ Automatically created from "patches.kernel.org/patch-2.6.31" by xen-port-patches
  	CFI_ENDPROC
  
  nmi_stack_fixup:
---- 13.2.orig/arch/x86/kernel/entry_64.S	2014-06-26 14:55:18.000000000 +0200
-+++ 13.2/arch/x86/kernel/entry_64.S	2014-06-26 14:58:58.000000000 +0200
-@@ -1341,7 +1341,7 @@ apicinterrupt3 HYPERVISOR_CALLBACK_VECTO
+Index: current/arch/x86/kernel/entry_64.S
+===================================================================
+--- current.orig/arch/x86/kernel/entry_64.S
++++ current/arch/x86/kernel/entry_64.S
+@@ -1297,7 +1297,7 @@ apicinterrupt3 HYPERVISOR_CALLBACK_VECTO
  idtentry debug do_debug has_error_code=0 paranoid=1 shift_ist=DEBUG_STACK
  idtentry int3 do_int3 has_error_code=0 paranoid=1 shift_ist=DEBUG_STACK
- idtentry stack_segment do_stack_segment has_error_code=1 paranoid=1
+ idtentry stack_segment do_stack_segment has_error_code=1
 -#ifdef CONFIG_XEN
 +#ifdef CONFIG_PARAVIRT_XEN
  idtentry xen_debug do_debug has_error_code=0
  idtentry xen_int3 do_int3 has_error_code=0
  idtentry xen_stack_segment do_stack_segment has_error_code=1
---- 13.2.orig/arch/x86/kernel/entry_64-xen.S	2013-05-24 08:22:20.000000000 +0200
-+++ 13.2/arch/x86/kernel/entry_64-xen.S	2013-05-24 08:23:11.000000000 +0200
+Index: current/arch/x86/kernel/entry_64-xen.S
+===================================================================
+--- current.orig/arch/x86/kernel/entry_64-xen.S
++++ current/arch/x86/kernel/entry_64-xen.S
 @@ -139,6 +139,7 @@ ENTRY(ftrace_graph_caller)
  
  	leaq 8(%rbp), %rdi

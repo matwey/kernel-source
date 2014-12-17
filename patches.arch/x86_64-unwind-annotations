@@ -8,9 +8,11 @@ References: bnc#472783, bnc#588458
  arch/x86/kernel/head_64.S  |   20 +++++++++
  2 files changed, 72 insertions(+), 47 deletions(-)
 
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -382,21 +382,21 @@ ENDPROC(native_usergs_sysret64)
+Index: current/arch/x86/kernel/entry_64.S
+===================================================================
+--- current.orig/arch/x86/kernel/entry_64.S
++++ current/arch/x86/kernel/entry_64.S
+@@ -179,21 +179,21 @@ ENDPROC(native_usergs_sysret64)
  /*
   * initial frame state for interrupts (and exceptions without error code)
   */
@@ -39,7 +41,7 @@ References: bnc#472783, bnc#588458
  	/*CFI_REL_OFFSET ss, SS+\offset-RIP*/
  	CFI_REL_OFFSET rsp, RSP+\offset-RIP
  	/*CFI_REL_OFFSET rflags, EFLAGS+\offset-RIP*/
-@@ -410,14 +410,15 @@ ENDPROC(native_usergs_sysret64)
+@@ -207,14 +207,15 @@ ENDPROC(native_usergs_sysret64)
   */
  	.macro XCPT_FRAME start=1 offset=0
  	INTR_FRAME \start, RIP+\offset-ORIG_RAX
@@ -56,7 +58,7 @@ References: bnc#472783, bnc#588458
  	CFI_REL_OFFSET rdi, RDI+\offset-ARGOFFSET
  	CFI_REL_OFFSET rsi, RSI+\offset-ARGOFFSET
  	CFI_REL_OFFSET rdx, RDX+\offset-ARGOFFSET
-@@ -433,7 +434,9 @@ ENDPROC(native_usergs_sysret64)
+@@ -230,7 +231,9 @@ ENDPROC(native_usergs_sysret64)
   * frame that enables passing a complete pt_regs to a C function.
   */
  	.macro DEFAULT_FRAME start=1 offset=0
@@ -66,7 +68,7 @@ References: bnc#472783, bnc#588458
  	CFI_REL_OFFSET rbx, RBX+\offset
  	CFI_REL_OFFSET rbp, RBP+\offset
  	CFI_REL_OFFSET r12, R12+\offset
-@@ -505,23 +508,23 @@ END(save_rest)
+@@ -285,23 +288,23 @@ ENDPROC(native_usergs_sysret64)
  	.endm
  
  ENTRY(save_paranoid)
@@ -102,16 +104,16 @@ References: bnc#472783, bnc#588458
  	movl $1,%ebx
  	movl $MSR_GS_BASE,%ecx
  	rdmsr
-@@ -1207,7 +1210,7 @@ ENTRY(\sym)
+@@ -1039,7 +1042,7 @@ ENTRY(\sym)
  	call error_entry
-	.endif
-
+ 	.endif
+ 
 -	DEFAULT_FRAME 0
 +	DEFAULT_FRAME -1
  
  	.if \paranoid
  	.if \shift_ist != -1
-@@ -1582,25 +1587,24 @@ END(paranoid_exit)
+@@ -1373,25 +1376,24 @@ END(paranoid_exit)
   * returns in "no swapgs flag" in %ebx.
   */
  ENTRY(error_entry)
@@ -152,15 +154,15 @@ References: bnc#472783, bnc#588458
  	xorl %ebx,%ebx
  	testl $3,CS+8(%rsp)
  	je error_kernelspace
-@@ -1618,6 +1622,7 @@ error_sti:
-  * compat mode. Check for these here too.
+@@ -1408,6 +1410,7 @@ error_sti:
+  * for these here too.
   */
  error_kernelspace:
 +	CFI_REL_OFFSET rcx, RCX+8
  	incl %ebx
  	leaq native_irq_return_iret(%rip),%rcx
  	cmpq %rcx,RIP+8(%rsp)
-@@ -1870,7 +1875,7 @@ end_repeat_nmi:
+@@ -1668,7 +1671,7 @@ end_repeat_nmi:
  	 * exceptions might do.
  	 */
  	call save_paranoid
@@ -169,9 +171,11 @@ References: bnc#472783, bnc#588458
  
  	/*
  	 * Save off the CR2 register. If we take a page fault in the NMI then
---- a/arch/x86/kernel/head_64.S
-+++ b/arch/x86/kernel/head_64.S
-@@ -375,6 +375,25 @@ ENTRY(early_idt_handler)
+Index: current/arch/x86/kernel/head_64.S
+===================================================================
+--- current.orig/arch/x86/kernel/head_64.S
++++ current/arch/x86/kernel/head_64.S
+@@ -378,6 +378,25 @@ ENTRY(early_idt_handler)
  
  11:
  #ifdef CONFIG_EARLY_PRINTK
@@ -197,7 +201,7 @@ References: bnc#472783, bnc#588458
  	GET_CR2_INTO(%r9)	# can clobber any volatile register if pv
  	movl 80(%rsp),%r8d	# error code
  	movl 72(%rsp),%esi	# vector number
-@@ -391,6 +410,7 @@ ENTRY(early_idt_handler)
+@@ -394,6 +413,7 @@ ENTRY(early_idt_handler)
  	movq 40(%rsp),%rsi	# %rip again
  	call __print_symbol
  #endif

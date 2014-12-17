@@ -786,16 +786,16 @@ References: fate#311376, fate#311529, bnc#578927, bnc#628554
  	  Real Time Clock.
 Index: current/drivers/rtc/rtc-cmos.c
 ===================================================================
---- current.orig/drivers/rtc/rtc-cmos.c	2014-12-17 13:31:54.816990534 +0100
-+++ current/drivers/rtc/rtc-cmos.c	2014-12-17 13:32:27.989322448 +0100
-@@ -37,6 +37,7 @@
- #include <linux/mod_devicetable.h>
+--- current.orig/drivers/rtc/rtc-cmos.c	2014-12-17 15:37:06.675379722 +0100
++++ current/drivers/rtc/rtc-cmos.c	2014-12-17 15:37:29.035602464 +0100
+@@ -36,6 +36,7 @@
+ #include <linux/platform_device.h>
  #include <linux/log2.h>
  #include <linux/pm.h>
 +#include <linux/efi.h>
  #include <linux/of.h>
  #include <linux/of_platform.h>
- 
+ #include <linux/dmi.h>
 @@ -1207,6 +1208,11 @@ static int __init cmos_init(void)
  {
  	int retval = 0;

@@ -37,8 +37,21 @@ Signed-off-by: John Stultz <john.stultz@linaro.org>
 
 Index: current/drivers/rtc/rtc-cmos.c
 ===================================================================
---- current.orig/drivers/rtc/rtc-cmos.c
-+++ current/drivers/rtc/rtc-cmos.c
+--- current.orig/drivers/rtc/rtc-cmos.c	2013-09-02 22:46:10.000000000 +0200
++++ current/drivers/rtc/rtc-cmos.c	2014-12-17 15:35:16.658283307 +0100
+@@ -34,11 +34,11 @@
+ #include <linux/interrupt.h>
+ #include <linux/spinlock.h>
+ #include <linux/platform_device.h>
+-#include <linux/mod_devicetable.h>
+ #include <linux/log2.h>
+ #include <linux/pm.h>
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
++#include <linux/dmi.h>
+ 
+ /* this is for "generic access to PC-style RTC" using CMOS_READ/CMOS_WRITE */
+ #include <asm-generic/rtc.h>
 @@ -377,6 +377,51 @@ static int cmos_set_alarm(struct device
  	return 0;
  }

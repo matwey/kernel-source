@@ -1,12 +1,14 @@
-From 2e73d1dd11c141f2aee5df738775be45674cbc17 Mon Sep 17 00:00:00 2001
+From ab2e76aead0c9f96a9741e31b3d8206435521083 Mon Sep 17 00:00:00 2001
 From: "Matwey V. Kornilov" <matwey@sai.msu.ru>
-Date: Sat, 7 Feb 2015 11:30:05 +0300
-Subject: [PATCH 2/2] pci: spear: Drop __initdata from struct platform_driver
- spear13xx_pcie_driver
+Date: Wed, 18 Feb 2015 12:02:42 +0300
+Subject: [PATCH] pci: spear: Drop __initdata from spear13xx_pcie_driver
 
 spear13xx_pcie_driver.driver is allocated in text.init section
 and then the pointer to it is passed futher. This patch is to avoid
-crashes like the following, when freed memory is used:
+crashes like the following, when freed memory is used.
+
+Also, __init has been dropped from the probe() function referred from the struct
+and all called functions.
 
  #0  __device_attach (drv=0xc0ed5608 <spear13xx_pcie_driver+20>, data=0xdb622610) at ../drivers/base/dd.c:409
  #1  0xc07a4798 in bus_for_each_drv (bus=<optimized out>, start=<optimized out>, data=0xda0, fn=0xc07a6740 <__device_attach>)
@@ -38,26 +40,56 @@ crashes like the following, when freed memory is used:
  #22 SyS_finit_module (fd=7, uargs=-1225602132, flags=0) at ../kernel/module.c:3518
  #23 0xc021a680 in ?? ()
 
-Fixes: 6675ef212da (PCI: spear: Fix Section mismatch compilation warning for probe())
 Signed-off-by: Matwey V. Kornilov <matwey@sai.msu.ru>
-Patch-mainline: not yet
 ---
- drivers/pci/host/pcie-spear13xx.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pci/host/pcie-designware.c | 2 +-
+ drivers/pci/host/pcie-spear13xx.c  | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/pci/host/pcie-designware.c b/drivers/pci/host/pcie-designware.c
+index df781cd..5b8a056 100644
+--- a/drivers/pci/host/pcie-designware.c
++++ b/drivers/pci/host/pcie-designware.c
+@@ -339,7 +339,7 @@ static const struct irq_domain_ops msi_domain_ops = {
+ 	.map = dw_pcie_msi_map,
+ };
+ 
+-int __init dw_pcie_host_init(struct pcie_port *pp)
++int dw_pcie_host_init(struct pcie_port *pp)
+ {
+ 	struct device_node *np = pp->dev->of_node;
+ 	struct platform_device *pdev = to_platform_device(pp->dev);
 diff --git a/drivers/pci/host/pcie-spear13xx.c b/drivers/pci/host/pcie-spear13xx.c
-index 51e1344..b94d4fb 100644
+index 866465f..020d788 100644
 --- a/drivers/pci/host/pcie-spear13xx.c
 +++ b/drivers/pci/host/pcie-spear13xx.c
+@@ -269,7 +269,7 @@ static struct pcie_host_ops spear13xx_pcie_host_ops = {
+ 	.host_init = spear13xx_pcie_host_init,
+ };
+ 
+-static int __init spear13xx_add_pcie_port(struct pcie_port *pp,
++static int spear13xx_add_pcie_port(struct pcie_port *pp,
+ 					 struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -299,7 +299,7 @@ static int __init spear13xx_add_pcie_port(struct pcie_port *pp,
+ 	return 0;
+ }
+ 
+-static int __init spear13xx_pcie_probe(struct platform_device *pdev)
++static int spear13xx_pcie_probe(struct platform_device *pdev)
+ {
+ 	struct spear13xx_pcie *spear13xx_pcie;
+ 	struct pcie_port *pp;
 @@ -370,7 +370,7 @@ static const struct of_device_id spear13xx_pcie_of_match[] = {
  };
  MODULE_DEVICE_TABLE(of, spear13xx_pcie_of_match);
  
 -static struct platform_driver spear13xx_pcie_driver __initdata = {
 +static struct platform_driver spear13xx_pcie_driver = {
+ 	.probe		= spear13xx_pcie_probe,
  	.driver = {
  		.name	= "spear-pcie",
- 		.of_match_table = of_match_ptr(spear13xx_pcie_of_match),
 -- 
 2.1.4
 

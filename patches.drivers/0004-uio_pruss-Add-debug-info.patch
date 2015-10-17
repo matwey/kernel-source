@@ -1,0 +1,27 @@
+From ad0e7ae8853a0945c4044db7b4fbc9aa868ed63b Mon Sep 17 00:00:00 2001
+From: "Matwey V. Kornilov" <matwey@sai.msu.ru>
+Date: Mon, 19 Oct 2015 20:31:29 +0300
+Subject: [PATCH 4/4] uio_pruss: Add debug info
+Patch-mainline: not yet
+
+Signed-off-by: Matwey V. Kornilov <matwey@sai.msu.ru>
+---
+ drivers/uio/uio_pruss.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/uio/uio_pruss.c b/drivers/uio/uio_pruss.c
+index 7741fc1..70a810f 100644
+--- a/drivers/uio/uio_pruss.c
++++ b/drivers/uio/uio_pruss.c
+@@ -131,6 +131,8 @@ static int pruss_probe(struct platform_device *pdev)
+ 	struct uio_pruss_pdata *pdata = dev_get_platdata(dev);
+ 	struct pinctrl *pinctrl;
+ 
++	dev_notice(dev, "Probing uio_pruss device\n");
++
+ 	gdev = kzalloc(sizeof(struct uio_pruss_dev), GFP_KERNEL);
+ 	if (!gdev)
+ 		return -ENOMEM;
+-- 
+2.1.4
+

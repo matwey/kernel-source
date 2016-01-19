@@ -2,7 +2,8 @@ From ec3ef064291c0cb3bf85a32afa49809975f123c1 Mon Sep 17 00:00:00 2001
 From: Sunil Goutham <sgoutham@cavium.com>
 Date: Wed, 9 Sep 2015 10:48:09 +0530
 Subject: [PATCH 08/23] net: thunderx: Set CQ timer threshold properly
-Patch-mainline: Not yet, needs submission
+Patch-mainline: v4.4-rc4
+Git-commit: 006394a7cb20559418c602b8433ec1839b6fc1d3 
 
 Properly set CQ timer threshold and also set it to 2us.
 With previous incorrect settings it was set to 0.5us which is too less.

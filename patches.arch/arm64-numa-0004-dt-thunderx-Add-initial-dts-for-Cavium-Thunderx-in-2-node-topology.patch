@@ -13,6 +13,7 @@ Subject: [PATCH v8 4/4] arm64, dt,
 Date: Tue, 29 Dec 2015 16:02:28 +0530
 Message-ID: <1451385148-13448-5-git-send-email-gkulkarni@caviumnetworks.com>
 Patch-mainline: Submitted, http://www.spinics.net/lists/devicetree/msg108574.html
+Reference: fate#319973
 
 Adding dt file for Cavium's Thunderx dual socket platform.
 

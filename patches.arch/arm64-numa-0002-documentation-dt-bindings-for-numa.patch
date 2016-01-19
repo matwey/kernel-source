@@ -12,6 +12,7 @@ Subject: [PATCH v8 2/4] Documentation, dt, arm64/arm: dt bindings for numa.
 Date: Tue, 29 Dec 2015 16:02:26 +0530
 Message-ID: <1451385148-13448-3-git-send-email-gkulkarni@caviumnetworks.com>
 Patch-mainline: Submitted, http://www.spinics.net/lists/devicetree/msg108570.html
+Reference: fate#319973
 
 DT bindings for numa mapping of memory, cores and IOs.
 

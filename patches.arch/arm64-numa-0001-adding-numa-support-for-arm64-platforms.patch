@@ -12,6 +12,7 @@ Subject: [PATCH v8 1/4] arm64, numa: adding numa support for arm64 platforms.
 Date: Tue, 29 Dec 2015 16:02:25 +0530
 Message-ID: <1451385148-13448-2-git-send-email-gkulkarni@caviumnetworks.com>
 Patch-mainline: Submitted, http://www.spinics.net/lists/devicetree/msg108572.html
+Reference: fate#319973
 
 Adding numa support for arm64 based platforms.
 This patch adds by default the dummy numa node and

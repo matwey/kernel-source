@@ -1,0 +1,45 @@
+From 9c1d9c207bb800498347a2716da298043ee280c5 Mon Sep 17 00:00:00 2001
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Wed, 16 Dec 2015 17:53:52 -0500
+Subject: [PATCH] sd: Reject optimal transfer length smaller than page size
+Git-commit: 9c1d9c207bb800498347a2716da298043ee280c5
+Patch-mainline: 4.4
+References: boo#961263
+
+Eryu Guan reported that loading scsi_debug would fail. This turned out
+to be caused by scsi_debug reporting an optimal I/O size of 32KB which
+is smaller than the 64KB page size on the PowerPC system in question.
+
+Add a check to ensure that we only use the device-reported OPTIMAL
+TRANSFER LENGTH if it is bigger than or equal to the page cache size.
+
+Reported-by: Eryu Guan <guaneryu@gmail.com>
+Reported-by: Ming Lei <tom.leiming@gmail.com>
+Reviewed-by: Douglas Gilbert <dgilbert@interlog.com>
+Reviewed-by: Ewan Milne <emilne@redhat.com>
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Acked-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ drivers/scsi/sd.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -2774,10 +2774,13 @@ static int sd_revalidate_disk(struct gen
+ 
+ 	/*
+ 	 * Use the device's preferred I/O size for reads and writes
+-	 * unless the reported value is unreasonably large (or garbage).
++	 * unless the reported value is unreasonably small, large, or
++	 * garbage.
+ 	 */
+-	if (sdkp->opt_xfer_blocks && sdkp->opt_xfer_blocks <= dev_max &&
+-	    sdkp->opt_xfer_blocks <= SD_DEF_XFER_BLOCKS)
++	if (sdkp->opt_xfer_blocks &&
++	    sdkp->opt_xfer_blocks <= dev_max &&
++	    sdkp->opt_xfer_blocks <= SD_DEF_XFER_BLOCKS &&
++	    sdkp->opt_xfer_blocks * sdp->sector_size >= PAGE_CACHE_SIZE)
+ 		rw_max = q->limits.io_opt =
+ 			logical_to_sectors(sdp, sdkp->opt_xfer_blocks);
+ 	else

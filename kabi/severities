@@ -11,3 +11,4 @@
 drivers/message/fusion/*	PASS
 drivers/staging/*		PASS
 
+inet_twsk_schedule		PASS

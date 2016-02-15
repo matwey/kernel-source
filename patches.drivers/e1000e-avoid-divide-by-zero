@@ -1,0 +1,25 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: e1000e: Avoid divide by zero error
+Patch-mainline: Never, only for Leap kernel
+References: bsc#965125
+
+Just papering over it for catching up any remaining error.
+Mostly only for debugging purpose, but better than the plain Oops.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4193,6 +4193,8 @@ static cycle_t e1000e_cyclecounter_read(
+ 		 * rate and is a multiple of incvalue
+ 		 */
+ 		incvalue = er32(TIMINCA) & E1000_TIMINCA_INCVALUE_MASK;
++		if (WARN_ON(!incvalue))
++			return 0;
+ 		for (i = 0; i < E1000_MAX_82574_SYSTIM_REREADS; i++) {
+ 			/* latch SYSTIMH on read of SYSTIML */
+ 			systim_next = (cycle_t)er32(SYSTIML);

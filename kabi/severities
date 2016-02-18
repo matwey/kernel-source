@@ -10,5 +10,8 @@
 
 drivers/message/fusion/*	PASS
 drivers/staging/*		PASS
+crypto/*			PASS
 
 inet_twsk_schedule		PASS
+crypto_*			PASS
+ahash_*				PASS

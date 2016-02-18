@@ -1,0 +1,67 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: kABI fixes for 4.1.18 thermal changes
+Patch-mainline: Never, Leap 42.1 only
+
+Shuffle need_update and guard with GENKSYMS as usual.
+Also guard the new include not to change the signature.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ drivers/thermal/thermal_core.c |    2 ++
+ drivers/thermal/thermal_core.h |    4 +++-
+ include/linux/thermal.h        |    4 +++-
+ 3 files changed, 8 insertions(+), 2 deletions(-)
+
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -189,7 +189,6 @@ struct thermal_zone_device {
+ 	int emul_temperature;
+ 	int passive;
+ 	unsigned int forced_passive;
+-	atomic_t need_update;
+ 	struct thermal_zone_device_ops *ops;
+ 	const struct thermal_zone_params *tzp;
+ 	struct thermal_governor *governor;
+@@ -198,6 +197,9 @@ struct thermal_zone_device {
+ 	struct mutex lock;
+ 	struct list_head node;
+ 	struct delayed_work poll_queue;
++#ifndef __GENKSYMS__
++	atomic_t need_update;
++#endif
+ };
+ 
+ /**
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -37,7 +37,9 @@
+ #include <linux/of.h>
+ #include <net/netlink.h>
+ #include <net/genetlink.h>
++#ifndef __GENKSYMS__
+ #include <linux/suspend.h>
++#endif
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/thermal.h>
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -41,7 +41,6 @@ struct thermal_instance {
+ 	struct thermal_zone_device *tz;
+ 	struct thermal_cooling_device *cdev;
+ 	int trip;
+-	bool initialized;
+ 	unsigned long upper;	/* Highest cooling state for this trip point */
+ 	unsigned long lower;	/* Lowest cooling state for this trip point */
+ 	unsigned long target;	/* expected cooling state */
+@@ -49,6 +48,9 @@ struct thermal_instance {
+ 	struct device_attribute attr;
+ 	struct list_head tz_node; /* node in tz->thermal_instances */
+ 	struct list_head cdev_node; /* node in cdev->thermal_instances */
++#ifndef __GENKSYMS__
++	bool initialized;
++#endif
+ };
+ 
+ int thermal_register_governor(struct thermal_governor *);

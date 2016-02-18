@@ -1,0 +1,41 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: kABI fix for 4.1.18 ceph changes
+Patch-mainline: Never, Leap 42.1 only
+
+Shuffle struct items and guard with GENKSYMS as usual.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ include/linux/ceph/messenger.h |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+--- a/include/linux/ceph/messenger.h
++++ b/include/linux/ceph/messenger.h
+@@ -224,7 +224,6 @@ struct ceph_connection {
+ 	struct ceph_entity_addr actual_peer_addr;
+ 
+ 	/* message out temps */
+-	struct ceph_msg_header out_hdr;
+ 	struct ceph_msg *out_msg;        /* sending message (== tail of
+ 					    out_sent) */
+ 	bool out_msg_done;
+@@ -234,6 +233,7 @@ struct ceph_connection {
+ 	int out_kvec_left;   /* kvec's left in out_kvec */
+ 	int out_skip;        /* skip this many bytes */
+ 	int out_kvec_bytes;  /* total bytes left */
++	bool out_kvec_is_msg; /* XXX placeholder for kABI */
+ 	int out_more;        /* there is more data after the kvecs */
+ 	__le64 out_temp_ack; /* for writing an ack */
+ 
+@@ -248,6 +248,10 @@ struct ceph_connection {
+ 
+ 	struct delayed_work work;	    /* send|recv work */
+ 	unsigned long       delay;          /* current delay interval */
++
++#ifndef __GENKSYMS__
++	struct ceph_msg_header out_hdr; /* XXX moved due to kABI */
++#endif
+ };
+ 
+ 

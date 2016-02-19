@@ -1,0 +1,22 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: Fix kABI breakage for patches.fixes/ptrace-in-namespace-perm-check.fix
+Patch-mainline: Never, Leap 42.1 only
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ kernel/ptrace.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -20,7 +20,9 @@
+ #include <linux/uio.h>
+ #include <linux/audit.h>
+ #include <linux/pid_namespace.h>
++#ifndef __GENKSYMS__
+ #include <linux/user_namespace.h>
++#endif
+ #include <linux/syscalls.h>
+ #include <linux/uaccess.h>
+ #include <linux/regset.h>

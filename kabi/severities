@@ -11,6 +11,7 @@
 drivers/message/fusion/*	PASS
 drivers/staging/*		PASS
 crypto/*			PASS
+drivers/md/dm-snapshot		PASS
 
 inet_twsk_schedule		PASS
 crypto_*			PASS

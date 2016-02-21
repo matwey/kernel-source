@@ -2,7 +2,8 @@ From a7e50a6d0b40323eabca6d7fd0fddf42fc0013bf Mon Sep 17 00:00:00 2001
 From: Sunil Goutham <sgoutham@cavium.com>
 Date: Fri, 25 Sep 2015 15:34:21 +0530
 Subject: [PATCH 10/23] net, thunderx: Enable BGX LMAC's RX/TX only after VF is up
-Patch-mainline: Not yet, needs submission
+Patch-mainline: v4.4-rc4
+Git-commit: bc69fdfc6c13b7350be9bcb48328d8f231ed98bb
 
 Enable or disable BGX LMAC's RX/TX based on corresponding VF's
 status. If otherwise, when multiple LMAC's physical link is up

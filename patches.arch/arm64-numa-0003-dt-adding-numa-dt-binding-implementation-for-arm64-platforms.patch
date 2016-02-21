@@ -13,6 +13,7 @@ Subject: [PATCH v8 3/4] arm64/arm, numa,
 Date: Tue, 29 Dec 2015 16:02:27 +0530
 Message-ID: <1451385148-13448-4-git-send-email-gkulkarni@caviumnetworks.com>
 Patch-mainline: Submitted, http://www.spinics.net/lists/devicetree/msg108573.html
+Reference: fate#319973
 
 Adding numa dt binding support for arm64 based platforms.
 dt node parsing for numa topology is done using device property

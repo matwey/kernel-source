@@ -2,7 +2,8 @@ From ec1ee90ad8379a7c3be4ed32ef1d64b827d8539b Mon Sep 17 00:00:00 2001
 From: Sunil Goutham <sgoutham@cavium.com>
 Date: Thu, 24 Sep 2015 15:06:51 +0530
 Subject: [PATCH 16/23] net, thunderx: Switchon carrier only upon interface link up
-Patch-mainline: Not yet, needs submission
+Patch-mainline: v4.4-rc4
+Git-commit: 0b72a9a1060e7547e71e7f600849a2d3006bf63a
 
 Call netif_carrier_on() only if interface's link is up. Switching this on
 upon IFF_UP by default, is causing issues with ethernet channel bonding

@@ -3,7 +3,8 @@ From: Thanneeru Srinivasulu <tsrinivasulu@caviumnetworks.com>
 Date: Wed, 15 Jul 2015 12:44:22 +0530
 Subject: [PATCH 34/59] net: mdio-octeon: thunderx: Force to load octeon-mdio
  before bgx driver.
-Patch-mainline: Not yet, needs to be done
+Patch-mainline: v4.4-rc4
+Git-commit: 723cda5b055851f5e8bf61aacd8008c43c99e801
 
 PHYs need to be ready before bgx probing.
 

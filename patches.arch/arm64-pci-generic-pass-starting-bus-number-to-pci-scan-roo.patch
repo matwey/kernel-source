@@ -4,6 +4,7 @@ Date: Thu, 8 Oct 2015 10:24:41 -0500
 Subject: [PATCH] PCI: generic: Pass starting bus number to pci_scan_root_bus()
 Git-commit: 47ddb949029f9517a773e67b0e5eaf80ef596dad
 Patch-mainline: v4.4-rc1
+Reference: fate#319484
 
 If the bus is being configured with a bus-range that does not start at
 zero, pass that starting bus number to pci_scan_root_bus().  Passing the

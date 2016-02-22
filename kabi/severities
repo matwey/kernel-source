@@ -15,7 +15,9 @@ drivers/md/dm-snapshot		PASS
 drivers/target/*		PASS
 drivers/scsi/qla2xxx/*		PASS
 net/ceph/*			PASS
+drivers/mfd/tps65218		PASS
 
 inet_twsk_schedule		PASS
 crypto_*			PASS
 ahash_*				PASS
+lpddr2_jedec_*			PASS

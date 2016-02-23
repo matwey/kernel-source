@@ -1,0 +1,98 @@
+From 7c23b7c1996597dd9d60bb282fb5fa1be6ebd18b Mon Sep 17 00:00:00 2001
+From: "Lu, Han" <han.lu@intel.com>
+Date: Mon, 7 Dec 2015 15:59:13 +0800
+Subject: [PATCH] ALSA: hda - Fix playback noise with 24/32 bit sample size on BXT
+Git-commit: 7c23b7c1996597dd9d60bb282fb5fa1be6ebd18b
+Patch-mainline: 4.4-rc5
+References: bsc#966137
+
+In BXT-P A0, HD-Audio DMA requests is later than expected,
+and makes an audio stream sensitive to system latencies when
+24/32 bits are playing.
+Adjusting threshold of DMA fifo to force the DMA request
+sooner to improve latency tolerance at the expense of power.
+
+V2: move Intel specific code to hda_intel.c
+
+Signed-off-by: Lu, Han <han.lu@intel.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ sound/pci/hda/hda_intel.c |   38 +++++++++++++++++++++++++++++++++++---
+ 1 file changed, 35 insertions(+), 3 deletions(-)
+
+--- a/sound/pci/hda/hda_intel.c
++++ b/sound/pci/hda/hda_intel.c
+@@ -346,6 +346,8 @@ enum {
+ 					((pci)->device == 0x0d0c) || \
+ 					((pci)->device == 0x160c))
+ 
++#define IS_BROXTON(pci)	((pci)->device == 0x5a98)
++
+ static char *driver_short_names[] = {
+ 	[AZX_DRIVER_ICH] = "HDA Intel",
+ 	[AZX_DRIVER_PCH] = "HDA Intel PCH",
+@@ -497,6 +499,36 @@ static void azx_init_pci(struct azx *chi
+         }
+ }
+ 
++/* Skylake/Broxton display HD-A controller Extended Mode registers */
++#define AZX_REG_SKL_EM4L               0x1040
++
++/*
++ * In BXT-P A0, HD-Audio DMA requests is later than expected,
++ * and makes an audio stream sensitive to system latencies when
++ * 24/32 bits are playing.
++ * Adjusting threshold of DMA fifo to force the DMA request
++ * sooner to improve latency tolerance at the expense of power.
++ */
++static void bxt_reduce_dma_latency(struct azx *chip)
++{
++	u32 val;
++
++	val = azx_readl(chip, SKL_EM4L);
++	val &= (0x3 << 20);
++	azx_writel(chip, SKL_EM4L, val);
++}
++
++static void hda_intel_init_chip(struct azx *chip, bool full_reset)
++{
++	struct pci_dev *pci = chip->pci;
++
++	azx_init_chip(chip, full_reset);
++
++	/* reduce dma latency to avoid noise */
++	if (IS_BROXTON(pci))
++		bxt_reduce_dma_latency(chip);
++}
++
+ /* calculate runtime delay from LPIB */
+ static int azx_get_delay_from_lpib(struct azx *chip, struct azx_dev *azx_dev,
+ 				   unsigned int pos)
+@@ -833,7 +865,7 @@ static int azx_resume(struct device *dev
+ 		return -EIO;
+ 	azx_init_pci(chip);
+ 
+-	azx_init_chip(chip, true);
++	hda_intel_init_chip(chip, true);
+ 
+ 	snd_power_change_state(card, SNDRV_CTL_POWER_D0);
+ 	return 0;
+@@ -930,7 +962,7 @@ static int azx_runtime_resume(struct dev
+ 	status = azx_readw(chip, STATESTS);
+ 
+ 	azx_init_pci(chip);
+-	azx_init_chip(chip, true);
++	hda_intel_init_chip(chip, true);
+ 
+ 	bus = chip->bus;
+ 	if (status && bus) {
+@@ -1628,7 +1660,7 @@ static int azx_first_init(struct azx *ch
+ 		haswell_set_bclk(hda);
+ 	}
+ 
+-	azx_init_chip(chip, (probe_only[dev] & 2) == 0);
++	hda_intel_init_chip(chip, (probe_only[dev] & 2) == 0);
+ 
+ 	/* codec detection */
+ 	if (!chip->codec_mask) {

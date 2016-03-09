@@ -1,0 +1,28 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: hda_jack_callback kabi fix for 4.1.19
+Patch-mainline: Never, Leap 42.1 kernel only
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ sound/pci/hda/hda_jack.h |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+--- a/sound/pci/hda/hda_jack.h
++++ b/sound/pci/hda/hda_jack.h
+@@ -21,7 +21,14 @@ struct hda_jack_callback;
+ typedef void (*hda_jack_callback_fn) (struct hda_codec *, struct hda_jack_callback *);
+ 
+ struct hda_jack_callback {
+-	hda_nid_t nid;
++#ifndef __GENKSYMS__
++	union {
++		hda_nid_t nid;
++		struct hda_jack_tbl *tbl;
++	};
++#else
++	struct hda_jack_tbl *tbl;
++#endif
+ 	hda_jack_callback_fn func;
+ 	unsigned int private_data;	/* arbitrary data */
+ 	struct hda_jack_callback *next;

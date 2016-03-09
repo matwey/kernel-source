@@ -1,0 +1,33 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: cgroup kabi fix for 4.1.19
+Patch-mainline: Never, Leap 42.1 kernel only
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ include/linux/cgroup-defs.h |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+--- a/include/linux/cgroup-defs.h
++++ b/include/linux/cgroup-defs.h
+@@ -115,15 +115,16 @@ struct cgroup_subsys_state {
+ 	 */
+ 	u64 serial_nr;
+ 
++	/* percpu_ref killing and RCU release */
++	struct rcu_head rcu_head;
++	struct work_struct destroy_work;
++#ifndef __GENKSYMS__
+ 	/*
+ 	 * Incremented by online self and children.  Used to guarantee that
+ 	 * parents are not offlined before their children.
+ 	 */
+ 	atomic_t online_cnt;
+-
+-	/* percpu_ref killing and RCU release */
+-	struct rcu_head rcu_head;
+-	struct work_struct destroy_work;
++#endif
+ };
+ 
+ /*

@@ -7,8 +7,7 @@ Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
  include/linux/ipv6.h |    4 +++-
  include/net/ip_fib.h |    2 ++
- include/net/scm.h    |    4 +++-
- 3 files changed, 8 insertions(+), 2 deletions(-)
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
 --- a/include/linux/ipv6.h
 +++ b/include/linux/ipv6.h
@@ -42,17 +41,3 @@ Signed-off-by: Takashi Iwai <tiwai@suse.de>
  };
  
  struct fnhe_hash_bucket {
---- a/include/net/scm.h
-+++ b/include/net/scm.h
-@@ -21,8 +21,10 @@ struct scm_creds {
- struct scm_fp_list {
- 	short			count;
- 	short			max;
--	struct user_struct	*user;
- 	struct file		*fp[SCM_MAX_FD];
-+#ifndef __GENKSYMS__
-+	struct user_struct	*user;
-+#endif
- };
- 
- struct scm_cookie {

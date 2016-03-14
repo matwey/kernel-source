@@ -22,3 +22,5 @@ crypto_*			PASS
 ahash_*				PASS
 lpddr2_jedec_*			PASS
 ip6_route_output		PASS
+__scm_*				PASS
+scm_*				PASS

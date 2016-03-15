@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 4.1.18 Kernel Configuration
+# Linux/arm 4.1.19 Kernel Configuration
 #
 CONFIG_ARM=y
 CONFIG_ARM_HAS_SG_CHAIN=y
@@ -734,6 +734,7 @@ CONFIG_PCI_IMX6=y
 CONFIG_PCI_TEGRA=y
 CONFIG_PCI_RCAR_GEN2=y
 CONFIG_PCI_RCAR_GEN2_PCIE=y
+CONFIG_PCI_HOST_COMMON=y
 CONFIG_PCI_HOST_GENERIC=y
 # CONFIG_PCIE_SPEAR13XX is not set
 CONFIG_PCI_KEYSTONE=y

@@ -46,7 +46,7 @@ Signed-off-by: David Disseldorp <ddiss@suse.de>
  			 * RESERVATION CONFLICT on some CDBs */
  
 -	if (!se_sess->se_node_acl->device_list)
--		return;
+-		return 0;
 -
 -	se_deve = se_sess->se_node_acl->device_list[cmd->orig_fe_lun];
 -	/*

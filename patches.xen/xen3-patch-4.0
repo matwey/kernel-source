@@ -2063,7 +2063,7 @@ Acked-by: jbeulich@suse.com
  xen-balloon_$(CONFIG_XEN)	:= balloon/
 --- a/drivers/xen/blkback/blkback.c
 +++ b/drivers/xen/blkback/blkback.c
-@@ -751,7 +751,7 @@ static int __init blkif_init(void)
+@@ -748,7 +748,7 @@ static int __init blkif_init(void)
  	kfree(pending_reqs);
  	kfree(pending_grant_handles);
  	free_empty_pages_and_pagevec(pending_pages, mmap_pages);
@@ -2180,7 +2180,7 @@ Acked-by: jbeulich@suse.com
  	}
 --- a/drivers/xen/netback/netback.c
 +++ b/drivers/xen/netback/netback.c
-@@ -1956,7 +1956,7 @@ static int __init netback_init(void)
+@@ -1957,7 +1957,7 @@ static int __init netback_init(void)
  
  	mmap_pages = alloc_empty_pages_and_pagevec(MAX_PENDING_REQS);
  	if (mmap_pages == NULL) {
@@ -2457,7 +2457,7 @@ Acked-by: jbeulich@suse.com
  
  	pending_req->rqid       = ring_req->rqid;
  	pending_req->act        = ring_req->act;
-@@ -577,7 +577,7 @@ static int _scsiback_do_cmd_fn(struct vs
+@@ -579,7 +579,7 @@ static int _scsiback_do_cmd_fn(struct vs
  	RING_IDX rc, rp;
  	int err, more_to_do = 0;
  
@@ -2466,7 +2466,7 @@ Acked-by: jbeulich@suse.com
  
  	rc = ring->req_cons;
  	rp = ring->sring->req_prod;
-@@ -669,7 +669,7 @@ int scsiback_schedule(void *data)
+@@ -671,7 +671,7 @@ int scsiback_schedule(void *data)
  {
  	struct vscsibk_info *info = (struct vscsibk_info *)data;
  
@@ -2475,7 +2475,7 @@ Acked-by: jbeulich@suse.com
  
  	while (!kthread_should_stop()) {
  		wait_event_interruptible(
-@@ -742,7 +742,7 @@ out_of_memory:
+@@ -744,7 +744,7 @@ out_of_memory:
  	kfree(pending_reqs);
  	kfree(pending_grant_handles);
  	free_empty_pages_and_pagevec(pending_pages, mmap_pages);
@@ -3872,15 +3872,15 @@ Acked-by: jbeulich@suse.com
  
 --- a/drivers/xen/tpmback/tpmback.c
 +++ b/drivers/xen/tpmback/tpmback.c
-@@ -876,7 +876,7 @@ static void tpm_tx_action(unsigned long
+@@ -871,7 +871,7 @@ static void tpm_tx_action(unsigned long
+ 	struct list_head *ent;
  	tpmif_t *tpmif;
- 	tpmif_tx_request_t *tx;
  
 -	DPRINTK("%s: Getting data from front-end(s)!\n", __FUNCTION__);
 +	DPRINTK("%s: Getting data from front-end(s)!\n", __func__);
  
  	while (!list_empty(&tpm_schedule_list)) {
- 		/* Get a tpmif from the list with work to do. */
+ 		tpmif_tx_request_t tx;
 --- a/drivers/xen/usbback/xenbus.c
 +++ b/drivers/xen/usbback/xenbus.c
 @@ -272,7 +272,7 @@ static void frontend_changed(struct xenb

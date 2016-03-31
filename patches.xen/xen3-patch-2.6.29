@@ -8776,7 +8776,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  	int cpu;
 --- a/drivers/gpu/drm/i915/i915_drv.c
 +++ b/drivers/gpu/drm/i915/i915_drv.c
-@@ -1556,7 +1556,7 @@ static const struct file_operations i915
+@@ -1611,7 +1611,7 @@ static const struct file_operations i915
  	.open = drm_open,
  	.release = drm_release,
  	.unlocked_ioctl = drm_ioctl,
@@ -8787,7 +8787,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  #ifdef CONFIG_COMPAT
 --- a/drivers/gpu/drm/i915/i915_drv.h
 +++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -2759,6 +2759,11 @@ int __i915_wait_request(struct drm_i915_
+@@ -2787,6 +2787,11 @@ int __i915_wait_request(struct drm_i915_
  			s64 *timeout,
  			struct drm_i915_file_private *file_priv);
  int __must_check i915_wait_request(struct drm_i915_gem_request *req);
@@ -9977,7 +9977,7 @@ Automatically created from "patches.kernel.org/patch-2.6.29" by xen-port-patches
  }
  /* 
   * Add following to poll() function in NAPI driver (Tigon3 is example):
-@@ -1552,7 +1552,6 @@ static void net_tx_action(unsigned long
+@@ -1553,7 +1553,6 @@ static void net_tx_action(unsigned long
  		dev->stats.rx_packets++;
  
  		netif_rx(skb);

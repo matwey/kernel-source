@@ -6452,7 +6452,7 @@ Automatically created from "patches.kernel.org/patch-2.6.32" by xen-port-patches
  
 --- a/drivers/pci/probe.c
 +++ b/drivers/pci/probe.c
-@@ -1604,6 +1604,10 @@ static unsigned next_fn(struct pci_bus *
+@@ -1607,6 +1607,10 @@ static unsigned next_fn(struct pci_bus *
  	/* dev may be NULL for non-contiguous multifunction devices */
  	if (!dev || dev->multifunction)
  		return (fn + 1) % 8;
@@ -6463,7 +6463,7 @@ Automatically created from "patches.kernel.org/patch-2.6.32" by xen-port-patches
  
  	return 0;
  }
-@@ -1644,9 +1648,12 @@ int pci_scan_slot(struct pci_bus *bus, i
+@@ -1647,9 +1651,12 @@ int pci_scan_slot(struct pci_bus *bus, i
  		return 0; /* Already scanned the entire slot */
  
  	dev = pci_scan_single_device(bus, devfn);

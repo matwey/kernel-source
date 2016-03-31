@@ -13159,7 +13159,7 @@ Automatically created from "patches.kernel.org/patch-2.6.28" by xen-port-patches
 +}
 --- a/drivers/pci/probe.c
 +++ b/drivers/pci/probe.c
-@@ -1498,6 +1498,11 @@ static void pci_init_capabilities(struct
+@@ -1501,6 +1501,11 @@ static void pci_init_capabilities(struct
  	/* Vital Product Data */
  	pci_vpd_pci22_init(dev);
  

@@ -571,7 +571,7 @@ Patch-mainline: Never, SUSE-Xen specific
  
 --- a/drivers/xen/netback/netback.c
 +++ b/drivers/xen/netback/netback.c
-@@ -1923,6 +1923,12 @@ static irqreturn_t netif_be_dbg(int irq,
+@@ -1924,6 +1924,12 @@ static irqreturn_t netif_be_dbg(int irq,
  
  	return IRQ_HANDLED;
  }
@@ -584,7 +584,7 @@ Patch-mainline: Never, SUSE-Xen specific
  #endif
  
  static int __init netback_init(void)
-@@ -1991,12 +1997,9 @@ static int __init netback_init(void)
+@@ -1992,12 +1998,9 @@ static int __init netback_init(void)
  	netif_xenbus_init();
  
  #ifdef NETBE_DEBUG_INTERRUPT

@@ -388,7 +388,7 @@ Acked-by: jbeulich@suse.com
  
  /*         xwr */
  #define __P000	PAGE_NONE
-@@ -399,6 +396,59 @@ static inline pmdval_t pmdnuma_flags(pmd
+@@ -399,6 +396,57 @@ static inline pmdval_t pmdnuma_flags(pmd
  #define pgprot_val(x)	((x).pgprot)
  #define __pgprot(x)	((pgprot_t) { (x) } )
  
@@ -425,20 +425,18 @@ Acked-by: jbeulich@suse.com
 +}
 +static inline pgprot_t pgprot_4k_2_large(pgprot_t pgprot)
 +{
++	pgprotval_t val = pgprot_val(pgprot);
 +	pgprot_t new;
-+	unsigned long val;
 +
-+	val = pgprot_val(pgprot);
 +	pgprot_val(new) = (val & ~(_PAGE_PAT | _PAGE_PAT_LARGE)) |
 +		((val & _PAGE_PAT) << (_PAGE_BIT_PAT_LARGE - _PAGE_BIT_PAT));
 +	return new;
 +}
 +static inline pgprot_t pgprot_large_2_4k(pgprot_t pgprot)
 +{
++	pgprotval_t val = pgprot_val(pgprot);
 +	pgprot_t new;
-+	unsigned long val;
 +
-+	val = pgprot_val(pgprot);
 +	pgprot_val(new) = (val & ~(_PAGE_PAT | _PAGE_PAT_LARGE)) |
 +			  ((val & _PAGE_PAT_LARGE) >>
 +			   (_PAGE_BIT_PAT_LARGE - _PAGE_BIT_PAT));
@@ -448,7 +446,7 @@ Acked-by: jbeulich@suse.com
  
  typedef struct page *pgtable_t;
  
-@@ -452,6 +502,7 @@ static inline void update_page_count(int
+@@ -452,6 +500,7 @@ static inline void update_page_count(int
  extern pte_t *lookup_address(unsigned long address, unsigned int *level);
  extern pte_t *lookup_address_in_pgd(pgd_t *pgd, unsigned long address,
  				    unsigned int *level);
@@ -3984,7 +3982,7 @@ Acked-by: jbeulich@suse.com
  	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
  
  	/* Set the "privileged fault" bit to something sane. */
-@@ -1263,47 +1258,50 @@ good_area:
+@@ -1266,47 +1261,50 @@ good_area:
  	 * we get VM_FAULT_RETRY back, the mmap_sem has been unlocked.
  	 */
  	fault = handle_mm_fault(mm, vma, address, flags);
@@ -4262,7 +4260,7 @@ Acked-by: jbeulich@suse.com
  
  	/* Do an early initialization of the fixmap area. */
  	addr = __fix_to_virt(FIX_EARLYCON_MEM_BASE);
-@@ -862,8 +867,10 @@ void __init xen_init_pt(void)
+@@ -864,8 +869,10 @@ void __init xen_init_pt(void)
  				 XENFEAT_writable_page_tables);
  	early_make_page_readonly(level3_kernel_pgt,
  				 XENFEAT_writable_page_tables);
@@ -4273,7 +4271,7 @@ Acked-by: jbeulich@suse.com
  	early_make_page_readonly(level2_fixmap_pgt,
  				 XENFEAT_writable_page_tables);
  	early_make_page_readonly(level1_fixmap_pgt,
-@@ -1541,67 +1548,16 @@ int kern_addr_valid(unsigned long addr)
+@@ -1543,67 +1550,16 @@ int kern_addr_valid(unsigned long addr)
  	return pfn_valid(pte_pfn(*pte));
  }
  
@@ -6033,7 +6031,7 @@ Acked-by: jbeulich@suse.com
  	struct arch_shared_info arch;
 --- a/kernel/time/timekeeping.c
 +++ b/kernel/time/timekeeping.c
-@@ -934,7 +934,7 @@ int do_settimeofday64(const struct times
+@@ -933,7 +933,7 @@ int do_settimeofday64(const struct times
  	timekeeping_update(tk, TK_CLEAR_NTP | TK_MIRROR | TK_CLOCK_WAS_SET);
  
  #ifdef CONFIG_XEN_PRIVILEGED_GUEST
@@ -6042,7 +6040,7 @@ Acked-by: jbeulich@suse.com
  #endif
  
  	write_seqcount_end(&tk_core.seq);
-@@ -981,10 +981,7 @@ int timekeeping_inject_offset(struct tim
+@@ -980,10 +980,7 @@ int timekeeping_inject_offset(struct tim
  	tk_set_wall_to_mono(tk, timespec64_sub(tk->wall_to_monotonic, ts64));
  
  #ifdef CONFIG_XEN_PRIVILEGED_GUEST

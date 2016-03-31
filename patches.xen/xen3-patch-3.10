@@ -806,7 +806,7 @@ Acked-by: jbeulich@suse.com
  		nr = (address - idt_descr.address) >> 3;
  
  		if (nr == 6) {
-@@ -1250,7 +1250,9 @@ good_area:
+@@ -1253,7 +1253,9 @@ good_area:
  dotraplinkage void __kprobes
  do_page_fault(struct pt_regs *regs, unsigned long error_code)
  {
@@ -936,7 +936,7 @@ Acked-by: jbeulich@suse.com
  
  #include <asm/processor.h>
  #include <asm/bios_ebda.h>
-@@ -1324,14 +1325,12 @@ remove_pagetable(unsigned long start, un
+@@ -1326,14 +1327,12 @@ remove_pagetable(unsigned long start, un
  	flush_tlb_all();
  }
  
@@ -953,7 +953,7 @@ Acked-by: jbeulich@suse.com
  static void __meminit
  kernel_physical_mapping_remove(unsigned long start, unsigned long end)
  {
-@@ -1341,7 +1340,6 @@ kernel_physical_mapping_remove(unsigned
+@@ -1343,7 +1342,6 @@ kernel_physical_mapping_remove(unsigned
  	remove_pagetable(start, end, true);
  }
  
@@ -961,7 +961,7 @@ Acked-by: jbeulich@suse.com
  int __ref arch_remove_memory(u64 start, u64 size)
  {
  	unsigned long start_pfn = start >> PAGE_SHIFT;
-@@ -1381,10 +1379,9 @@ void __init mem_init(void)
+@@ -1383,10 +1381,9 @@ void __init mem_init(void)
  
  	/* clear_bss() already clear the empty_zero_page */
  
@@ -974,7 +974,7 @@ Acked-by: jbeulich@suse.com
  	totalram_pages = free_all_bootmem();
  
  	/* XEN: init pages outside initial allocation. */
-@@ -1618,18 +1615,17 @@ static long __meminitdata addr_start, ad
+@@ -1620,18 +1617,17 @@ static long __meminitdata addr_start, ad
  static void __meminitdata *p_start, *p_end;
  static int __meminitdata node_start;
  
@@ -998,7 +998,7 @@ Acked-by: jbeulich@suse.com
  
  		pgd = vmemmap_pgd_populate(addr, node);
  		if (!pgd)
-@@ -1639,31 +1635,14 @@ vmemmap_populate(struct page *start_page
+@@ -1641,31 +1637,14 @@ vmemmap_populate(struct page *start_page
  		if (!pud)
  			return -ENOMEM;
  
@@ -1035,7 +1035,7 @@ Acked-by: jbeulich@suse.com
  				entry = pfn_pte(__pa(p) >> PAGE_SHIFT,
  						PAGE_KERNEL_LARGE);
  				set_pmd(pmd, __pmd_ma(__pte_val(entry)));
-@@ -1680,15 +1659,32 @@ vmemmap_populate(struct page *start_page
+@@ -1682,15 +1661,32 @@ vmemmap_populate(struct page *start_page
  
  				addr_end = addr + PMD_SIZE;
  				p_end = p + PMD_SIZE;
@@ -1750,7 +1750,7 @@ Acked-by: jbeulich@suse.com
  #ifdef MODULE
 --- a/drivers/xen/netback/netback.c
 +++ b/drivers/xen/netback/netback.c
-@@ -1757,6 +1757,8 @@ static void net_tx_action(unsigned long
+@@ -1758,6 +1758,8 @@ static void net_tx_action(unsigned long
  			continue;
  		}
  
@@ -2266,7 +2266,7 @@ Acked-by: jbeulich@suse.com
  	 * if lock->owner is not set, the mutex owner may have just acquired
 --- a/kernel/time/timekeeping.c
 +++ b/kernel/time/timekeeping.c
-@@ -980,6 +980,10 @@ int timekeeping_inject_offset(struct tim
+@@ -979,6 +979,10 @@ int timekeeping_inject_offset(struct tim
  	tk_xtime_add(tk, &ts64);
  	tk_set_wall_to_mono(tk, timespec64_sub(tk->wall_to_monotonic, ts64));
  

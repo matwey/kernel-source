@@ -1,0 +1,55 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: xen: Linux 4.1.19
+Patch-mainline: Never, SUSE-Xen specific
+References: CVE-2016-2383 CVE-2016-2384 bsc#966684 bsc#966693 bsc#968018
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Automatically created from "patches.kernel.org/patch-4.1.18-19" by xen-port-patches.py
+
+--- a/arch/x86/mm/fault-xen.c
++++ b/arch/x86/mm/fault-xen.c
+@@ -293,6 +293,9 @@ static noinline int vmalloc_fault(unsign
+ 	if (!pmd_k)
+ 		return -1;
+ 
++	if (pmd_huge(*pmd_k))
++		return 0;
++
+ 	pte_k = pte_offset_kernel(pmd_k, address);
+ 	if (!pte_present(*pte_k))
+ 		return -1;
+@@ -364,8 +367,6 @@ void vmalloc_sync_all(void)
+  * 64-bit:
+  *
+  *   Handle a fault on the vmalloc area
+- *
+- * This assumes no large pages in there.
+  */
+ static noinline int vmalloc_fault(unsigned long address)
+ {
+@@ -407,17 +408,23 @@ static noinline int vmalloc_fault(unsign
+ 	if (pud_none(*pud_ref))
+ 		return -1;
+ 
+-	if (pud_none(*pud) || pud_page_vaddr(*pud) != pud_page_vaddr(*pud_ref))
++	if (pud_none(*pud) || pud_pfn(*pud) != pud_pfn(*pud_ref))
+ 		BUG();
+ 
++	if (pud_huge(*pud))
++		return 0;
++
+ 	pmd = pmd_offset(pud, address);
+ 	pmd_ref = pmd_offset(pud_ref, address);
+ 	if (pmd_none(*pmd_ref))
+ 		return -1;
+ 
+-	if (pmd_none(*pmd) || pmd_page(*pmd) != pmd_page(*pmd_ref))
++	if (pmd_none(*pmd) || pmd_pfn(*pmd) != pmd_pfn(*pmd_ref))
+ 		BUG();
+ 
++	if (pmd_huge(*pmd))
++		return 0;
++
+ 	pte_ref = pte_offset_kernel(pmd_ref, address);
+ 	if (!pte_present(*pte_ref))
+ 		return -1;

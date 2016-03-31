@@ -1,0 +1,38 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: xen: Linux 4.1.14
+Patch-mainline: Never, SUSE-Xen specific
+References: CVE-2015-5307 CVE-2015-6937 bsc#945825 bsc#953527
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Automatically created from "patches.kernel.org/patch-4.1.13-14" by xen-port-patches.py
+
+--- a/arch/x86/kernel/cpu/common-xen.c
++++ b/arch/x86/kernel/cpu/common-xen.c
+@@ -313,8 +313,9 @@ static __always_inline void setup_smap(s
+ {
+ 	unsigned long eflags;
+ 
++	asm ("pushf;" __ASM_SIZE(pop) "%0" : "=rm" (eflags));
++
+ 	/* This should have been cleared long ago */
+-	raw_local_save_flags(eflags);
+ 	BUG_ON(eflags & X86_EFLAGS_AC);
+ 
+ 	if (cpu_has(c, X86_FEATURE_SMAP)) {
+--- a/arch/x86/kernel/setup-xen.c
++++ b/arch/x86/kernel/setup-xen.c
+@@ -1350,6 +1350,14 @@ void __init setup_arch(char **cmdline_p)
+ 	clone_pgd_range(initial_page_table + KERNEL_PGD_BOUNDARY,
+ 			swapper_pg_dir     + KERNEL_PGD_BOUNDARY,
+ 			KERNEL_PGD_PTRS);
++
++	/*
++	 * sync back low identity map too.  It is used for example
++	 * in the 32-bit EFI stub.
++	 */
++	clone_pgd_range(initial_page_table,
++			swapper_pg_dir     + KERNEL_PGD_BOUNDARY,
++			min(KERNEL_PGD_PTRS, KERNEL_PGD_BOUNDARY));
+ #endif
+ 
+ 	tboot_probe();

@@ -2168,7 +2168,7 @@ Acked-by: jbeulich@suse.com
  	}
  
  	printk(KERN_ALERT "BUG: unable to handle kernel ");
-@@ -1238,7 +1244,8 @@ good_area:
+@@ -1241,7 +1247,8 @@ good_area:
  	/*
  	 * If for any reason at all we couldn't handle the fault,
  	 * make sure we exit gracefully rather than endlessly redo
@@ -2208,7 +2208,7 @@ Acked-by: jbeulich@suse.com
  
 --- a/arch/x86/mm/init_64-xen.c
 +++ b/arch/x86/mm/init_64-xen.c
-@@ -1004,7 +1004,8 @@ static void  update_end_of_memory_vars(u
+@@ -1006,7 +1006,8 @@ static void  update_end_of_memory_vars(u
  int arch_add_memory(int nid, u64 start, u64 size)
  {
  	struct pglist_data *pgdat = NODE_DATA(nid);
@@ -2793,7 +2793,7 @@ Acked-by: jbeulich@suse.com
  
 --- a/kernel/time/timekeeping.c
 +++ b/kernel/time/timekeeping.c
-@@ -981,7 +981,10 @@ int timekeeping_inject_offset(struct tim
+@@ -980,7 +980,10 @@ int timekeeping_inject_offset(struct tim
  	tk_set_wall_to_mono(tk, timespec64_sub(tk->wall_to_monotonic, ts64));
  
  #ifdef CONFIG_XEN_PRIVILEGED_GUEST

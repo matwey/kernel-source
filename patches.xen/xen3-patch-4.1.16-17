@@ -1,0 +1,88 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: xen: Linux 4.1.17
+Patch-mainline: Never, SUSE-Xen specific
+References: CVE-2015-7799 CVE-2015-7884 CVE-2015-8104 CVE-2015-8767 CVE-2016-2069 bnc#814440 bnc#951626 bnc#963767 boo#954876 boo#958504 boo#960710 bsc#949936 bsc#954404 bsc#958439 bsc#961509 http://article.gmane.org/gmane.comp.security.oss.general/17908
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Automatically created from "patches.kernel.org/patch-4.1.16-17" by xen-port-patches.py
+
+--- a/arch/x86/include/mach-xen/asm/mmu_context.h
++++ b/arch/x86/include/mach-xen/asm/mmu_context.h
+@@ -157,10 +157,38 @@ static inline void switch_mm(struct mm_s
+ #endif
+ 		cpumask_set_cpu(cpu, mm_cpumask(next));
+ 
+-		/* Re-load page tables: load_cr3(next->pgd) */
++		/*
++		 * Re-load page tables: load_cr3(next->pgd).
++		 *
++		 * This logic has an ordering constraint:
++		 *
++		 *  CPU 0: Write to a PTE for 'next'
++		 *  CPU 0: load bit 1 in mm_cpumask.  if nonzero, send IPI.
++		 *  CPU 1: set bit 1 in next's mm_cpumask
++		 *  CPU 1: load from the PTE that CPU 0 writes (implicit)
++		 *
++		 * We need to prevent an outcome in which CPU 1 observes
++		 * the new PTE value and CPU 0 observes bit 1 clear in
++		 * mm_cpumask.  (If that occurs, then the IPI will never
++		 * be sent, and CPU 0's TLB will contain a stale entry.)
++		 *
++		 * The bad outcome can occur if either CPU's load is
++		 * reordered before that CPU's store, so both CPUs must
++		 * execute full barriers to prevent this from happening.
++		 *
++		 * Thus, switch_mm needs a full barrier between the
++		 * store to mm_cpumask and any operation that could load
++		 * from next->pgd.  TLB fills are special and can happen
++		 * due to instruction fetches or for no reason at all,
++		 * and neither LOCK nor MFENCE orders them.
++		 * Fortunately, load_cr3() is serializing and gives the
++		 * ordering guarantee we need.
++		 *
++		 */
+ 		op->cmd = MMUEXT_NEW_BASEPTR;
+ 		op->arg1.mfn = virt_to_mfn(next->pgd);
+ 		op++;
++
+ 		trace_tlb_flush(TLB_FLUSH_ON_TASK_SWITCH, TLB_FLUSH_ALL);
+ 
+ 		/* xen_new_user_pt(__pa(__user_pgd(next->pgd))) */
+@@ -220,10 +248,14 @@ static inline void switch_mm(struct mm_s
+ 			 * schedule, protecting us from simultaneous changes.
+ 			 */
+ 			cpumask_set_cpu(cpu, mm_cpumask(next));
++
+ 			/*
+ 			 * We were in lazy tlb mode and leave_mm disabled
+ 			 * tlb flush IPI delivery. We must reload CR3
+ 			 * to make sure to use no freed page tables.
++			 *
++			 * As above, load_cr3() is serializing and orders TLB
++			 * fills with respect to the mm_cpumask write.
+ 			 */
+ 			load_cr3(next->pgd);
+ 			trace_tlb_flush(TLB_FLUSH_ON_TASK_SWITCH, TLB_FLUSH_ALL);
+--- a/arch/x86/mm/tlb-xen.c
++++ b/arch/x86/mm/tlb-xen.c
+@@ -32,6 +32,9 @@ void flush_tlb_mm_range(struct mm_struct
+ 
+ 	preempt_disable();
+ 	if (current->active_mm != mm || !current->mm) {
++		/* Synchronize with switch_mm. */
++		smp_mb();
++
+ 		if (cpumask_any_but(mask, smp_processor_id()) >= nr_cpu_ids) {
+ 			preempt_enable();
+ 			return;
+@@ -46,6 +49,10 @@ void flush_tlb_mm_range(struct mm_struct
+ 	if ((end != TLB_FLUSH_ALL) && !(vmflag & VM_HUGETLB))
+ 		base_pages_to_flush = (end - start) >> PAGE_SHIFT;
+ 
++	/*
++	 * Both branches below are implicit full barriers (MOV to CR or
++	 * INVLPG) that synchronize with switch_mm.
++	 */
+ 	if (base_pages_to_flush > tlb_single_page_flush_ceiling) {
+ 		base_pages_to_flush = TLB_FLUSH_ALL;
+ 		count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ALL);

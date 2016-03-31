@@ -146,7 +146,7 @@ Acked-by: jbeulich@novell.com
  
  	return NETDEV_TX_OK;
  
-@@ -876,8 +899,11 @@ static void net_rx_action(unsigned long 
+@@ -876,8 +899,11 @@ static void net_rx_action(unsigned long
  
  		if (netif_queue_stopped(netif->dev) &&
  		    netif_schedulable(netif) &&
@@ -159,7 +159,7 @@ Acked-by: jbeulich@novell.com
  
  		if (ret && netif != notify_tail && !netif->rx_notify_link) {
  			if (notify_tail)
-@@ -900,7 +926,7 @@ static void net_rx_action(unsigned long 
+@@ -900,7 +926,7 @@ static void net_rx_action(unsigned long
  	/* More work to do? */
  	if (!skb_queue_empty(&netbk->queue) &&
  	    !timer_pending(&netbk->timer))
@@ -168,7 +168,7 @@ Acked-by: jbeulich@novell.com
  #if 0
  	else
  		xen_network_done_notify();
-@@ -909,12 +935,12 @@ static void net_rx_action(unsigned long 
+@@ -909,12 +935,12 @@ static void net_rx_action(unsigned long
  
  static void net_alarm(unsigned long group)
  {
@@ -183,7 +183,7 @@ Acked-by: jbeulich@novell.com
  }
  
  static int __on_net_schedule_list(netif_t *netif)
-@@ -1841,7 +1867,10 @@ static void net_tx_action(unsigned long 
+@@ -1842,7 +1868,10 @@ static void net_tx_action(unsigned long
  		dev->stats.rx_bytes += skb->len;
  		dev->stats.rx_packets++;
  
@@ -195,7 +195,7 @@ Acked-by: jbeulich@novell.com
  	}
  
  	if (gop.notify.head)
-@@ -1871,7 +1900,7 @@ static void netif_idx_release(struct xen
+@@ -1872,7 +1901,7 @@ static void netif_idx_release(struct xen
  	netbk->tx.dealloc_prod++;
  	spin_unlock_irqrestore(&netbk->tx.release_lock, flags);
  
@@ -204,7 +204,7 @@ Acked-by: jbeulich@novell.com
  }
  
  static void netif_page_release(struct page *page, unsigned int order)
-@@ -2018,6 +2047,50 @@ static struct irqaction netif_be_dbg_act
+@@ -2019,6 +2048,50 @@ static struct irqaction netif_be_dbg_act
  };
  #endif
  
@@ -255,7 +255,7 @@ Acked-by: jbeulich@novell.com
  static int __init netback_init(void)
  {
  	unsigned int i, group;
-@@ -2055,9 +2128,6 @@ static int __init netback_init(void)
+@@ -2056,9 +2129,6 @@ static int __init netback_init(void)
  	for (group = 0; group < netbk_nr_groups; group++) {
  		struct xen_netbk *netbk = &xen_netbk[group];
  
@@ -265,7 +265,7 @@ Acked-by: jbeulich@novell.com
  		skb_queue_head_init(&netbk->rx.queue);
  		skb_queue_head_init(&netbk->tx.queue);
  
-@@ -2093,6 +2163,26 @@ static int __init netback_init(void)
+@@ -2094,6 +2164,26 @@ static int __init netback_init(void)
  			netbk->tx.pending_ring[i] = i;
  			INIT_LIST_HEAD(&netbk->tx.pending_inuse[i].list);
  		}
@@ -292,7 +292,7 @@ Acked-by: jbeulich@novell.com
  	}
  
  	netbk_copy_skb_mode = NETBK_DONT_COPY_SKB;
-@@ -2119,12 +2209,15 @@ static int __init netback_init(void)
+@@ -2120,12 +2210,15 @@ static int __init netback_init(void)
  	return 0;
  
  failed_init:

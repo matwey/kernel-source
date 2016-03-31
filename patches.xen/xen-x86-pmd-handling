@@ -380,7 +380,7 @@ Patch-mainline: Never, SUSE-Xen specific
  			if (page_size_mask & (1 << PG_LEVEL_NUM)) {
  				mmu_update_t u;
  
-@@ -936,10 +942,10 @@ kernel_physical_mapping_init(unsigned lo
+@@ -938,10 +944,10 @@ kernel_physical_mapping_init(unsigned lo
  		last_map_addr = phys_pud_init(pud, __pa(start), __pa(end),
  						 page_size_mask);
  
@@ -394,7 +394,7 @@ Patch-mainline: Never, SUSE-Xen specific
  			spin_lock(&init_mm.page_table_lock);
  			pgd_populate(&init_mm, pgd, pud);
  			spin_unlock(&init_mm.page_table_lock);
-@@ -976,8 +982,6 @@ void __init paging_init(void)
+@@ -978,8 +984,6 @@ void __init paging_init(void)
  		node_clear_state(0, N_NORMAL_MEMORY);
  
  	zone_sizes_init();

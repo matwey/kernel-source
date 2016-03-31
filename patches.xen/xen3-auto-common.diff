@@ -719,7 +719,7 @@ take the forward porting patches:
  obj-$(CONFIG_TCG_CRB) += tpm_crb.o
 --- a/drivers/char/tpm/tpm.h
 +++ b/drivers/char/tpm/tpm.h
-@@ -180,6 +180,9 @@ struct tpm_chip {
+@@ -187,6 +187,9 @@ struct tpm_chip {
  #endif /* CONFIG_ACPI */
  
  	struct list_head list;
@@ -729,7 +729,7 @@ take the forward porting patches:
  };
  
  #define to_tpm_chip(n) container_of(n, struct tpm_chip, vendor)
-@@ -386,6 +389,18 @@ extern struct class *tpm_class;
+@@ -393,6 +396,18 @@ extern struct class *tpm_class;
  extern dev_t tpm_devt;
  extern const struct file_operations tpm_fops;
  
@@ -2085,7 +2085,7 @@ take the forward porting patches:
  static ssize_t tty_read(struct file *, char __user *, size_t, loff_t *);
  static ssize_t tty_write(struct file *, const char __user *, size_t, loff_t *);
  ssize_t redirected_tty_write(struct file *, const char __user *,
-@@ -1989,6 +1993,10 @@ static struct tty_driver *tty_lookup_dri
+@@ -1993,6 +1997,10 @@ static struct tty_driver *tty_lookup_dri
  #ifdef CONFIG_VT
  	case MKDEV(TTY_MAJOR, 0): {
  		extern struct tty_driver *console_driver;
@@ -2096,7 +2096,7 @@ take the forward porting patches:
  		driver = tty_driver_kref_get(console_driver);
  		*index = fg_console;
  		*noctty = 1;
-@@ -3660,7 +3668,8 @@ int __init tty_init(void)
+@@ -3686,7 +3694,8 @@ int __init tty_init(void)
  		consdev = NULL;
  
  #ifdef CONFIG_VT
@@ -2108,7 +2108,7 @@ take the forward porting patches:
  }
 --- a/drivers/edac/edac_mc.c
 +++ b/drivers/edac/edac_mc.c
-@@ -866,6 +866,10 @@ static void edac_mc_scrub_block(unsigned
+@@ -858,6 +858,10 @@ static void edac_mc_scrub_block(unsigned
  
  	edac_dbg(3, "\n");
  
@@ -3495,7 +3495,7 @@ take the forward porting patches:
   * Flags checked when a page is prepped for return by the page allocator.
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -1245,6 +1245,10 @@ static inline int pci_enable_msix_exact(
+@@ -1249,6 +1249,10 @@ static inline int pci_enable_msix_exact(
  		return rc;
  	return 0;
  }
@@ -3840,7 +3840,7 @@ take the forward porting patches:
   * zap_page_range_single - remove user pages in a given range
 --- a/mm/mmap.c
 +++ b/mm/mmap.c
-@@ -2403,6 +2403,14 @@ static void unmap_region(struct mm_struc
+@@ -2398,6 +2398,14 @@ static void unmap_region(struct mm_struc
  	tlb_finish_mmu(&tlb, start, end);
  }
  
@@ -3855,7 +3855,7 @@ take the forward porting patches:
  /*
   * Create a list of vma's touched by the unmap, removing them from the mm's
   * vma list as we go..
-@@ -2418,6 +2426,7 @@ detach_vmas_to_be_unmapped(struct mm_str
+@@ -2413,6 +2421,7 @@ detach_vmas_to_be_unmapped(struct mm_str
  	vma->vm_prev = NULL;
  	do {
  		vma_rb_erase(vma, &mm->mm_rb);
@@ -3863,7 +3863,7 @@ take the forward porting patches:
  		mm->map_count--;
  		tail_vma = vma;
  		vma = vma->vm_next;
-@@ -2824,6 +2833,11 @@ void exit_mmap(struct mm_struct *mm)
+@@ -2843,6 +2852,11 @@ void exit_mmap(struct mm_struct *mm)
  
  	arch_exit_mmap(mm);
  

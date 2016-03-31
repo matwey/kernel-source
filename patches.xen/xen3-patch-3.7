@@ -2556,7 +2556,7 @@ Acked-by: jbeulich@suse.com
  		/* Register acpi_idle_driver if not already registered */
 --- a/drivers/char/tpm/tpm.h
 +++ b/drivers/char/tpm/tpm.h
-@@ -180,9 +180,6 @@ struct tpm_chip {
+@@ -187,9 +187,6 @@ struct tpm_chip {
  #endif /* CONFIG_ACPI */
  
  	struct list_head list;
@@ -2566,7 +2566,7 @@ Acked-by: jbeulich@suse.com
  };
  
  #define to_tpm_chip(n) container_of(n, struct tpm_chip, vendor)
-@@ -389,17 +386,15 @@ extern struct class *tpm_class;
+@@ -396,17 +393,15 @@ extern struct class *tpm_class;
  extern dev_t tpm_devt;
  extern const struct file_operations tpm_fops;
  
@@ -3344,7 +3344,7 @@ Acked-by: jbeulich@suse.com
  
  		RING_PUSH_RESPONSES_AND_CHECK_NOTIFY(&netif->rx, ret);
  		irq = netif->irq;
-@@ -1218,9 +1299,10 @@ void netbk_get_requests(netif_t *netif,
+@@ -1217,9 +1298,10 @@ void netbk_get_requests(netif_t *netif,
  		frag_set_pending_idx(&frags[i], pending_idx);
  	}
  
@@ -3358,7 +3358,7 @@ Acked-by: jbeulich@suse.com
  }
  
  static int netbk_tx_check_gop(struct sk_buff *skb,
-@@ -1319,9 +1401,9 @@ static int netbk_tx_check_gop(struct sk_
+@@ -1318,9 +1400,9 @@ static int netbk_tx_check_gop(struct sk_
  
  	gop->map = mop;
  	gop->copy = cop;

@@ -4,7 +4,7 @@ Patch-mainline: Never, SUSE-Xen specific
 
 --- a/arch/x86/mm/fault-xen.c
 +++ b/arch/x86/mm/fault-xen.c
-@@ -352,6 +352,7 @@ static void dump_pagetable(unsigned long
+@@ -355,6 +355,7 @@ static void dump_pagetable(unsigned long
  out:
  	printk(KERN_CONT "\n");
  }
@@ -12,7 +12,7 @@ Patch-mainline: Never, SUSE-Xen specific
  
  #else /* CONFIG_X86_64: */
  
-@@ -461,7 +462,7 @@ static int bad_address(void *p)
+@@ -468,7 +469,7 @@ static int bad_address(void *p)
  	return probe_kernel_address((unsigned long *)p, dummy);
  }
  
@@ -21,7 +21,7 @@ Patch-mainline: Never, SUSE-Xen specific
  {
  	pgd_t *base = __va(read_cr3() & PHYSICAL_PAGE_MASK);
  	pgd_t *pgd = base + pgd_index(address);
-@@ -469,6 +470,9 @@ static void dump_pagetable(unsigned long
+@@ -476,6 +477,9 @@ static void dump_pagetable(unsigned long
  	pmd_t *pmd;
  	pte_t *pte;
  
@@ -31,7 +31,7 @@ Patch-mainline: Never, SUSE-Xen specific
  	if (bad_address(pgd))
  		goto bad;
  
-@@ -623,7 +627,7 @@ show_fault_oops(struct pt_regs *regs, un
+@@ -630,7 +634,7 @@ show_fault_oops(struct pt_regs *regs, un
  	printk(KERN_ALERT "IP:");
  	printk_address(regs->ip);
  
@@ -40,7 +40,7 @@ Patch-mainline: Never, SUSE-Xen specific
  }
  
  static noinline void
-@@ -640,7 +644,7 @@ pgtable_bad(struct pt_regs *regs, unsign
+@@ -647,7 +651,7 @@ pgtable_bad(struct pt_regs *regs, unsign
  
  	printk(KERN_ALERT "%s: Corrupted page table at address %lx\n",
  	       tsk->comm, address);

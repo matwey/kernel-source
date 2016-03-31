@@ -1013,7 +1013,7 @@ Acked-by: jbeulich@suse.com
  			spin_unlock(pgt_lock);
  		}
  		spin_unlock(&pgd_lock);
-@@ -946,7 +957,7 @@ kernel_physical_mapping_init(unsigned lo
+@@ -948,7 +959,7 @@ kernel_physical_mapping_init(unsigned lo
  	}
  
  	if (pgd_changed)
@@ -1022,7 +1022,7 @@ Acked-by: jbeulich@suse.com
  
  	return last_map_addr;
  }
-@@ -1289,25 +1300,26 @@ static void __meminit
+@@ -1291,25 +1302,26 @@ static void __meminit
  remove_pagetable(unsigned long start, unsigned long end, bool direct)
  {
  	unsigned long next;
@@ -1054,7 +1054,7 @@ Acked-by: jbeulich@suse.com
  
  	flush_tlb_all();
  }
-@@ -1433,7 +1445,7 @@ void mark_rodata_ro(void)
+@@ -1435,7 +1447,7 @@ void mark_rodata_ro(void)
  	unsigned long end = (unsigned long) &__end_rodata;
  	unsigned long text_end = PFN_ALIGN(&__stop___ex_table);
  	unsigned long rodata_end = PFN_ALIGN(&__end_rodata);
@@ -1063,7 +1063,7 @@ Acked-by: jbeulich@suse.com
  
  	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
  	       (end - start) >> 10);
-@@ -1444,7 +1456,20 @@ void mark_rodata_ro(void)
+@@ -1446,7 +1458,20 @@ void mark_rodata_ro(void)
  	/*
  	 * The rodata/data/bss/brk section (but not the kernel text!)
  	 * should also be not-executable.
@@ -1084,7 +1084,7 @@ Acked-by: jbeulich@suse.com
  	set_memory_nx(rodata_start, (all_end - rodata_start) >> PAGE_SHIFT);
  
  	rodata_test();
-@@ -1678,7 +1703,7 @@ int __meminit vmemmap_populate(unsigned
+@@ -1680,7 +1705,7 @@ int __meminit vmemmap_populate(unsigned
  	else
  		err = vmemmap_populate_basepages(start, end, node);
  	if (!err)
@@ -1468,6 +1468,17 @@ Acked-by: jbeulich@suse.com
  		spin_unlock_irqrestore(&np->tx_lock, flags);
  		goto drop;
  	}
+--- a/drivers/xen/pci.c
++++ b/drivers/xen/pci.c
+@@ -196,7 +196,7 @@ static int xen_pci_notifier(struct notif
+ 	case BUS_NOTIFY_ADD_DEVICE:
+ 		r = xen_add_device(dev);
+ 		break;
+-	case BUS_NOTIFY_DEL_DEVICE:
++	case BUS_NOTIFY_REMOVED_DEVICE:
+ 		r = xen_remove_device(dev);
+ 		break;
+ 	default:
 --- a/drivers/xen/xen-pciback/xenbus.c
 +++ b/drivers/xen/xen-pciback/xenbus.c
 @@ -792,13 +792,11 @@ static const struct xenbus_device_id xen

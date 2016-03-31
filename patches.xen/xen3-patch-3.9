@@ -1644,7 +1644,7 @@ Acked-by: jbeulich@suse.com
  }
 --- a/arch/x86/kernel/head_64.S
 +++ b/arch/x86/kernel/head_64.S
-@@ -471,7 +471,7 @@ NEXT_PAGE(early_dynamic_pgts)
+@@ -479,7 +479,7 @@ NEXT_PAGE(early_dynamic_pgts)
  
  	.data
  
@@ -2609,6 +2609,18 @@ Acked-by: jbeulich@suse.com
  		return 0;
  
  	ret = spurious_fault_check(error_code, pte);
+@@ -1077,7 +1073,10 @@ __do_page_fault(struct pt_regs *regs, un
+ 		}
+ 
+ 		if (!(error_code & (PF_RSVD | PF_USER | PF_PROT))) {
+-			if (vmalloc_fault(address) >= 0)
++			pagefault_disable(); /* suppress lazy MMU updates */
++			fault = vmalloc_fault(address);
++			pagefault_enable();
++			if (fault >= 0)
+ 				return;
+ 
+ 			if (kmemcheck_fault(regs, address, error_code))
 --- a/arch/x86/mm/init-xen.c
 +++ b/arch/x86/mm/init-xen.c
 @@ -16,105 +16,151 @@
@@ -3901,7 +3913,7 @@ Acked-by: jbeulich@suse.com
  
  	/* Find the initial pte page that was built for us. */
  	page = (unsigned long *)xen_start_info->pt_base;
-@@ -762,6 +790,60 @@ void __init xen_init_pt(void)
+@@ -762,6 +790,62 @@ void __init xen_init_pt(void)
  	level2_fixmap_pgt[pmd_index(addr)] =
  		__pmd(__pa_symbol(level1_fixmap_pgt) | _PAGE_TABLE);
  
@@ -3948,6 +3960,8 @@ Acked-by: jbeulich@suse.com
 +			       || (pa >= pmd_pa && pa < pmd_pa + pmd_sz)
 +			       || (pa >= pte_pa && pa < pte_pa + pte_sz)
 +			       ? pte_wrprotect(pte_k[i]) : pte_k[i];
++			*pte = pte_set_flags(*pte,
++					     __supported_pte_mask & _PAGE_NX);
 +		}
 +		early_make_page_readonly(pte - PTRS_PER_PTE,
 +					 XENFEAT_writable_page_tables);
@@ -3962,7 +3976,7 @@ Acked-by: jbeulich@suse.com
  	early_make_page_readonly(init_level4_pgt,
  				 XENFEAT_writable_page_tables);
  	early_make_page_readonly(__user_pgd(init_level4_pgt),
-@@ -783,7 +865,8 @@ void __init xen_init_pt(void)
+@@ -783,7 +867,8 @@ void __init xen_init_pt(void)
  
  void __init xen_finish_init_mapping(void)
  {
@@ -3972,7 +3986,7 @@ Acked-by: jbeulich@suse.com
  
  	/* Re-vector virtual addresses pointing into the initial
  	   mapping to the just-established permanent ones. */
-@@ -800,17 +883,24 @@ void __init xen_finish_init_mapping(void
+@@ -800,17 +885,24 @@ void __init xen_finish_init_mapping(void
  		xen_start_info->mod_start = (unsigned long)
  			__va(__pa(xen_start_info->mod_start));
  
@@ -4006,7 +4020,7 @@ Acked-by: jbeulich@suse.com
  }
  
  unsigned long __meminit
-@@ -828,42 +918,34 @@ kernel_physical_mapping_init(unsigned lo
+@@ -828,42 +920,34 @@ kernel_physical_mapping_init(unsigned lo
  
  	for (; start < end; start = next) {
  		pgd_t *pgd = pgd_offset_k(start);
@@ -4059,7 +4073,7 @@ Acked-by: jbeulich@suse.com
  
  	return last_map_addr;
  }
-@@ -922,13 +1004,11 @@ int arch_add_memory(int nid, u64 start,
+@@ -922,13 +1006,11 @@ int arch_add_memory(int nid, u64 start,
  {
  	struct pglist_data *pgdat = NODE_DATA(nid);
  	struct zone *zone = pgdat->node_zones + ZONE_NORMAL;
@@ -4075,7 +4089,7 @@ Acked-by: jbeulich@suse.com
  
  	ret = __add_pages(nid, zone, start_pfn, nr_pages);
  	WARN_ON_ONCE(ret);
-@@ -940,10 +1020,357 @@ int arch_add_memory(int nid, u64 start,
+@@ -940,10 +1022,357 @@ int arch_add_memory(int nid, u64 start,
  }
  EXPORT_SYMBOL_GPL(arch_add_memory);
  
@@ -4433,7 +4447,7 @@ Acked-by: jbeulich@suse.com
  void __init mem_init(void)
  {
  	long codesize, reservedpages, datasize, initsize;
-@@ -957,11 +1384,8 @@ void __init mem_init(void)
+@@ -957,11 +1386,8 @@ void __init mem_init(void)
  	reservedpages = 0;
  
  	/* this will put all low memory onto the freelists */
@@ -4446,7 +4460,7 @@ Acked-by: jbeulich@suse.com
  
  	/* XEN: init pages outside initial allocation. */
  	for (pfn = xen_start_info->nr_pages; pfn < max_pfn; pfn++) {
-@@ -1037,12 +1461,11 @@ void set_kernel_text_ro(void)
+@@ -1037,12 +1463,11 @@ void set_kernel_text_ro(void)
  void mark_rodata_ro(void)
  {
  	unsigned long start = PFN_ALIGN(_text);
@@ -4463,7 +4477,7 @@ Acked-by: jbeulich@suse.com
  
  	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
  	       (end - start) >> 10);
-@@ -1051,10 +1474,10 @@ void mark_rodata_ro(void)
+@@ -1051,10 +1476,10 @@ void mark_rodata_ro(void)
  	kernel_set_to_readonly = 1;
  
  	/*
@@ -4477,7 +4491,7 @@ Acked-by: jbeulich@suse.com
  
  	rodata_test();
  
-@@ -1067,12 +1490,12 @@ void mark_rodata_ro(void)
+@@ -1067,12 +1492,12 @@ void mark_rodata_ro(void)
  #endif
  
  	free_init_pages("unused kernel memory",
@@ -4495,7 +4509,7 @@ Acked-by: jbeulich@suse.com
  }
  
  #endif
-@@ -1262,10 +1685,70 @@ vmemmap_populate(struct page *start_page
+@@ -1262,10 +1687,70 @@ vmemmap_populate(struct page *start_page
  		}
  
  	}
@@ -4987,7 +5001,7 @@ Acked-by: jbeulich@suse.com
  
 --- a/drivers/char/tpm/tpm.h
 +++ b/drivers/char/tpm/tpm.h
-@@ -388,12 +388,12 @@ extern const struct file_operations tpm_
+@@ -395,12 +395,12 @@ extern const struct file_operations tpm_
  
  static inline void *chip_get_private(const struct tpm_chip *chip)
  {
@@ -5788,7 +5802,7 @@ Acked-by: jbeulich@suse.com
  		return XEN_PCI_ERR_op_failed;
  	}
  
-@@ -367,7 +371,11 @@ void xen_pcibk_do_op(struct work_struct
+@@ -386,7 +390,11 @@ void xen_pcibk_do_op(struct work_struct
  			break;
  #ifdef CONFIG_PCI_MSI
  		case XEN_PCI_OP_enable_msi:

@@ -52,7 +52,7 @@ when the functions are used before the page fault handler gets set up.
  						 .ascii "|auto_translated_physmap";
 --- a/arch/x86/kernel/setup-xen.c
 +++ b/arch/x86/kernel/setup-xen.c
-@@ -1433,7 +1433,7 @@ void __init setup_arch(char **cmdline_p)
+@@ -1441,7 +1441,7 @@ void __init setup_arch(char **cmdline_p)
  		difference = xen_start_info->nr_pages - max_pfn;
  
  		set_xen_guest_handle(reservation.extent_start,
@@ -61,7 +61,7 @@ when the functions are used before the page fault handler gets set up.
  		reservation.nr_extents = difference;
  		ret = HYPERVISOR_memory_op(XENMEM_decrease_reservation,
  					   &reservation);
-@@ -1446,13 +1446,83 @@ void __init setup_arch(char **cmdline_p)
+@@ -1454,13 +1454,83 @@ void __init setup_arch(char **cmdline_p)
  		phys_to_machine_mapping = alloc_bootmem_pages(
  			max_pfn * sizeof(unsigned long));
  		memcpy(phys_to_machine_mapping,
@@ -178,7 +178,7 @@ when the functions are used before the page fault handler gets set up.
  	/* Do an early initialization of the fixmap area. */
  	addr = __fix_to_virt(FIX_EARLYCON_MEM_BASE);
  	if (pud_present(level3_kernel_pgt[pud_index(addr)])) {
-@@ -886,6 +899,7 @@ void __init xen_init_pt(void)
+@@ -888,6 +901,7 @@ void __init xen_init_pt(void)
  void __init xen_finish_init_mapping(void)
  {
  	unsigned long va;
@@ -186,7 +186,7 @@ when the functions are used before the page fault handler gets set up.
  	pud_t *pud;
  
  	/* Re-vector virtual addresses pointing into the initial
-@@ -893,16 +907,20 @@ void __init xen_finish_init_mapping(void
+@@ -895,16 +909,20 @@ void __init xen_finish_init_mapping(void
  	xen_start_info = __va(__pa(xen_start_info));
  	xen_start_info->pt_base = (unsigned long)
  		__va(__pa(xen_start_info->pt_base));

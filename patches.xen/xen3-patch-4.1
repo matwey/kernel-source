@@ -3426,7 +3426,7 @@ Acked-by: jbeulich@suse.com
  		error_code |= PF_USER;
  	else
  		error_code &= ~PF_USER;
-@@ -1166,7 +1166,7 @@ __do_page_fault(struct pt_regs *regs, un
+@@ -1169,7 +1169,7 @@ __do_page_fault(struct pt_regs *regs, un
  	 * User-mode registers count as a user access even for any
  	 * potential system fault or CPU buglet:
  	 */

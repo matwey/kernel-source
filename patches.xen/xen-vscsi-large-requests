@@ -5,16 +5,14 @@ References: bnc#774818
 
 --- a/drivers/xen/scsiback/common.h
 +++ b/drivers/xen/scsiback/common.h
-@@ -95,10 +95,15 @@ struct vscsibk_info {
+@@ -95,10 +95,13 @@ struct vscsibk_info {
  	unsigned int waiting_reqs;
  	struct page **mmap_pages;
  
 +	struct pending_req *preq;
 +
-+	union {
-+		struct gnttab_map_grant_ref   *gmap;
-+		struct gnttab_unmap_grant_ref *gunmap;
-+	};
++	struct gnttab_map_grant_ref   *gmap;
++	struct gnttab_unmap_grant_ref *gunmap;
  };
  
 -typedef struct {
@@ -23,7 +21,7 @@ References: bnc#774818
  	struct vscsibk_info *info;
  	struct scsi_device *sdev;
  
-@@ -115,7 +120,8 @@ typedef struct {
+@@ -115,7 +118,8 @@ typedef struct {
  	
  	uint32_t request_bufflen;
  	struct scatterlist *sgl;
@@ -33,7 +31,7 @@ References: bnc#774818
  
  	int32_t rslt;
  	uint32_t resid;
-@@ -124,7 +130,7 @@ typedef struct {
+@@ -124,7 +128,7 @@ typedef struct {
  	struct list_head free_list;
  } pending_req_t;
  
@@ -42,7 +40,7 @@ References: bnc#774818
  
  #define scsiback_get(_b) (atomic_inc(&(_b)->nr_unreplied_reqs))
  #define scsiback_put(_b)				\
-@@ -164,7 +170,7 @@ void scsiback_release_translation_entry(
+@@ -164,7 +168,7 @@ void scsiback_release_translation_entry(
  
  int scsiback_cmd_exec(pending_req_t *pending_req);
  void scsiback_do_resp_with_sense(char *sense_buffer, int32_t result,
@@ -68,21 +66,22 @@ References: bnc#774818
  	if (!info)
  		return ERR_PTR(-ENOMEM);
  
-+	info->gmap = kcalloc(max(sizeof(*info->gmap), sizeof(*info->gunmap)),
-+			     vscsiif_segs, GFP_KERNEL);
-+	if (!info->gmap) {
-+		kfree(info);
++	info->gmap = kcalloc(sizeof(*info->gmap), vscsiif_segs, GFP_KERNEL);
++	info->gunmap = kcalloc(sizeof(*info->gunmap), vscsiif_segs, GFP_KERNEL);
++	if (!info->gmap || !info->gunmap) {
++		scsiback_free(info);
 +		return ERR_PTR(-ENOMEM);
 +	}
 +
  	info->domid = domid;
  	spin_lock_init(&info->ring_lock);
  	atomic_set(&info->nr_unreplied_reqs, 0);
-@@ -122,6 +129,7 @@ void scsiback_disconnect(struct vscsibk_
+@@ -122,6 +129,8 @@ void scsiback_disconnect(struct vscsibk_
  
  void scsiback_free(struct vscsibk_info *info)
  {
 +	kfree(info->gmap);
++	kfree(info->gunmap);
  	kmem_cache_free(scsiback_cachep, info);
  }
  
@@ -117,7 +116,7 @@ References: bnc#774818
  	unsigned int i, invcount = 0;
  	grant_handle_t handle;
  	int err;
-@@ -118,6 +122,7 @@ static pending_req_t * alloc_req(struct 
+@@ -118,6 +122,7 @@ static pending_req_t * alloc_req(struct
  	if (!list_empty(&pending_free)) {
  		req = list_entry(pending_free.next, pending_req_t, free_list);
  		list_del(&req->free_list);
@@ -125,7 +124,7 @@ References: bnc#774818
  	}
  	spin_unlock_irqrestore(&pending_free_lock, flags);
  	return req;
-@@ -145,7 +150,8 @@ static void scsiback_notify_work(struct 
+@@ -145,7 +150,8 @@ static void scsiback_notify_work(struct
  }
  
  void scsiback_do_resp_with_sense(char *sense_buffer, int32_t result,
@@ -194,16 +193,16 @@ References: bnc#774818
  
 -		for (i = 0; i < nr_segments; i++)
 +		for (i = 0; i < pending_req->nr_segments; i++)
++			gnttab_set_map_op(&map[i], vaddr(pending_req, i), flags,
++						pending_req->segs[i].gref,
++						info->domid);
++		for (j = 0; i < nr_segments; i++, j++)
  			gnttab_set_map_op(&map[i], vaddr(pending_req, i), flags,
 -						ring_req->seg[i].gref,
-+						pending_req->segs[i].gref,
- 						info->domid);
-+		for (j = 0; i < nr_segments; i++, j++)
-+			gnttab_set_map_op(&map[i], vaddr(pending_req, i), flags,
 +						segs[j].gref,
-+						info->domid);
-+
+ 						info->domid);
  
++
  		err = HYPERVISOR_grant_table_op(GNTTABOP_map_grant_ref, map, nr_segments);
  		BUG_ON(err);
  
@@ -261,8 +260,8 @@ References: bnc#774818
 -
  	pending_req->info       = info;
  
- 	pending_req->v_chn = vir.chn = ring_req->channel;
-@@ -534,11 +555,10 @@ static int prepare_pending_reqs(struct v
+ 	vir.chn = ring_req->channel;
+@@ -536,11 +557,10 @@ static int prepare_pending_reqs(struct v
  		goto invalid_value;
  	}
  
@@ -277,7 +276,7 @@ References: bnc#774818
  		err = -EINVAL;
  		goto invalid_value;
  	}
-@@ -555,7 +575,7 @@ static int prepare_pending_reqs(struct v
+@@ -557,7 +577,7 @@ static int prepare_pending_reqs(struct v
  	
  	pending_req->timeout_per_command = ring_req->timeout_per_command;
  
@@ -286,7 +285,7 @@ References: bnc#774818
  		DPRINTK("scsiback: invalid buffer\n");
  		err = -EINVAL;
  		goto invalid_value;
-@@ -567,6 +587,20 @@ invalid_value:
+@@ -569,6 +589,20 @@ invalid_value:
  	return err;
  }
  
@@ -299,15 +298,15 @@ References: bnc#774818
 +	if (pending_req->nr_segments + nr_segs <= vscsiif_segs) {
 +		memcpy(pending_req->segs + pending_req->nr_segments,
 +		       sgl->seg, nr_segs * sizeof(*sgl->seg));
++		barrier();
 +		pending_req->nr_segments += nr_segs;
-+	}
-+	else
++	} else
 +		DPRINTK("scsiback: invalid nr_segs = %u\n", nr_segs);
 +}
  
  static int _scsiback_do_cmd_fn(struct vscsibk_info *info)
  {
-@@ -593,9 +627,11 @@ static int _scsiback_do_cmd_fn(struct vs
+@@ -595,9 +629,11 @@ static int _scsiback_do_cmd_fn(struct vs
  	}
  
  	while ((rc != rp)) {
@@ -320,7 +319,7 @@ References: bnc#774818
  		if (NULL == pending_req) {
  			more_to_do = 1;
  			break;
-@@ -604,9 +640,26 @@ static int _scsiback_do_cmd_fn(struct vs
+@@ -606,9 +642,26 @@ static int _scsiback_do_cmd_fn(struct vs
  		ring_req = RING_GET_REQUEST(ring, rc);
  		ring->req_cons = ++rc;
  
@@ -350,7 +349,7 @@ References: bnc#774818
  		case VSCSIIF_ACT_SCSI_CDB:
  			/* The Host mode is through as for Emulation. */
  			if (info->feature == VSCSI_TYPE_HOST ?
-@@ -615,7 +668,8 @@ static int _scsiback_do_cmd_fn(struct vs
+@@ -617,7 +670,8 @@ static int _scsiback_do_cmd_fn(struct vs
  				scsiback_fast_flush_area(pending_req);
  				scsiback_do_resp_with_sense(NULL,
  							    DRIVER_ERROR << 24,
@@ -360,7 +359,7 @@ References: bnc#774818
  			}
  			break;
  		case VSCSIIF_ACT_SCSI_RESET:
-@@ -623,19 +677,27 @@ static int _scsiback_do_cmd_fn(struct vs
+@@ -625,19 +679,27 @@ static int _scsiback_do_cmd_fn(struct vs
  			scsiback_fast_flush_area(pending_req);
  			scsiback_device_reset_exec(pending_req);
  			break;
@@ -391,7 +390,7 @@ References: bnc#774818
  			break;
  		}
  
-@@ -707,17 +769,32 @@ static int __init scsiback_init(void)
+@@ -709,17 +771,32 @@ static int __init scsiback_init(void)
  	if (!is_running_on_xen())
  		return -ENODEV;
  
@@ -426,7 +425,7 @@ References: bnc#774818
  	for (i = 0; i < mmap_pages; i++)
  		pending_grant_handles[i] = SCSIBACK_INVALID_HANDLE;
  
-@@ -739,6 +816,10 @@ static int __init scsiback_init(void)
+@@ -741,6 +818,10 @@ static int __init scsiback_init(void)
  out_interface:
  	scsiback_interface_exit();
  out_of_memory:
@@ -437,7 +436,7 @@ References: bnc#774818
  	kfree(pending_reqs);
  	kfree(pending_grant_handles);
  	free_empty_pages_and_pagevec(pending_pages, mmap_pages);
-@@ -749,12 +830,17 @@ out_of_memory:
+@@ -751,12 +832,17 @@ out_of_memory:
  #if 0
  static void __exit scsiback_exit(void)
  {

@@ -2166,7 +2166,7 @@ Acked-by: jbeulich@suse.com
  __do_page_fault(struct pt_regs *regs, unsigned long error_code,
  		unsigned long address)
  {
-@@ -1279,8 +1283,9 @@ good_area:
+@@ -1282,8 +1286,9 @@ good_area:
  
  	up_read(&mm->mmap_sem);
  }
@@ -2177,7 +2177,7 @@ Acked-by: jbeulich@suse.com
  do_page_fault(struct pt_regs *regs, unsigned long error_code)
  {
  	unsigned long address = read_cr2(); /* Get the faulting address */
-@@ -1298,10 +1303,12 @@ do_page_fault(struct pt_regs *regs, unsi
+@@ -1301,10 +1306,12 @@ do_page_fault(struct pt_regs *regs, unsi
  	__do_page_fault(regs, error_code, address);
  	exception_exit(prev_state);
  }
@@ -2192,7 +2192,7 @@ Acked-by: jbeulich@suse.com
  {
  	if (user_mode(regs))
  		trace_page_fault_user(address, regs, error_code);
-@@ -1309,7 +1316,7 @@ static void trace_page_fault_entries(uns
+@@ -1312,7 +1319,7 @@ static void trace_page_fault_entries(uns
  		trace_page_fault_kernel(address, regs, error_code);
  }
  
@@ -2201,7 +2201,7 @@ Acked-by: jbeulich@suse.com
  trace_do_page_fault(struct pt_regs *regs, unsigned long error_code)
  {
  	/*
-@@ -1326,4 +1333,5 @@ trace_do_page_fault(struct pt_regs *regs
+@@ -1329,4 +1336,5 @@ trace_do_page_fault(struct pt_regs *regs
  	__do_page_fault(regs, error_code, address);
  	exception_exit(prev_state);
  }
@@ -2218,7 +2218,7 @@ Acked-by: jbeulich@suse.com
  		__pgd(__pa_symbol(level3_user_pgt) | _PAGE_TABLE);
  
  	/* Do an early initialization of the fixmap area. */
-@@ -1377,8 +1377,8 @@ void __init mem_init(void)
+@@ -1379,8 +1379,8 @@ void __init mem_init(void)
  	after_bootmem = 1;
  
  	/* Register memory areas for /proc/kcore */
@@ -2229,7 +2229,7 @@ Acked-by: jbeulich@suse.com
  
  	mem_init_print_info(NULL);
  }
-@@ -1520,11 +1520,19 @@ int kern_addr_valid(unsigned long addr)
+@@ -1522,11 +1522,19 @@ int kern_addr_valid(unsigned long addr)
   * covers the 64bit vsyscall page now. 32bit has a real VMA now and does
   * not need special handling anymore:
   */
@@ -2252,7 +2252,7 @@ Acked-by: jbeulich@suse.com
  };
  
  struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
-@@ -1553,26 +1561,45 @@ int in_gate_area(struct mm_struct *mm, u
+@@ -1555,26 +1563,45 @@ int in_gate_area(struct mm_struct *mm, u
   */
  int in_gate_area_no_mm(unsigned long addr)
  {

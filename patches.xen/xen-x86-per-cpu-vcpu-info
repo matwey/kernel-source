@@ -199,7 +199,7 @@ prerequisite for removing the limitation on 32 vCPU-s per guest.
  {
 --- a/arch/x86/kernel/cpu/common-xen.c
 +++ b/arch/x86/kernel/cpu/common-xen.c
-@@ -407,8 +407,16 @@ static const char *table_lookup_model(st
+@@ -408,8 +408,16 @@ static const char *table_lookup_model(st
  __u32 cpu_caps_cleared[NCAPINTS];
  __u32 cpu_caps_set[NCAPINTS];
  
@@ -487,7 +487,7 @@ prerequisite for removing the limitation on 32 vCPU-s per guest.
  #define NR_MMU    BITS_PER_LONG
 --- a/arch/x86/mm/init_64-xen.c
 +++ b/arch/x86/mm/init_64-xen.c
-@@ -121,6 +121,26 @@ void __init early_make_page_readonly(voi
+@@ -121,6 +121,26 @@ void __init early_make_page_readonly(con
  		BUG();
  }
  

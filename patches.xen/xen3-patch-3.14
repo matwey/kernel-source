@@ -90,7 +90,7 @@ Acked-by: jbeulich@suse.com
  #endif /* _ASM_X86_FIXMAP_H */
 --- a/arch/x86/include/mach-xen/asm/io.h
 +++ b/arch/x86/include/mach-xen/asm/io.h
-@@ -233,7 +233,7 @@ memcpy_toio(volatile void __iomem *dst, 
+@@ -233,7 +233,7 @@ memcpy_toio(volatile void __iomem *dst,
  
  static inline void flush_write_buffers(void)
  {
@@ -321,7 +321,7 @@ Acked-by: jbeulich@suse.com
  		/* Found one! */
  		current_vector = vector;
  		current_offset = offset;
-@@ -1242,7 +1240,7 @@ static void __clear_irq_vector(int irq, 
+@@ -1242,7 +1240,7 @@ static void __clear_irq_vector(int irq,
  
  	vector = cfg->vector;
  	for_each_cpu_and(cpu, cfg->domain, cpu_online_mask)
@@ -330,7 +330,7 @@ Acked-by: jbeulich@suse.com
  
  	cfg->vector = 0;
  	cpumask_clear(cfg->domain);
-@@ -1250,11 +1248,10 @@ static void __clear_irq_vector(int irq, 
+@@ -1250,11 +1248,10 @@ static void __clear_irq_vector(int irq,
  	if (likely(!cfg->move_in_progress))
  		return;
  	for_each_cpu_and(cpu, cfg->old_domain, cpu_online_mask) {
@@ -776,7 +776,7 @@ Acked-by: jbeulich@suse.com
  	/*
  	 * Detect and handle instructions that would cause a page fault for
  	 * both a tracked kernel page and a userspace page.
-@@ -1113,11 +1120,9 @@ __do_page_fault(struct pt_regs *regs, un
+@@ -1116,11 +1123,9 @@ __do_page_fault(struct pt_regs *regs, un
  	if (unlikely(error_code & PF_RSVD))
  		pgtable_bad(regs, error_code, address);
  
@@ -791,7 +791,7 @@ Acked-by: jbeulich@suse.com
  	}
  
  	/*
-@@ -1270,32 +1275,50 @@ good_area:
+@@ -1273,32 +1278,50 @@ good_area:
  	up_read(&mm->mmap_sem);
  }
  
@@ -873,7 +873,7 @@ Acked-by: jbeulich@suse.com
  	BUG_ON(PKMAP_BASE + LAST_PKMAP*PAGE_SIZE	> FIXADDR_START);
 --- a/arch/x86/mm/init_64-xen.c
 +++ b/arch/x86/mm/init_64-xen.c
-@@ -954,7 +954,7 @@ kernel_physical_mapping_init(unsigned lo
+@@ -956,7 +956,7 @@ kernel_physical_mapping_init(unsigned lo
  #ifndef CONFIG_NUMA
  void __init initmem_init(void)
  {
@@ -2186,7 +2186,7 @@ Acked-by: jbeulich@suse.com
  	if (nvec > maxvec)
  		return maxvec;
  
-@@ -766,31 +821,6 @@ int pci_enable_msi_block(struct pci_dev 
+@@ -766,31 +821,6 @@ int pci_enable_msi_block(struct pci_dev
  }
  EXPORT_SYMBOL(pci_enable_msi_block);
  
@@ -2404,7 +2404,7 @@ Acked-by: jbeulich@suse.com
  obj-$(CONFIG_XEN_DEV_EVTCHN)		+= $(xen-evtchn-name-y).o
 --- a/drivers/xen/blkback/blkback.c
 +++ b/drivers/xen/blkback/blkback.c
-@@ -611,7 +611,7 @@ static void dispatch_rw_block_io(blkif_t
+@@ -608,7 +608,7 @@ static void dispatch_rw_block_io(blkif_t
  			bio->bi_bdev    = preq.bdev;
  			bio->bi_private = pending_req;
  			bio->bi_end_io  = end_block_io_op;
@@ -2413,7 +2413,7 @@ Acked-by: jbeulich@suse.com
  		}
  
  		preq.sector_number += seg[i].nsec;
-@@ -632,7 +632,7 @@ static void dispatch_rw_block_io(blkif_t
+@@ -629,7 +629,7 @@ static void dispatch_rw_block_io(blkif_t
  		bio->bi_bdev    = preq.bdev;
  		bio->bi_private = pending_req;
  		bio->bi_end_io  = end_block_io_op;
@@ -2436,7 +2436,7 @@ Acked-by: jbeulich@suse.com
  
  	return 0;
  }
-@@ -1761,7 +1758,7 @@ static void net_tx_action(unsigned long 
+@@ -1762,7 +1759,7 @@ static void net_tx_action(unsigned long
  
  		skb->protocol = eth_type_trans(skb, dev);
  
@@ -2445,7 +2445,7 @@ Acked-by: jbeulich@suse.com
  			netdev_dbg(dev,
  				   "Can't setup checksum in net_tx_action\n");
  			kfree_skb(skb);
-@@ -1771,6 +1768,21 @@ static void net_tx_action(unsigned long 
+@@ -1772,6 +1769,21 @@ static void net_tx_action(unsigned long
  
  		skb_probe_transport_header(skb, 0);
  
@@ -2519,7 +2519,7 @@ Acked-by: jbeulich@suse.com
  
  	/* Header must be checked, and gso_segs computed. */
  	skb_shinfo(skb)->gso_type |= SKB_GSO_DODGY;
-@@ -1494,7 +1508,7 @@ err:	
+@@ -1494,7 +1508,7 @@ err:
  		/* Ethernet work: Delayed to here as it peeks the header. */
  		skb->protocol = eth_type_trans(skb, dev);
  

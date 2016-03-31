@@ -925,7 +925,7 @@ Acked-by: jbeulich@suse.com
  
  	/* Set the "privileged fault" bit to something sane. */
  	if (user_mode_vm(regs))
-@@ -1109,6 +1098,7 @@ __do_page_fault(struct pt_regs *regs, un
+@@ -1112,6 +1101,7 @@ __do_page_fault(struct pt_regs *regs, un
  	if (user_mode_vm(regs)) {
  		local_irq_enable();
  		error_code |= PF_USER;
@@ -933,7 +933,7 @@ Acked-by: jbeulich@suse.com
  	} else {
  		if (regs->flags & X86_EFLAGS_IF)
  			local_irq_enable();
-@@ -1135,6 +1125,9 @@ __do_page_fault(struct pt_regs *regs, un
+@@ -1138,6 +1128,9 @@ __do_page_fault(struct pt_regs *regs, un
  		return;
  	}
  
@@ -943,7 +943,7 @@ Acked-by: jbeulich@suse.com
  	/*
  	 * When running in the kernel we expect faults to occur only to
  	 * addresses in user space.  All other faults represent errors in
-@@ -1213,9 +1206,17 @@ good_area:
+@@ -1216,9 +1209,17 @@ good_area:
  	 */
  	fault = handle_mm_fault(mm, vma, address, flags);
  

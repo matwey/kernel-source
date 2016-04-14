@@ -1,0 +1,41 @@
+From: NeilBrown <neilb@suse.com>
+Subject: Fix kABI additions for pipe: limit the per-user amount of pages allocated in pipes
+Patch-mainline: Never, kabi fix
+
+Move new fields to end of struct and protect from kabi.
+
+---
+ include/linux/pipe_fs_i.h |    2 ++
+ include/linux/sched.h     |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+--- a/include/linux/pipe_fs_i.h
++++ b/include/linux/pipe_fs_i.h
+@@ -58,7 +58,9 @@ struct pipe_inode_info {
+ 	struct fasync_struct *fasync_readers;
+ 	struct fasync_struct *fasync_writers;
+ 	struct pipe_buffer *bufs;
++#ifndef __GENKSYMS__
+ 	struct user_struct *user;
++#endif
+ };
+ 
+ /*
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -802,7 +802,6 @@ struct user_struct {
+ 	unsigned long mq_bytes;	/* How many bytes can be allocated to mqueue? */
+ #endif
+ 	unsigned long locked_shm; /* How many pages of mlocked shm ? */
+-	atomic_long_t pipe_bufs;  /* how many pages are allocated in pipe buffers */
+ 
+ #ifdef CONFIG_KEYS
+ 	struct key *uid_keyring;	/* UID specific keyring */
+@@ -818,6 +817,7 @@ struct user_struct {
+ #endif
+ #ifndef __GENKSYMS__
+ 	unsigned long unix_inflight;	/* How many files in flight in unix sockets */
++	atomic_long_t pipe_bufs;  /* how many pages are allocated in pipe buffers */
+ #endif
+ };
+ 

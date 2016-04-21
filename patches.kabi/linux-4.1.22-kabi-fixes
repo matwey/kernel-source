@@ -1,0 +1,129 @@
+From: Takashi Iwai <tiwai@suse.de>
+Subject: kABI fixes for 4.1.22
+Patch-mainline: Never, Leap kernel only
+
+The module.h changes are a bit tricky: it assumes that the modified
+fields are used only in kernel/module.c.  Since the new fields are
+smaller than the old, it's fit via unnamed union.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+---
+ fs/fuse/fuse_i.h                |    4 +++-
+ include/drm/drm_dp_mst_helper.h |    9 +++++++++
+ include/linux/module.h          |   14 ++++++++++++++
+ include/linux/pci.h             |    2 ++
+ include/linux/thermal.h         |    2 +-
+ 5 files changed, 29 insertions(+), 2 deletions(-)
+
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -306,9 +306,23 @@ struct module {
+ #endif
+ 
+ #ifdef CONFIG_KALLSYMS
++#ifndef __GENKSYMS__
++	union {
++		struct {
++#endif
++	/* old placeholder for kABI compatibility */
++	Elf_Sym *symtab, *core_symtab;
++	unsigned int num_symtab, core_num_syms;
++	char *strtab, *core_strtab;
++#ifndef __GENKSYMS__
++		};
++		struct {
+ 	/* Protected by RCU and/or module_mutex: use rcu_dereference() */
+ 	struct mod_kallsyms *kallsyms;
+ 	struct mod_kallsyms core_kallsyms;
++		};
++	};
++#endif
+ 
+ 	/* Section attributes */
+ 	struct module_sect_attrs *sect_attrs;
+--- a/include/drm/drm_dp_mst_helper.h
++++ b/include/drm/drm_dp_mst_helper.h
+@@ -68,6 +68,10 @@ struct drm_dp_vcpi {
+ struct drm_dp_mst_port {
+ 	struct kref kref;
+ 
++	/* FIXME: placeholder for kABI compatibility */
++	bool guid_valid;
++	u8 guid[16];
++
+ 	u8 port_num;
+ 	bool input;
+ 	bool mcs;
+@@ -128,8 +132,10 @@ struct drm_dp_mst_branch {
+ 	int last_seqno;
+ 	bool link_address_sent;
+ 
++#ifndef __GENKSYMS__
+ 	/* global unique identifier to identify branch devices */
+ 	u8 guid[16];
++#endif
+ };
+ 
+ 
+@@ -431,6 +437,9 @@ struct drm_dp_mst_topology_mgr {
+ 
+ 	bool mst_state;
+ 	struct drm_dp_mst_branch *mst_primary;
++	/* placeholder for kABI compatibility */
++	bool guid_valid;
++	u8 guid[16];
+ 
+ 	u8 dpcd[DP_RECEIVER_CAP_SIZE];
+ 	u8 sink_count;
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -357,8 +357,10 @@ struct pci_dev {
+ 	unsigned int	broken_intx_masking:1;
+ 	unsigned int	io_window_1k:1;	/* Intel P2P bridge 1K I/O windows */
+ 	unsigned int	irq_managed:1;
++#ifndef __GENKSYMS__
+ 	unsigned int	has_secondary_link:1;
+ 	unsigned int	non_compliant_bars:1;	/* broken BARs; ignore them */
++#endif
+ 	pci_dev_flags_t dev_flags;
+ 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
+ 
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -183,7 +183,6 @@ struct thermal_zone_device {
+ 	struct thermal_attr *trip_hyst_attrs;
+ 	void *devdata;
+ 	int trips;
+-	unsigned long trips_disabled;	/* bitmap for disabled trips */
+ 	int passive_delay;
+ 	int polling_delay;
+ 	int temperature;
+@@ -201,6 +200,7 @@ struct thermal_zone_device {
+ 	struct delayed_work poll_queue;
+ #ifndef __GENKSYMS__
+ 	atomic_t need_update;
++	unsigned long trips_disabled;	/* bitmap for disabled trips */
+ #endif
+ };
+ 
+--- a/fs/fuse/fuse_i.h
++++ b/fs/fuse/fuse_i.h
+@@ -254,7 +254,6 @@ enum fuse_req_state {
+ 
+ /** The request IO state (for asynchronous processing) */
+ struct fuse_io_priv {
+-	struct kref refcnt;
+ 	int async;
+ 	spinlock_t lock;
+ 	unsigned reqs;
+@@ -266,6 +265,9 @@ struct fuse_io_priv {
+ 	struct kiocb *iocb;
+ 	struct file *file;
+ 	struct completion *done;
++#ifndef __GENKSYMS__
++	struct kref refcnt;
++#endif
+ };
+ 
+ #define FUSE_IO_PRIV_SYNC(f) \

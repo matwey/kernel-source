@@ -16,6 +16,7 @@ drivers/target/*		PASS
 drivers/scsi/qla2xxx/*		PASS
 net/ceph/*			PASS
 drivers/mfd/tps65218		PASS
+sound/hda/*			PASS
 
 inet_twsk_schedule		PASS
 crypto_*			PASS
@@ -24,3 +25,7 @@ lpddr2_jedec_*			PASS
 ip6_route_output		PASS
 __scm_*				PASS
 scm_*				PASS
+efivar_validate			PASS
+file_open_root			PASS
+dax_fault			PASS
+x509_*				PASS

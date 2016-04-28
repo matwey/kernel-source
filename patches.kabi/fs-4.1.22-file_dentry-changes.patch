@@ -1,0 +1,69 @@
+From 882d522654f6e890b8707080f70dd07f033ff4bc Mon Sep 17 00:00:00 2001
+From: Goldwyn Rodrigues <rgoldwyn@suse.com>
+Date: Thu, 28 Apr 2016 11:34:23 -0500
+Subject: [PATCH] kabi: file_dentry changes
+Patch-mainline: Never, Leap 42.1 only
+
+References: bsc#977198
+---
+ fs/dcache.c            | 3 ++-
+ fs/overlayfs/super.c   | 1 +
+ include/linux/dcache.h | 2 ++
+ include/linux/fs.h     | 1 +
+ 4 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/fs/dcache.c b/fs/dcache.c
+index 693228c..8f29a11 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1685,7 +1685,8 @@ void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
+ 		dentry->d_flags |= DCACHE_OP_PRUNE;
+ 	if (op->d_select_inode)
+ 		dentry->d_flags |= DCACHE_OP_SELECT_INODE;
+-	if (op->d_real)
++	if ((dentry->d_sb->s_type->fs_flags & FS_DENTRY_OP_REAL)
++			&& (op->d_real))
+ 		dentry->d_flags |= DCACHE_OP_REAL;
+ 
+ }
+diff --git a/fs/overlayfs/super.c b/fs/overlayfs/super.c
+index d8f5e1f..07c1d29 100644
+--- a/fs/overlayfs/super.c
++++ b/fs/overlayfs/super.c
+@@ -1071,6 +1071,7 @@ static struct file_system_type ovl_fs_type = {
+ 	.name		= "overlay",
+ 	.mount		= ovl_mount,
+ 	.kill_sb	= kill_anon_super,
++	.fs_flags	= FS_DENTRY_OP_REAL,
+ };
+ MODULE_ALIAS_FS("overlay");
+ 
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index c099167..429e017 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -161,7 +161,9 @@ struct dentry_operations {
+ 	struct vfsmount *(*d_automount)(struct path *);
+ 	int (*d_manage)(struct dentry *, bool);
+ 	struct inode *(*d_select_inode)(struct dentry *, unsigned);
++#ifndef __GENKSYMS__
+ 	struct dentry *(*d_real)(struct dentry *, struct inode *);
++#endif
+ } ____cacheline_aligned;
+ 
+ /*
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 3a25ad7..76867b0 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1923,6 +1923,7 @@ struct file_system_type {
+ #define FS_USERNS_MOUNT		8	/* Can be mounted by userns root */
+ #define FS_USERNS_DEV_MOUNT	16 /* A userns mount does not imply MNT_NODEV */
+ #define FS_USERNS_VISIBLE	32	/* FS must already be visible */
++#define FS_DENTRY_OP_REAL	64	/* Supports dentry->d_op->d_real. */
+ #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move() during rename() internally. */
+ 	struct dentry *(*mount) (struct file_system_type *, int,
+ 		       const char *, void *);
+-- 
+2.6.6
+

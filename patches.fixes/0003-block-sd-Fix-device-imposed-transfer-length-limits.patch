@@ -51,10 +51,10 @@ Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
  block/blk-settings.c   |   15 ++++++++++++---
  block/blk-sysfs.c      |    3 +++
- drivers/scsi/sd.c      |   46 ++++++++++++++++++++++++++++++----------------
+ drivers/scsi/sd.c      |   41 +++++++++++++++++++++++++----------------
  drivers/scsi/sd.h      |    1 +
  include/linux/blkdev.h |    1 +
- 5 files changed, 47 insertions(+), 19 deletions(-)
+ 5 files changed, 42 insertions(+), 19 deletions(-)
 
 --- a/block/blk-settings.c
 +++ b/block/blk-settings.c
@@ -129,7 +129,7 @@ Signed-off-by: Takashi Iwai <tiwai@suse.de>
  
 --- a/drivers/scsi/sd.c
 +++ b/drivers/scsi/sd.c
-@@ -2223,11 +2223,8 @@ got_data:
+@@ -2224,11 +2224,8 @@ got_data:
  		}
  	}
  
@@ -140,9 +140,9 @@ Signed-off-by: Takashi Iwai <tiwai@suse.de>
 -	} else
 -		sdkp->max_xfer_blocks = SD_DEF_XFER_BLOCKS;
  
- 	/* Rescale capacity to 512-byte units */
- 	if (sector_size == 4096)
-@@ -2544,7 +2541,6 @@ static void sd_read_block_limits(struct
+ 	blk_queue_physical_block_size(sdp->request_queue,
+ 				      sdkp->physical_block_size);
+@@ -2537,7 +2534,6 @@ static void sd_read_block_limits(struct
  {
  	unsigned int sector_sz = sdkp->device->sector_size;
  	const int vpd_len = 64;
@@ -150,7 +150,7 @@ Signed-off-by: Takashi Iwai <tiwai@suse.de>
  	unsigned char *buffer = kmalloc(vpd_len, GFP_KERNEL);
  
  	if (!buffer ||
-@@ -2552,14 +2548,11 @@ static void sd_read_block_limits(struct
+@@ -2545,14 +2541,11 @@ static void sd_read_block_limits(struct
  	    scsi_get_vpd_page(sdkp->device, 0xb0, buffer, vpd_len))
  		goto out;
  
@@ -168,19 +168,7 @@ Signed-off-by: Takashi Iwai <tiwai@suse.de>
  
  	if (buffer[3] == 0x3c) {
  		unsigned int lba_count, desc_count;
-@@ -2708,6 +2701,11 @@ static int sd_try_extended_inquiry(struc
- 	return 0;
- }
- 
-+static inline u32 logical_to_sectors(struct scsi_device *sdev, u32 blocks)
-+{
-+	return blocks << (ilog2(sdev->sector_size) - 9);
-+}
-+
- /**
-  *	sd_revalidate_disk - called the first time a new disk is seen,
-  *	performs disk spin up, read_capacity, etc.
-@@ -2717,8 +2715,9 @@ static int sd_revalidate_disk(struct gen
+@@ -2710,8 +2703,9 @@ static int sd_revalidate_disk(struct gen
  {
  	struct scsi_disk *sdkp = scsi_disk(disk);
  	struct scsi_device *sdp = sdkp->device;
@@ -191,7 +179,7 @@ Signed-off-by: Takashi Iwai <tiwai@suse.de>
  
  	SCSI_LOG_HLQUEUE(3, sd_printk(KERN_INFO, sdkp,
  				      "sd_revalidate_disk\n"));
-@@ -2766,11 +2765,26 @@ static int sd_revalidate_disk(struct gen
+@@ -2759,11 +2753,26 @@ static int sd_revalidate_disk(struct gen
  	 */
  	sd_set_flush_flag(sdkp);
  
@@ -220,13 +208,13 @@ Signed-off-by: Takashi Iwai <tiwai@suse.de>
 +	/* Combine with controller limits */
 +	q->limits.max_sectors = min(rw_max, queue_max_hw_sectors(q));
  
- 	set_capacity(disk, sdkp->capacity);
+ 	set_capacity(disk, logical_to_sectors(sdp, sdkp->capacity));
  	sd_config_write_same(sdkp);
 --- a/drivers/scsi/sd.h
 +++ b/drivers/scsi/sd.h
 @@ -67,6 +67,7 @@ struct scsi_disk {
  	atomic_t	openers;
- 	sector_t	capacity;	/* size in 512-byte sectors */
+ 	sector_t	capacity;	/* size in logical blocks */
  	u32		max_xfer_blocks;
 +	u32		opt_xfer_blocks;
  	u32		max_ws_blocks;

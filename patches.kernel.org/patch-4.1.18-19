@@ -1,7 +1,7 @@
 From: Takashi Iwai <tiwai@suse.de>
 Subject: Linux 4.1.19
 Patch-mainline: 4.1.19
-References: CVE-2016-2383 CVE-2016-2384 bsc#966684 bsc#966693 bsc#968018
+References: CVE-2016-2383 CVE-2016-2384 bsc#966684 bsc#966693 bsc#968018 bsc#973570
 Git-commit: d9749fb5942f51555dc9ce1ac0dbb1806960a975
 Git-commit: b5f0549231ffb025337be5a625b0ff9f52b016f0
 Git-commit: a97eb33ff225f34a8124774b3373fd244f0e83ce

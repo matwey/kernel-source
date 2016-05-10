@@ -1,7 +1,7 @@
 From: Takashi Iwai <tiwai@suse.de>
 Subject: Linux 4.1.15
 Patch-mainline: 4.1.15
-References: boo#954647 bsc#955422
+References: CVE-2013-7446 bsc#917648 boo#954647 bsc#955422 bsc#955654
 Git-commit: e2656412f2a7343ecfd13eb74bac0a6e6e9c5aad
 Git-commit: 777d738a5e58ba3b6f3932ab1543ce93703f4873
 Git-commit: 8f1eb48758aacf6c1ffce18179295adbf3bd7640

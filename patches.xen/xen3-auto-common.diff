@@ -3487,7 +3487,7 @@ take the forward porting patches:
 @@ -632,7 +666,7 @@ static inline void ClearPageSlabPfmemall
  	 1 << PG_writeback | 1 << PG_reserved | \
  	 1 << PG_slab	 | 1 << PG_swapcache | 1 << PG_active | \
- 	 1 << PG_unevictable | __PG_MLOCKED | __PG_HWPOISON | \
+ 	 1 << PG_unevictable | __PG_MLOCKED | \
 -	 __PG_COMPOUND_LOCK)
 +	 __PG_COMPOUND_LOCK | __PG_XEN)
  
@@ -3495,7 +3495,7 @@ take the forward porting patches:
   * Flags checked when a page is prepped for return by the page allocator.
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -1249,6 +1249,10 @@ static inline int pci_enable_msix_exact(
+@@ -1253,6 +1253,10 @@ static inline int pci_enable_msix_exact(
  		return rc;
  	return 0;
  }
@@ -3877,7 +3877,7 @@ take the forward porting patches:
  		return;
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -783,6 +783,13 @@ static bool free_pages_prepare(struct pa
+@@ -803,6 +803,13 @@ static bool free_pages_prepare(struct pa
  	bool compound = PageCompound(page);
  	int i, bad = 0;
  

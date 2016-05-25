@@ -2,7 +2,8 @@ From: Takashi Iwai <tiwai@suse.de>
 Subject: [PATCH] drm/sti: Remove select of CONFIG_FW_LOADER_USER_HELPER_FALLBACK
 Date: Mon, 19 Oct 2015 08:16:10 +0200
 Message-id: <1445235370-6717-1-git-send-email-tiwai@suse.de>
-Patch-mainline: Submitted, Mon, 19 Oct 2015 08:16:10 +0200, LKML
+Patch-mainline: 4.4-rc1
+Git-commit: e00fe64a5ccd94590e1c3325346b60aa0ffdc1ff
 References: boo#951260
 
 The commit [4fdbc678fe4d: drm: sti: add HQVDP plane] added the select

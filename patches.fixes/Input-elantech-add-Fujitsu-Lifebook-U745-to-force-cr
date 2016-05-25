@@ -2,9 +2,9 @@ From: Takashi Iwai <tiwai@suse.de>
 Date: Fri,  6 Nov 2015 20:01:25 +0100
 Subject: [PATCH] Input: elantech - add Fujitsu Lifebook U745 to force
  crc_enabled
-Patch-mainline: Submitted, Fri,  6 Nov 2015 20:01:25 +0100, linux-input ML
+Patch-mainline: v4.6-rc1
+Git-commit: 60603950f836ef4e88daddf61a273b91e671db2d
 References: boo#883192
-Message-id: <1446836485-1006-1-git-send-email-tiwai@suse.de>
 
 Another Lifebook machine that needs the same quirk as other similar
 models to make the driver working.

@@ -1,6 +1,7 @@
 From: Takashi Iwai <tiwai@suse.de>
 Subject: drm/i915: Don't override output type for DDI HDMI
-Patch-mainline: Submitted, Wed, 18 Nov 2015 16:23:06 +0100, intel-gfx ML
+Patch-mainline: v4.4-rc4
+Git-commit: 2540058f7a9d9a843b4d9a28d4f8168dd034d030
 References: boo#955190
 
 Currently a DDI port may register the DP hotplug handler even though

@@ -1,0 +1,27 @@
+From f7102756aeb0d0fd2c64c8868ed6f779bb95d5d8 Mon Sep 17 00:00:00 2001
+From: "Matwey V. Kornilov" <matwey.kornilov@gmail.com>
+Date: Mon, 1 Aug 2016 11:02:36 +0300
+Subject: [PATCH] Revert "Revert "usb: musb: musb_host: Enable HCD_BH flag to
+ handle urb return in bottom half""
+
+This reverts commit f551e13529833e052f75ec628a8af7b034af20f9.
+---
+ drivers/usb/musb/musb_host.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/musb/musb_host.c b/drivers/usb/musb/musb_host.c
+index d227a71..9e8c61a 100644
+--- a/drivers/usb/musb/musb_host.c
++++ b/drivers/usb/musb/musb_host.c
+@@ -2741,7 +2741,7 @@ static const struct hc_driver musb_hc_driver = {
+ 	.description		= "musb-hcd",
+ 	.product_desc		= "MUSB HDRC host driver",
+ 	.hcd_priv_size		= sizeof(struct musb *),
+-	.flags			= HCD_USB2 | HCD_MEMORY,
++	.flags			= HCD_USB2 | HCD_MEMORY | HCD_BH,
+ 
+ 	/* not using irq handler or reset hooks from usbcore, since
+ 	 * those must be shared with peripheral code for OTG configs
+-- 
+2.1.4
+

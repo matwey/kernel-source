@@ -1,0 +1,93 @@
+From 3d5cd6635730439b304e350e929a52c6c7c595ca Mon Sep 17 00:00:00 2001
+From: Suman Anna <s-anna@ti.com>
+Date: Wed, 20 Oct 2021 16:09:23 -0500
+Subject: [PATCH 1/4] dt-bindings: remoteproc: pru: Update bindings for
+ supporting rpmsg
+
+Update the PRU remoteproc DT bindings to add the properties required
+to support the optional virtio rpmsg stack using the virtio-ring based
+communication transport between MPU and a PRU core.
+
+Signed-off-by: Suman Anna <s-anna@ti.com>
+Co-developed-by: Grzegorz Jaszczyk <grzegorz.jaszczyk@linaro.org>
+Signed-off-by: Grzegorz Jaszczyk <grzegorz.jaszczyk@linaro.org>
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+(cherry picked from commit 91575de141aab215c6450f029fc486abe470a504)
+Patch-mainline: Queued in TI repository
+Git-repo: https://git.ti.com/git/ti-linux-kernel/ti-linux-kernel.git
+Git-commit: 91575de141aab215c6450f029fc486abe470a504
+---
+ .../bindings/remoteproc/ti,pru-rproc.yaml     | 29 +++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/remoteproc/ti,pru-rproc.yaml b/Documentation/devicetree/bindings/remoteproc/ti,pru-rproc.yaml
+index d7c3a78e37e6..3c42c3c6ce5f 100644
+--- a/Documentation/devicetree/bindings/remoteproc/ti,pru-rproc.yaml
++++ b/Documentation/devicetree/bindings/remoteproc/ti,pru-rproc.yaml
+@@ -31,6 +31,9 @@ description: |
+   including a complete example,
+     Documentation/devicetree/bindings/soc/ti/ti,pruss.yaml
+ 
++allOf:
++  - $ref: /schemas/interrupts.yaml#
++
+ properties:
+   compatible:
+     enum:
+@@ -65,6 +68,23 @@ properties:
+       Should contain the name of the default firmware image
+       file located on the firmware search path.
+ 
++# Optional Properties:
++# --------------------
++# The virtio based communication between the MPU and a PRU core _requires_ the
++# set of 'interrupt-parent', 'interrupts' and 'interrupt-names' properties.
++
++  interrupts:
++    description: |
++      Array of interrupt specifiers if using PRU system events for IPC
++      signalling between host and a PRU core. This property should match
++      with the PRU system event used in the corresponding firmware image.
++    items:
++      - description: PRU event number used to receive virtqueue events
++
++  interrupt-names:
++    items:
++      - const: vring # for PRU to HOST virtqueue signalling
++
+ if:
+   properties:
+     compatible:
+@@ -93,6 +113,9 @@ else:
+       $nodename:
+         pattern: "^pru@[0-9a-f]+$"
+ 
++dependencies:
++  interrupts: [interrupt-names, interrupt-parent]
++
+ required:
+   - compatible
+   - reg
+@@ -131,6 +154,9 @@ examples:
+                 <0x22400 0x100>;
+           reg-names = "iram", "control", "debug";
+           firmware-name = "am335x-pru0-fw";
++          interrupt-parent = <&pruss_intc>;
++          interrupts = <16 2 2>;
++          interrupt-names = "vring";
+         };
+ 
+         pru1: pru@38000 {
+@@ -140,6 +166,9 @@ examples:
+                 <0x24400 0x100>;
+           reg-names = "iram", "control", "debug";
+           firmware-name = "am335x-pru1-fw";
++          interrupt-parent = <&pruss_intc>;
++          interrupts = <18 3 3>;
++          interrupt-names = "vring";
+         };
+       };
+     };
+-- 
+2.35.3
+
